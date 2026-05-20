@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/login.css' %}">
+    <title>Login</title>
+</head>
+<body>
+    <div class="Card-Login">
+        <div class="imgContainer">
+            <img class="Logo"src="{% static 'logo.jpg'%}" alt="Logo">
+        </div>
+        <div Class="inputsContainer">
+        <input type="text" class="loginInput"name="Usuario" placeholder="Usuario"> 
+        <input type="text" class="loginInput"name="Password" placeholder="Contraseña">
+        <button class="loginButton">Iniciar Sesión</button>
+        <a class="registrarseLink" href="">Registrate</a>
+        </div>
+    </div>
+</body>
+</html>
