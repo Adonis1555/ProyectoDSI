@@ -8,19 +8,58 @@
     <title>Login</title>
 </head>
 <body>
+    {% if messages %}
+        <div class="toast-container">
+            {% for message in messages %}
+                <div class="toast-card">
+                    <button type="button" class="toast-close-btn" aria-label="Cerrar">&times;</button>
+                    <div class="toast-content">
+                        <p class="toast-text">{{ message }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <form method="POST" action="">
-        {% csrf_token %}<div class="Card-Login">
+      
+        {% csrf_token %}
+        <div class="Card-Login">
             <div class="imgContainer">
                 <img class="Logo"src="{% static 'logo.jpg'%}" alt="Logo">
             </div>
+            
             <div Class="inputsContainer">
-            <input type="text" class="loginInput"name="Usuario" placeholder="Usuario"> 
-            <input type="text" class="loginInput"name="Password" placeholder="Contraseña">
+            <input type="text" class="loginInput {% if messages %}input-error{% endif %}"name="Usuario" placeholder="Usuario"> 
+            <input type="password" class="loginInput {% if messages %}input-error{% endif %}"name="Password" placeholder="Contraseña">
             <button class="loginButton" type="submit">Iniciar Sesión</button>
             <a class="registrarseLink" href="">Registrate</a>
             </div>
+           
         </div>
     </form>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const toast = document.querySelector('.toast-card');
+            
+            if (toast) {
+                const hideToast = () => {
+                    toast.classList.add('hide');
+                    setTimeout(() => toast.remove(), 500);
+                };
+    
+                const autoHideTimer = setTimeout(hideToast, 4000);
+    
+                const closeBtn = toast.querySelector('.toast-close-btn');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        clearTimeout(autoHideTimer); 
+                        hideToast(); e
+                    });
+                }
+            }
+        });
+    </script>
 </body>
 </html>
