@@ -1,0 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    font-family: 'Inter', sans-serif;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #F0F4FA;
+    padding: 20px;
+}
+
+
+.directora-maestro {
+    width: 100%;
+    max-width: 1200px; 
+    background: #fff;
+    display: grid;
+    grid-template-columns: 240px 1fr; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border-radius: 1.5rem;
+    min-height: 70vh;
+}
+
+
+.menu-opciones {
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 1.5rem 0 0 1.5rem; 
+    padding: 30px 20px;
+    border-right: 1px solid #f0f0f0;
+}
+
+.imgContainer {
+    width: 110px;
+    margin-bottom: 35px;
+}
+
+.Logo {
+    width: 100%;
+    object-fit: contain;
+}
+
+.menu-opciones ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.item-menu {
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    gap: 10px;
+    padding: 12px 16px;
+    color: #4b5563; 
+    cursor: pointer;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    width: 100%; 
+}
+
+.item-menu:hover {
+    background-color: #2E5299;
+    color: #fff; 
+}
+
+.item-menu.activo {
+    background-color: #2E5299;
+    font-weight: 600;
+    color: #fff;
+}
+
+
+.registro-maestro {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    background-color: #fcfcfc;
+    border-radius: 0 1.5rem 1.5rem 0;
+}
+
+.container-titulo-maestro {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    flex-wrap: wrap; 
+}
+
+.titulo-maestro {
+    font-size: 24px;
+    color: #111827;
+}
+
+.btnRegistrarMaestro {
+    padding: 12px 24px;
+    background-color: #111827;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.3s;
+    height: fit-content;
+    white-space: nowrap; /
+}
+
+.btnRegistrarMaestro:hover {
+    background-color: #1f2937;
+    transform: translateY(-1px);
+}
+
+
+
+.containerTabla {
+    width: 100%;
+    overflow-x: auto; 
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+
+.tabla-maestro {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: inherit;
+    min-width: 600px;
+}
+
+.tabla-maestro th, .tabla-maestro td {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.tabla-maestro th {
+    background-color: #f8fafc;
+    color: #4b5563;
+    font-weight: 600;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.tabla-maestro td {
+    border-bottom: 1px solid #edf2f7;
+    color: #1f2937;
+}
+
+.tabla-maestro tr:last-child td {
+    border-bottom: none;
+}
+
+.tabla-maestro tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+
+.container-buscar {
+    width: 100%;
+    display: flex;
+    margin-bottom: 5px;
+}
+
+.inputBuscarMaestro {
+    width: 100%;
+    max-width: 320px; 
+    padding: 12px 16px; 
+    border: 1px solid #e5e7eb; 
+    border-radius: 10px;
+    outline: none;
+    font-size: 14px;
+    color: #1f2937;
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Sombra sutil casi imperceptible */
+}
+
+.inputBuscarMaestro:focus {
+    border-color: #2E5299;
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(46, 82, 153, 0.15); /* Efecto de enfoque tipo anillo, mucho más moderno */
+}
+
+/* El marcador de posición (placeholder) con un tono gris elegante */
+.inputBuscarMaestro::placeholder {
+    color: #9ca3af;
+}
+
+/* Contenedor especial para evitar el desborde de la tabla */
+.containerTabla {
+    width: 100%;
+    overflow-x: auto; 
+    border-radius: 12px; /* Bordes un poco más suaves para combinar con la tarjeta */
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+}
+
+/* ... (El resto del código y el Media Query se mantienen igual) ... */
+/* ==========================================
+   MEDIA QUERY: Adaptación para Dispositivos Móviles
+   ========================================== */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .directora-maestro {
+        grid-template-columns: 1fr; /* Pasa a ser una sola columna */
+        min-height: auto;
+    }
+
+    .menu-opciones {
+        border-radius: 1.5rem 1.5rem 0 0;
+        border-right: none;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 20px;
+    }
+
+    .imgContainer {
+        margin-bottom: 15px;
+        width: 90px;
+    }
+
+    .menu-opciones ul {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .item-menu {
+        width: auto; /* Los botones se adaptan a su texto uno al lado del otro */
+        margin-bottom: 0;
+    }
+
+    .registro-maestro {
+        padding: 20px;
+        border-radius: 0 0 1.5rem 1.5rem;
+    }
+
+    .inputBuscarMaestro {
+        max-width: 100%; /* El buscador toma todo el ancho en móviles */
+    }
+}

@@ -22,6 +22,7 @@ class Usuario(AbstractUser):
         ('maestro', 'Maestro'),
         ('responsable', 'Responsable'),
     ]
+    username = None
 
     email= models.EmailField(unique=True)
     nombre = models.CharField(max_length=100)
