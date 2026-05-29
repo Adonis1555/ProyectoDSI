@@ -13,6 +13,8 @@ body{
     background-color:#f3f4f6;
 }
 
+
+
 /* CARD */
 
 .Card-Login{
@@ -55,7 +57,6 @@ body{
     border-radius:10px;
     outline:none;
     font-size:14px;
-
     transition:0.3s;
 }
 
@@ -74,7 +75,6 @@ body{
     cursor:pointer;
     font-size:15px;
     font-weight:bold;
-
     transition:0.3s;
 }
 

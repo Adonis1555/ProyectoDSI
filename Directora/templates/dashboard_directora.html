@@ -1,11 +1,58 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'estilos/dashboard.css' %}">
+    <title>Dashboard</title>
 </head>
 <body>
-    <h1>Hola Directora</h1>
+   
+    <main class="directora-maestro">
+        <section class="menu-opciones">
+            <div class="imgContainer">
+                    <img class="Logo" src="{% static 'logo.jpg' %}" alt="">
+            </div>
+           
+            <div class="opciones">
+                <ul>
+
+                    <li class="item-menu">
+                        <i class="ti ti-demerito"></i> Demeritos
+                    </li>
+                    <li class="item-menu activo">
+                        <i class="ti ti-maestros"></i> Maestros
+                    </li>
+                </ul>
+            </div>
+        </section>
+        <section class="registro-maestro">
+                <div class="container-titulo-maestro">
+                    <h1 class="titulo-maestro">Registro de Maestro</h1>
+                    <button type="submit" class="btnRegistrarMaestro">+ Registrar Maestro</button>
+                </div>
+                <input type="text" class="inputBuscarMaestro" placeholder="Buscar Maestro">
+                <div class="containerTabla">
+                <table class="tabla-maestro">
+                    <thead>
+                        <tr>
+                            <th>Nombre Completo</th>
+                            <th>Edad</th>
+                            <th>Teléfono</th>
+                            <th>Especialidad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+
+                </div>
+                
+
+        </section>
+    </main>
 </body>
 </html>
