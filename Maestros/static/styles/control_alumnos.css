@@ -38,7 +38,7 @@ body {
 }
 
 
-.directora-maestro {
+.maestro-alumno {
     width: 100%;
     max-width: 1200px; 
     background: #fff;
@@ -105,7 +105,7 @@ body {
 }
 
 
-.registro-maestro {
+.registro-alumno {
     padding: 40px;
     display: flex;
     flex-direction: column;
@@ -114,7 +114,7 @@ body {
     border-radius: 0 1.5rem 1.5rem 0;
 }
 
-.container-titulo-maestro {
+.container-titulo-alumno {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -123,12 +123,12 @@ body {
     flex-wrap: wrap; 
 }
 
-.titulo-maestro {
+.titulo-alumno {
     font-size: 24px;
     color: #111827;
 }
 
-.btnRegistrarMaestro {
+.btnRegistrarAlumno {
     padding: 12px 24px;
     background-color: #111827;
     color: white;
@@ -142,7 +142,7 @@ body {
     white-space: nowrap; 
 }
 
-.btnRegistrarMaestro:hover {
+.btnRegistrarAlumno:hover {
     background-color: #1f2937;
     transform: translateY(-1px);
 }
@@ -157,36 +157,36 @@ body {
 }
 
 
-.tabla-maestro {
+.tabla-alumno {
     width: 100%;
     border-collapse: collapse;
     font-family: inherit;
     min-width: 600px;
 }
 
-.tabla-maestro th, .tabla-maestro td {
+.tabla-alumno th, .tabla-alumno td {
     padding: 14px 16px;
     text-align: left;
     font-size: 14px;
 }
 
-.tabla-maestro th {
+.tabla-alumno th {
     background-color: #f8fafc;
     color: #4b5563;
     font-weight: 600;
     border-bottom: 2px solid #e5e7eb;
 }
 
-.tabla-maestro td {
+.tabla-alumno td {
     border-bottom: 1px solid #edf2f7;
     color: #1f2937;
 }
 
-.tabla-maestro tr:last-child td {
+.tabla-alumno tr:last-child td {
     border-bottom: none;
 }
 
-.tabla-maestro tr:nth-child(even) {
+.tabla-alumno tr:nth-child(even) {
     background-color: #f8fafc;
 }
 
@@ -202,7 +202,7 @@ body {
     margin-bottom: 5px;
 }
 
-.inputBuscarMaestro {
+.inputBuscarAlumno {
     width: 100%;
     max-width: 320px; 
     padding: 12px 16px; 
@@ -216,14 +216,14 @@ body {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); 
 }
 
-.inputBuscarMaestro:focus {
+.inputBuscarAlumno:focus {
     border-color: #2E5299;
     background-color: #fff;
     box-shadow: 0 0 0 4px rgba(46, 82, 153, 0.15); 
 }
 
 
-.inputBuscarMaestro::placeholder {
+.inputBuscarAlumno::placeholder {
     color: #9ca3af;
 }
 
@@ -244,7 +244,7 @@ body {
         padding: 10px;
     }
 
-    .directora-maestro {
+    .maestro-alumno {
         grid-template-columns: 1fr; /* Pasa a ser una sola columna */
         min-height: auto;
     }
@@ -268,34 +268,35 @@ body {
     }
 
     .item-menu {
-        width: auto; /* Los botones se adaptan a su texto uno al lado del otro */
+        width: auto; 
         margin-bottom: 0;
     }
 
-    .registro-maestro {
+    .registro-alumno {
         padding: 20px;
         border-radius: 0 0 1.5rem 1.5rem;
     }
 
-    .inputBuscarMaestro {
-        max-width: 100%; /* El buscador toma todo el ancho en móviles */
+    .inputBuscarAlumno {
+        max-width: 100%; 
     }
 }
 
+
 /*
 
--------------------------------PARTE DE REGISTRO DE MAESTROS---------------------------------------------
+-------------------------------PARTE DE REGISTRO DE ALUMNOS---------------------------------------------
 
 
 */
 
-.registro-datos-maestro{
+.registro-datos-alumno{
     display:grid;
     grid-template-columns: repeat(2,1fr);
     gap:15px;
 }
 
-.registro-container-maestro{
+.registro-container-alumno{
     min-height: 75%;
     display: flex;
     flex-direction: column;
@@ -303,7 +304,7 @@ body {
     padding-bottom: 25px;
 }
 
-.container-botones-maestro{
+.container-botones-alumno{
     display: flex;
     justify-content: end;
     align-items: center; 
@@ -359,4 +360,76 @@ body {
     transform: translateY(-1px); 
 }
 
+.seleccion-sexo{
+    display:flex;
+    flex-direction: row;
+}
+
+.container-seleccion{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    padding: 8px;
+}
+
+.seleccion-sexo {
+    display: flex;
+    align-items: center; /* Alinea verticalmente el texto y el círculo */
+    cursor: pointer;
+  }
+  
+  .seleccion-sexo label {
+    cursor: pointer;
+    margin-right: 8px;   /* Separa el texto "Masculino:" del círculo */
+    font-size: 15px;
+    color: #333;
+  }
+  
+  /* 3. El truco de magia: Personalizar el Radio Button */
+  .radio-sexo {
+    /* Resetea por completo el aspecto aburrido del navegador */
+    appearance: none;
+    -webkit-appearance: none;
+    
+    /* Diseñamos nuestro propio círculo */
+    width: 20px;
+    height: 20px;
+    border: 2px solid #cbd5e1; /* Borde gris suave */
+    border-radius: 50%;        /* Lo hace perfectamente redondo */
+    background-color: #fff;
+    cursor: pointer;
+    
+    /* Preparamos una transición suave para los cambios visuales */
+    transition: all 0.2s ease-in-out;
+    
+    /* Centrado interno para el punto que aparecerá al seleccionarlo */
+    display: grid;
+    place-content: center;
+  }
+  
+  /* 4. Efecto Hover (Al pasar el mouse por encima) */
+  .radio-sexo:hover {
+    border-color: #1e3a8a; /* El azul oscuro de tu app */
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1); /* Destello sutil */
+  }
+  
+  /* 5. Estilos para cuando el Radio esté SELECCIONADO (Checked) */
+  .radio-sexo:checked {
+    border-color: #1e3a8a; /* El borde cambia al azul de tu diseño */
+  }
+  
+ 
+  .radio-sexo::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    transform: scale(0); 
+    transition: 0.15s transform ease-in-out;
+    background-color: #1e3a8a; 
+  }
+ 
+  .radio-sexo:checked::before {
+    transform: scale(1); 
+  }
 

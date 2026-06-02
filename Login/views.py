@@ -27,8 +27,8 @@ def Login(request):
     return render(request, "login.html")
 
 def redirigir_por_rol(user):
-    if user.es_directora(): return redirect("dashboard_directora")
-    if user.es_maestro(): return redirect("dashboard_maestro")
+    if user.es_directora(): return redirect("control_maestro")
+    if user.es_maestro(): return redirect("control_alumnos")
     if user.es_responsable(): return redirect("dashboard_responsable")
     return redirect("login")
 
