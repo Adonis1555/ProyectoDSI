@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'estilos/dashboard.css' %}">
-    <title>Dashboard</title>
+    <title>Maestros</title>
 </head>
 <body>
    
@@ -25,12 +25,22 @@
                         <i class="ti ti-maestros"></i> Maestros
                     </li>
                 </ul>
+                <div class="cerrar-sesion-container">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit"class="btnCerrarSesion">cerrar sesión</button>
+                    </form>
+                    
+                </div>
             </div>
         </section>
         <section class="registro-maestro">
                 <div class="container-titulo-maestro">
-                    <h1 class="titulo-maestro">Registro de Maestro</h1>
-                    <button type="submit" class="btnRegistrarMaestro">+ Registrar Maestro</button>
+                    <h1 class="titulo-maestro">Maestros</h1>
+                    <a href="{% url 'registro_maestro' %}">
+                        <button type="button" class="btnRegistrarMaestro">+ Registrar Maestro</button>
+                    </a>
+                    
                 </div>
                 <input type="text" class="inputBuscarMaestro" placeholder="Buscar Maestro">
                 <div class="containerTabla">

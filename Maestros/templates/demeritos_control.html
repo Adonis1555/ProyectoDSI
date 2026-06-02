@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/control_alumnos.css' %}">
+    <title>Alumnos</title>
+</head>
+<body>
+   
+    <main class="maestro-alumno">
+        <section class="menu-opciones">
+            <div class="imgContainer">
+                    <img class="Logo" src="{% static 'logo.jpg' %}" alt="">
+            </div>
+           
+            <div class="opciones">
+                <ul>
+
+                    <li class="item-menu activo">
+                        <i class="ti ti-demerito"></i> Demeritos
+                    </li>
+
+                    <a href="{% url 'control_alumnos'%}" style="text-decoration:none;">
+                        <li class="item-menu">
+                            <i class="ti ti-alumnos"></i> Alumnos
+                        </li>
+                    </a>
+                    
+                </ul>
+                <div class="cerrar-sesion-container">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit"class="btnCerrarSesion">cerrar sesión</button>
+                    </form>
+                    
+                </div>
+            </div>
+        </section>
+        <section class="registro-alumno">
+                <div class="container-titulo-alumno">
+                    <h1 class="titulo-alumno">Demeritos</h1>
+                </div>
+                <div class="containerTabla">
+                <table class="tabla-alumno">
+                    <thead>
+                        <tr>
+                            <th>Nombre Completo</th>
+                            <th>Edad</th>
+                            <th>Grado</th>
+                            <th>Seccion</th>
+                            <th>Responsable</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+
+                </div>
+                
+        </section>
+    </main>
+</body>
+</html>
