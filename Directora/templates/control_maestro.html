@@ -55,7 +55,15 @@
                         </tr>
                     </thead>
                     <tbody>
-
+                        {% for maestro in maestros %}
+                        <tr>
+                            <td>{{ maestro.nombre }} {{ maestro.apellido }}</td>
+                            <td>{{ maestro.edad }} años</td>
+                            <td>{{ maestro.telefono }}</td>
+                            <td>{{ maestro.especialidad }}</td>
+                            <td></td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
 

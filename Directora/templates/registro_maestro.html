@@ -42,41 +42,50 @@
                         </svg>
                     </a>
                 </div>
-                <div class="registro-container-maestro">
-                    <div class="registro-datos-maestro">
-                        <div class="container-dato">
-                            <label for="">Nombre:</label>
-                            <input class="input-dato" type="text">
+                <form action="" id="formMaestro" data-url="{% url 'registro_maestro' %}" data-redirect="{% url 'control_maestro' %}">
+                    {% csrf_token %}
+                    <div class="registro-container-maestro">
+                        <div class="registro-datos-maestro">
+                            <div class="container-dato">
+                                <label for="">Nombre:</label>
+                                <input class="input-dato" type="text" name="nombre" required>
+                            </div>
+                            <div class="container-dato">
+                                <label for="">Apellido:</label>
+                                <input class="input-dato" type="text" name="apellido" required>
+                            </div>
+                            <div class="container-dato">
+                                <label for="">Especialidad:</label>
+                                <input class="input-dato" type="text" name="especialidad" required>
+                            </div>
+                            <div class="container-dato">
+                                <label for="">Dui:</label>
+                                <input class="input-dato" id="inputDui" type="text" name="dui" required maxlength="10" placeholder="00000000-0">
+                                
+                            </div>
+                            <div class="container-dato">
+                                <label for="">Teléfono:</label>
+                                <input class="input-dato" type="text" id="inputTelefono" name="telefono" maxlength="9" placeholder="7000-0000" required>
+    
+                            </div>
+                            <div class="container-dato">
+                                <label for="">Fecha de nacimiento:</label>
+                                <input class="input-dato" type="date" input="inputFechaNac" name="fecha_nac"> 
+                            </div>
+                            <div class="container-dato">
+                                <label for="">Correo eletrónico</label>
+                                <input  class="input-dato" type="email" name="correo" placeholder="ejemplo@gmail.com" required>
+                            </div>  
                         </div>
-                        <div class="container-dato">
-                            <label for="">Apellido:</label>
-                            <input class="input-dato" type="text">
+                        <div class="container-botones-maestro">
+                            <button class="btnCancelar">Cancelar</button>
+                            <button type="submit" class="btnRegistrarMaestro">Guardar Maestro</button>
                         </div>
-                        <div class="container-dato">
-                            <label for="">Especialidad:</label>
-                            <input class="input-dato" type="text">
-                        </div>
-                        <div class="container-dato">
-                            <label for="">Dui:</label>
-                            <input class="input-dato" type="text">
-                            
-                        </div>
-                        <div class="container-dato">
-                            <label for="">Teléfono:</label>
-                            <input class="input-dato" type="text">
-
-                        </div>
-                        <div class="container-dato">
-                            <label for="">Fecha de nacimiento:</label>
-                            <input class="input-dato" type="date"> 
-                        </div>  
                     </div>
-                    <div class="container-botones-maestro">
-                        <button class="btnCancelar">Cancelar</button>
-                        <button class="btnRegistrarMaestro">Guardar Maestro</button>
-                    </div>
-                </div>
+                </form>
+                
         </section>
     </main>
+    <script src="{% static 'js/registro_maestro.js' %}"></script>
 </body>
 </html>
