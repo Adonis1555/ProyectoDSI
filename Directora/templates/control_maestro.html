@@ -68,8 +68,28 @@
                 </table>
 
                 </div>
-                
+                {% if maestros.has_other_pages %}
+<div class="paginacion-container" style="display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 10px;">
+    
+    {% if maestros.has_previous %}
+        <a href="?page={{ maestros.previous_page_number }}" class="btn-pagina">&lsaquo; Anterior</a>
+    {% else %}
+        <span class="btn-pagina deshabilitado">&lsaquo; Anterior</span>
+    {% endif %}
 
+    <span class="pagina-actual" style="font-weight: bold; color: #4a5568; padding: 8px 12px;">
+        Página {{ maestros.number }} de {{ maestros.paginator.num_pages }}
+    </span>
+
+    {% if maestros.has_next %}
+        <a href="?page={{ maestros.next_page_number }}" class="btn-pagina">Siguiente &rsaquo;</a>
+    {% else %}
+        <span class="btn-pagina deshabilitado">Siguiente &rsaquo;</span>
+    {% endif %}
+
+</div>
+{% endif %}
+                
         </section>
     </main>
 </body>

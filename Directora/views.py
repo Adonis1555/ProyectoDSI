@@ -7,21 +7,31 @@ from Login.models import Usuario
 from Directora.models import Maestro
 from django.http import JsonResponse
 from django.db import transaction
+from django.core.paginator import Paginator
+import secrets
+import string
+from django.contrib.auth.hashers import make_password
+from django.core.mail import send_mail
+from django.conf import settings
 
 @login_required
 @directora_required
 def directora_view(request):
-    maestros=Maestro.objects.filter(activo=True)
+    maestros_lista=Maestro.objects.filter(activo=True)
     hoy=date.today()
 
-    for m in maestros:
+    paginator = Paginator(maestros_lista, 5)
+    numero_pagina = request.GET.get('page', 1)
+    maestros_paginados = paginator.get_page(numero_pagina)
+
+    for m in maestros_paginados:
         if m.fecha_nac:
            f_nac = m.fecha_nac.date() if hasattr(m.fecha_nac, 'date') else m.fecha_nac
            m.edad = hoy.year - f_nac.year - ((hoy.month, hoy.day) < (f_nac.month, f_nac.day))
         else:
             m.edad = "N/A"
 
-    return render(request, "control_maestro.html",{'maestros': maestros})
+    return render(request, "control_maestro.html",{'maestros': maestros_paginados})
 
 @login_required
 @directora_required
@@ -60,11 +70,34 @@ def registro_maestro_view(request):
         if Maestro.objects.filter(dui=dui).exists():
             return JsonResponse({'ok': False, 'error': 'Este número de DUI ya está registrado.'})
         
+        caracteres = string.ascii_letters + string.digits
+        contrasenia_plana = ""
+        
+        while True:
+            contrasenia_plana = ''.join(secrets.choice(caracteres) for _ in range(8))
+            hash_temporal = make_password(contrasenia_plana)
+            if not Usuario.objects.filter(password=hash_temporal).exists():
+                break
+
+        try:
+            asunto = 'Credenciales de acceso al sistema escolar'
+            mensaje = f'Hola {nombre} {apellido},\n\nSe ha creado tu cuenta de maestro con éxito.\n\nTus credenciales de acceso son:\nUsuario: {email}\nContraseña: {contrasenia_plana}\n'
+            correo_emisor = settings.EMAIL_HOST_USER
+            
+            send_mail(
+                asunto,
+                mensaje,
+                correo_emisor,
+                [email],
+                fail_silently=False,
+            )
+        except Exception:
+            return JsonResponse({'ok': False, 'error': 'El correo electrónico ingresado no es válido o no existe. No se pudo completar el registro.'})
         try:
             with transaction.atomic():
                 nuevo_usuario = Usuario.objects.create_user(
                     email=email,
-                    password=dui,
+                    password=contrasenia_plana,
                     nombre=nombre,
                     apellido=apellido,
                     rol='maestro'

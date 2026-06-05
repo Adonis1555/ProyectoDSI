@@ -6,6 +6,31 @@
     padding: 0;
 }
 
+.btn-pagina {
+    display: inline-block;
+    padding: 8px 14px;
+    background-color: #ffffff;
+    color: #2b6cb0;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.btn-pagina:hover {
+    background-color: #ebf8ff;
+    border-color: #bee3f8;
+    color: #2c5282;
+}
+
+.btn-pagina.deshabilitado {
+    background-color: #edf2f7;
+    color: #a0aec0;
+    border-color: #edf2f7;
+    cursor: not-allowed;
+    pointer-events: none; /* Evita que hagan click */
+}
 .btnCerrarSesion {
     background-color: #C0392B;
     padding: 12px 24px;
