@@ -1,3 +1,7 @@
+const scriptSwal = document.createElement('script');
+scriptSwal.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+document.head.appendChild(scriptSwal);
+
 document.addEventListener('DOMContentLoaded', ()=>{
     const inputFechaNac = document.getElementById('inputFechaNac');
     if (inputFechaNac) {
@@ -43,6 +47,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
             const urlEnvio = formMaestro.getAttribute('data-url');
             const urlRedireccion = formMaestro.getAttribute('data-redirect');
 
+            Swal.fire({
+                title: 'Procesando registro',
+                text: 'Por favor, espera un momento.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading(); 
+                }
+            });
             try{
                 const response=await fetch(urlEnvio,{
                     method: "POST",
@@ -54,15 +68,33 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 const data = await response.json();
 
                 if (data.ok) {
-                    alert("¡Maestro y usuario creados con éxito!");
-                    window.location.href = urlRedireccion; 
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Registro Exitoso!',
+                        text: 'El maestro y su usuario han sido creados correctamente.',
+                        confirmButtonColor: '#2b6cb0',
+                        timer: 2500,
+                        timerProgressBar: true
+                    }).then(() => {
+                        window.location.href = urlRedireccion; 
+                    });
                 } else {
-                    alert("Error: " + data.error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'No se pudo registrar',
+                        text: data.error,
+                        confirmButtonColor: '#2b6cb0'
+                    });
                 }
             }catch(error)
             {
                 console.error("Error en el servidor:", error);
-                alert("Hubo un problema al conectar con el servidor."); 
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: 'Hubo un problema al conectar con el servidor. Inténtalo de nuevo más tarde.',
+                    confirmButtonColor: '#2b6cb0'
+                });
             }
         });
     }
