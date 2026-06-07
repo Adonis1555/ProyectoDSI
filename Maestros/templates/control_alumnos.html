@@ -50,14 +50,33 @@
                     <thead>
                         <tr>
                             <th>Nombre Completo</th>
+                            <th>NIE</th>
                             <th>Edad</th>
                             <th>Grado</th>
                             <th>Seccion</th>
-                            <th>Responsable</th>
-                            <th>Acciones</th>
+                            <th>Acciones</th>   
                         </tr>
                     </thead>
                     <tbody>
+                        {% for alumno in alumnos %}
+                        <tr>
+                                <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                                <td>{{ alumno.NIE }}</td>
+                                <td>{{ alumno.edad }}</td>
+                                <td>{{ alumno.grado }}° Grado</td>
+                                <td>{{ alumno.seccion }}</td>
+                                <td></td>
+                        </tr>
+                        {% empty %}
+                         <tr>
+                             <td colspan="5" class="tabla-vacia">
+                                 <div class="mensaje-vacio">
+                                     <span class="icono-vacio">📁</span>
+                                     <p>No se encontraron alumnos registrados en el sistema.</p>
+                                 </div>
+                             </td>
+                         </tr>
+                        {% endfor %}
 
                     </tbody>
                 </table>

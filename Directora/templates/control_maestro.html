@@ -63,6 +63,15 @@
                             <td>{{ maestro.especialidad }}</td>
                             <td></td>
                         </tr>
+                        {% empty %}
+                         <tr>
+                             <td colspan="5" class="tabla-vacia">
+                                 <div class="mensaje-vacio">
+                                     <span class="icono-vacio">📁</span>
+                                     <p>No se encontraron maestros registrados en el sistema.</p>
+                                 </div>
+                             </td>
+                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>

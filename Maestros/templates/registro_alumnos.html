@@ -44,48 +44,76 @@
                         </svg>
                     </a>
                 </div>
-                <div class="registro-container-alumno">
-                    <div class="registro-datos-alumno">
-                        <div class="container-dato">
-                            <label for="">Nombre:</label>
-                            <input class="input-dato" type="text">
-                        </div>
-                        <div class="container-dato">
-                            <label for="">Apellido:</label>
-                            <input class="input-dato" type="text">
-                        </div>
-                        <div class="container-dato">
-                            <label for="">Sexo:</label>
-                            <div class="container-seleccion">
-                                <div class="seleccion-sexo">
-                                    <label for="">Masculino: </label>
-                                    <input class="radio-sexo" checked name="sexo" type="radio">
-                                </div>
-
-                                <div class="seleccion-sexo">
-                                    <label for="">Femenino: </label>
-                                    <input class="radio-sexo"  name="sexo" type="radio">
-                                </div>
+                <form action="" id="formRegistroAlumno" data-url="{% url 'registro_alumnos' %}" data-redirect="{% url 'control_alumnos' %}">
+                    {% csrf_token %}
+                    <div class="registro-container-alumno">
+                        <div class="registro-datos-alumno">
+                            <div class="container-dato">
+                                <label for="">Nombre:</label>
+                                <input required class="input-dato" id="inputNombre" type="text" name="nombre">
+                            </div>
+                            <div class="container-dato">
+                                <label for="">Apellido:</label>
+                                <input required class="input-dato" id="inputApellido" type="text" name="apellido">
+                            </div>
+                            <div class="container-dato">
+                                <label for="">Sexo:</label>
+                                <div class="container-seleccion">
+                                    <div class="seleccion-sexo">
+                                        <label for="">Masculino: </label>
+                                        <input   class="radio-sexo" input="inputMasculino" checked name="sexo" type="radio" value="M">
+                                    </div>
+    
+                                    <div class="seleccion-sexo">
+                                        <label for="">Femenino: </label>
+                                        <input  class="radio-sexo" input="inputFemenino" name="sexo" type="radio" value="F">
+                                    </div>             
+                                </div>      
+                            </div>
+                            <div class="container-dato">
+                                <label for="">NIE:</label>
+                                <input required class="input-dato" type="text" name="nie" maxlength="8" id="inputNie" placeholder="00000000">
                                 
-                            </div>    
-                          
+                            </div>
+                            <div class="container-dato">
+                                <label for="">Grado:</label>
+                                <select required class="input-dato" type="text" name="grado" id="inputGrado">
+                                    <option value="" disabled selected>Seleccione...</option>
+                                    <option value="0">Palvularia</option>
+                                    <option value="1">1° Grado</option>
+                                    <option value="2">2° Grado</option>
+                                    <option value="3">3° Grado</option>
+                                    <option value="4">4° Grado</option>
+                                    <option value="5">5° Grado</option>
+                                    <option value="6">6° Grado</option>
+                                    <option value="7">7° Grado</option>
+                                    <option value="8">8° Grado</option>
+                                    <option value="9">9° Grado</option>
+                                </select>
+                                
+                            </div>
+                            <div class="container-dato">
+                                <label for="">Sección:</label>
+                                <select required class="input-dato" type="text" name="seccion" id="inputSeccion">
+                                    <option value="" disabled selected>Seleccione...</option>
+                                    <option value="A">Sección A</option>
+                                    <option value="B">Sección B</option>
+                                    <option value="C">Sección C</option>
+                                </select>
+                            </div>
+                            <div class="container-dato">
+                                <label for="">Fecha de nacimiento:</label>
+                                <input required class="input-dato" type="date" name="fecha_nac" id="inputFechaNac"> 
+                            </div>  
+    
                         </div>
-                        <div class="container-dato">
-                            <label for="">NIE:</label>
-                            <input class="input-dato" type="text">
-                            
+                        <div class="container-botones-alumno">
+                            <button type="submit" class="btnRegistrarAlumno">Guardar Alumno</button>
                         </div>
-                        <div class="container-dato">
-                            <label for="">Fecha de nacimiento:</label>
-                            <input class="input-dato" type="date"> 
-                        </div>  
                     </div>
-                    <div class="container-botones-alumno">
-                        <button class="btnCancelar">Cancelar</button>
-                        <button class="btnRegistrarAlumno">Guardar Alumno</button>
-                    </div>
-                </div>
+                </form>
         </section>
     </main>
+    <script src="{% static 'js/registrar_alumnos.js' %}"></script>
 </body>
 </html>
