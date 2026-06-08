@@ -5,5 +5,6 @@ urlpatterns = [
 
         path('maestro/',views.directora_view,name="control_maestro"),
         path('registro_maestro/', views.registro_maestro_view,name="registro_maestro"),
-        
+        path('grado_seccion/',views.grado_seccion_control,name="grado_seccion_control"),
+        path('registrar_grado/',views.registrar_grado_seccion,name="registrar_grado_seccion"),
 ]

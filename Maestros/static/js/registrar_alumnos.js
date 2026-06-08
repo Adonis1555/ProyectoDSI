@@ -2,7 +2,34 @@ const scriptSwal = document.createElement('script');
 scriptSwal.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
 document.head.appendChild(scriptSwal);
 
+ 
+
 document.addEventListener('DOMContentLoaded', ()=>{
+
+    const inputGrado = document.getElementById('inputGrado');
+    const inputSeccion = document.getElementById('inputSeccion');
+    
+    const demeritosSecciones = window.seccionesPorGrado || {};
+
+    if (inputGrado && inputSeccion) {
+        inputGrado.addEventListener('change', (e) => {
+            const gradoSeleccionado = e.target.value;
+            
+            inputSeccion.innerHTML = '<option value="" disabled selected>Seleccione...</option>';
+            
+            if (gradoSeleccionado && demeritosSecciones[gradoSeleccionado]) {
+                demeritosSecciones[gradoSeleccionado].forEach(seccion => {
+                    const option = document.createElement('option');
+                    option.value = seccion;
+                    option.textContent = `Sección ${seccion}`;
+                    inputSeccion.appendChild(option);
+                });
+                inputSeccion.disabled = false;
+            } else {
+                inputSeccion.disabled = true;
+            }
+        });
+    }
     const inputFechaNac = document.getElementById('inputFechaNac');
     if (inputFechaNac) {
         const hoy = new Date();

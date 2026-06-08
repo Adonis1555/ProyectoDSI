@@ -23,6 +23,11 @@
                     <li class="item-menu activo">
                         <i class="ti ti-maestros"></i> Maestros
                     </li>
+                    <a href="{% url 'grado_seccion_control' %}" style="text-decoration: none;">
+                        <li class="item-menu">
+                            <i class="ti ti-grado_seccion"></i> Control de Grados
+                        </li>
+                    </a>
                 </ul>
                 <div class="cerrar-sesion-container">
                     <form action="{% url 'logout' %}" method="post">

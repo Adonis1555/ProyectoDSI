@@ -273,3 +273,27 @@ table tfoot td {
     background-color: #f8fafc;
     height: 32px;
 }
+
+.acciones-tarjeta {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: -5px;
+}
+
+.btn-primario {
+    background-color: #2E5299;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn-primario:hover {
+    background-color: #1E3A8A;
+    transform: translateY(-1px);
+}
+
