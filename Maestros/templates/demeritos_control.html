@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'styles/control_alumnos.css' %}">
-    <title>Alumnos</title>
+    <title>Demeritos</title>
 </head>
 <body>
    
@@ -39,22 +39,45 @@
             </div>
         </section>
         <section class="registro-alumno">
+            
                 <div class="container-titulo-alumno">
                     <h1 class="titulo-alumno">Demeritos</h1>
                 </div>
+                <input type="text" class="inputBuscarAlumno" placeholder="Buscar Alumno">
                 <div class="containerTabla">
                 <table class="tabla-alumno">
                     <thead>
                         <tr>
                             <th>Nombre Completo</th>
+                            <th>NIE</th>
                             <th>Edad</th>
-                            <th>Grado</th>
-                            <th>Seccion</th>
-                            <th>Responsable</th>
+                            <th>Meritos</th>
+                            <th>Demeritos</th>
+                            <th>Reconocimientos</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
+                        {% for alumno in alumnos %}
+                        <tr>
+                                <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                                <td>{{ alumno.NIE }}</td>
+                                <td>{{ alumno.edad }}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td><a href="{% url 'registrar_demeritos' %}">registrar demeritos</a></td>
+                        </tr>
+                        {% empty %}
+                         <tr>
+                             <td colspan="5" class="tabla-vacia">
+                                 <div class="mensaje-vacio">
+                                     <span class="icono-vacio">📁</span>
+                                     <p>No se encontraron alumnos registrados en el sistema.</p>
+                                 </div>
+                             </td>
+                         </tr>
+                        {% endfor %}
 
                     </tbody>
                 </table>

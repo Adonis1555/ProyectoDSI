@@ -88,6 +88,24 @@ def registrar_alumno(request):
 @login_required
 @maestro_required
 def control_demeritos(request):
-    return render(request,"demeritos_control.html")
+    alumno_lista=Alumno.objects.all().order_by('apellido','nombre')
+    hoy=date.today()
 
-# Create your views here.
+    paginator = Paginator(alumno_lista, 5)
+    numero_pagina = request.GET.get('page', 1)
+    alumno_paginados = paginator.get_page(numero_pagina)
+
+    for m in alumno_paginados:
+        if m.fecha_nac:
+           f_nac = m.fecha_nac.date() if hasattr(m.fecha_nac, 'date') else m.fecha_nac
+           m.edad = hoy.year - f_nac.year - ((hoy.month, hoy.day) < (f_nac.month, f_nac.day))
+        else:
+            m.edad = "N/A"
+    return render(request,"demeritos_control.html",{'alumnos': alumno_paginados})
+
+@login_required
+@maestro_required
+def registrar_demeritos(request):
+    return render(request,"registrar_demeritos.html")
+
+

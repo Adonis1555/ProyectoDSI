@@ -6,6 +6,23 @@
     padding: 0;
 }
 
+.btn-regresar {
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 50%;
+    background-color: #f1f5f9;
+    transition: 0.2s;
+}
+
+.btn-regresar:hover {
+    color: #1e293b;
+    background-color: #e2e8f0;
+}
+
+
 .btn-pagina {
     display: inline-block;
     padding: 8px 14px;

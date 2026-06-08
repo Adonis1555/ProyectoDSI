@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Deméritos</title>
+    <link rel="stylesheet" href="{% static 'styles/registro_demeritos.css' %}">
+</head>
+<body>
+    <main class="maestro-alumno">
+        <section class="menu-opciones">
+            <div class="imgContainer">
+                <img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo Institucional">
+            </div>
+           
+            <div class="opciones">
+                <ul>
+                    <li class="item-menu activo">
+                        <i class="ti ti-demerito"></i> Deméritos
+                    </li>
+                    <a href="{% url 'control_alumnos' %}" style="text-decoration:none;">
+                        <li class="item-menu">
+                            <i class="ti ti-alumnos"></i> Alumnos
+                        </li>
+                    </a>
+                </ul>
+                <div class="cerrar-sesion-container">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btnCerrarSesion">cerrar sesión</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="registro-demerito">
+            
+            <div class="titulo-demerito">
+                <h1 class="titulo">Registro De Deméritos del Estudiante - Instrumento No.001</h1>
+                <a href="{% url 'control_demeritos' %}" class="btn-regresar" aria-label="Volver">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="datos-generales">
+                <h2 class="titulo-dato">Datos Generales</h2>
+                
+                <div class="container-datos">
+                    <div class="fila-datos tres-columnas">
+                        <div class="dato">
+                            <label>centro educativo:</label>
+                            <input class="input-dato" type="text" readonly value="C.E Natalia Lopez">
+                        </div>
+                        <div class="dato">
+                            <label>Código del C.E:</label>
+                            <input class="input-dato" type="text" readonly value="11243">
+                        </div>
+                        <div class="dato">
+                            <label>Turno:</label>
+                            <input class="input-dato" type="text" readonly value="Mañana">
+                        </div>
+                    </div>
+
+                    <div class="fila-datos tres-columnas">
+                        <div class="dato">
+                            <label>Departamento:</label>
+                            <input class="input-dato" type="text" readonly value="La Libertad">
+                        </div>
+                        <div class="dato">
+                            <label>Municipio:</label>
+                            <input class="input-dato" type="text" readonly value="La Libertad Norte">
+                        </div>
+                        <div class="dato">
+                            <label>Distrito:</label>
+                            <input class="input-dato" type="text" readonly value="San Matías">
+                        </div>
+                    </div>
+
+                    <div class="fila-datos info-estudiante">
+                        <div class="dato nombre-estudiante">
+                            <label>Nombre del estudiante:</label>
+                            <input class="input-dato" type="text" readonly >
+                        </div>
+                        <div class="dato">
+                            <label>NIE:</label>
+                            <input class="input-dato" type="text" readonly>
+                        </div>
+                    </div>
+
+                    <div class="fila-datos tres-columnas">
+                        <div class="dato">
+                            <label>Sexo:</label>
+                            <input class="input-dato" type="text" readonly>
+                        </div>
+                        <div class="dato">
+                            <label>Grado:</label>
+                            <input class="input-dato" type="text" readonly >
+                        </div>
+                        <div class="dato">
+                            <label>Sección:</label>
+                            <input class="input-dato" type="text" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="contenedor-tabla">
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">No</th>
+                            <th rowspan="2">Fecha</th>
+                            <th colspan="4">D: Deméritos</th>
+                            <th colspan="4">R: Redenciones</th>
+                            <th colspan="4">RC: Reconocimientos</th>
+                            <th rowspan="2" class="col-firma">Nombre y firma de quién registra Demérito o Reconocimiento</th>
+                            <th rowspan="2" class="col-firma">Nombre y firma del responsable de cumplimiento de redención</th>
+                            <th rowspan="2" class="col-firma">Firma del estudiante</th>
+                        </tr>
+                        <tr>
+                            <th>A</th><th>B</th><th>C</th><th>D</th>
+                            <th>A</th><th>B</th><th>C</th><th>D</th>
+                            <th>A</th><th>B</th><th>C</th><th>D</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>02/Jun/2026</td>
+                            <td></td><td></td><td>X</td><td></td> <td></td><td></td><td></td><td></td> <td></td><td></td><td></td><td></td> <td class="text-left">Prof. Carlos Mendoza</td>
+                            <td>(Firma)</td>
+                            <td>(Firma)</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" class="text-bold">Total</td>
+                            <td>0</td><td>0</td><td>1</td><td>0</td> <td>0</td><td>0</td><td>0</td><td>0</td> <td>0</td><td>0</td><td>0</td><td>0</td> <td colspan="3" class="alerta-conductual">
+                                <strong>Total Deméritos Acumulados: 1.</strong>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
