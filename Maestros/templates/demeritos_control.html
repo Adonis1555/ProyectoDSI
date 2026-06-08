@@ -66,7 +66,15 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td><a href="{% url 'registrar_demeritos' %}">registrar demeritos</a></td>
+                                <td>
+                                    <a href="{% url 'registro_demeritos_view' alumno.NIE %}" class="btn-registrar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                                            <path d="M12 20h9"></path>
+                                            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                                        </svg>
+                                        Registrar Deméritos
+                                    </a>
+                                </td>
                         </tr>
                         {% empty %}
                          <tr>

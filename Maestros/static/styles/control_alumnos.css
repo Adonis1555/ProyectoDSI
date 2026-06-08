@@ -391,48 +391,42 @@ body {
 
 .seleccion-sexo {
     display: flex;
-    align-items: center; /* Alinea verticalmente el texto y el círculo */
+    align-items: center; 
     cursor: pointer;
   }
   
   .seleccion-sexo label {
     cursor: pointer;
-    margin-right: 8px;   /* Separa el texto "Masculino:" del círculo */
+    margin-right: 8px;  
     font-size: 15px;
     color: #333;
   }
   
-  /* 3. El truco de magia: Personalizar el Radio Button */
   .radio-sexo {
-    /* Resetea por completo el aspecto aburrido del navegador */
+ 
     appearance: none;
     -webkit-appearance: none;
-    
-    /* Diseñamos nuestro propio círculo */
     width: 20px;
     height: 20px;
-    border: 2px solid #cbd5e1; /* Borde gris suave */
-    border-radius: 50%;        /* Lo hace perfectamente redondo */
+    border: 2px solid #cbd5e1; 
+    border-radius: 50%;        
     background-color: #fff;
     cursor: pointer;
-    
-    /* Preparamos una transición suave para los cambios visuales */
     transition: all 0.2s ease-in-out;
     
-    /* Centrado interno para el punto que aparecerá al seleccionarlo */
+
     display: grid;
     place-content: center;
   }
   
-  /* 4. Efecto Hover (Al pasar el mouse por encima) */
   .radio-sexo:hover {
-    border-color: #1e3a8a; /* El azul oscuro de tu app */
-    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1); /* Destello sutil */
+    border-color: #1e3a8a; 
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1); 
   }
   
-  /* 5. Estilos para cuando el Radio esté SELECCIONADO (Checked) */
+
   .radio-sexo:checked {
-    border-color: #1e3a8a; /* El borde cambia al azul de tu diseño */
+    border-color: #1e3a8a; 
   }
   
  
@@ -450,3 +444,46 @@ body {
     transform: scale(1); 
   }
 
+  .btn-registrar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f1f5f9;
+    color: #1e293b;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.btn-registrar svg {
+    color: #64748b;
+    transition: color 0.2s ease;
+}
+
+.btn-registrar:hover {
+    background-color: #2E5299;
+    color: #ffffff;
+    border-color: #2E5299;
+    text-decoration: none;
+    box-shadow: 0 2px 4px rgba(46, 82, 153, 0.2);
+}
+
+.btn-registrar:hover svg {
+    color: #ffffff;
+}
+
+.btn-registrar:active {
+    transform: scale(0.96);
+}
+
+.btn-registrar:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(46, 82, 153, 0.25);
+}

@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'estilos/grado_seccion.css' %}">
+    <title>Grados</title>
+    <style>
+        .paginacion-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 10px 5px;
+        }
+        .paginacion-info {
+            font-size: 14px;
+            color: #64748b;
+        }
+        .paginacion-botones {
+            display: flex;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <main class="directora-maestro">
+        <section class="menu-opciones">
+            <div class="imgContainer">
+                <img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo">
+            </div>
+            <div class="opciones">
+                <ul>
+                    <li class="item-menu"><i class="ti ti-demerito"></i> Demeritos</li>
+                    <a href="{% url 'control_maestro' %}" style="text-decoration: none;">
+                        <li class="item-menu"><i class="ti ti-maestros"></i> Maestros</li>
+                    </a>
+                    <li class="item-menu activo"><i class="ti ti-grado_seccion"></i> Control de Grados</li>
+                </ul>
+                <div class="cerrar-sesion-container">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btnCerrarSesion">cerrar sesión</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="registro-grado">
+            <div class="container-titulo-grado">
+                <h1 class="titulo-maestro">Grados</h1>
+                <a href="{% url 'registrar_grado_seccion' %}">
+                    <button type="button" class="btnRegistrarGrado">+ Registrar Grado</button>
+                </a>
+            </div>
+            <div class="containerTabla">
+                <table class="tabla-grado">
+                    <thead>
+                        <tr>
+                            <th>Grado</th>
+                            <th>Seccion</th>
+                            <th>Cupos</th>
+                            <th>Encargado</th>
+                            <th>acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gs in grados_secciones %}
+                        <tr>
+                            <td>{{ gs.get_grado_display }}</td>
+                            <td class="text-bold">{{ gs.seccion }}</td>
+                            <td class="text-bold">{{ gs.cupo_maximo }} alumnos</td>
+                            <td>
+                                {% if gs.maestro_encargado %}
+                                    {{ gs.maestro_encargado.nombre }} {{ gs.maestro_encargado.apellido }}
+                                {% else %}
+                                    <span style="color: #94a3b8; font-style: italic;">Sin asignar</span>
+                                {% endif %}
+                            </td>
+                            <td></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="tabla-vacia">
+                                <div class="mensaje-vacio">
+                                    <span class="icono-vacio">📁</span>
+                                    <p>No se encontraron grados ni secciones registradas en el sistema.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if grados_secciones.has_other_pages %}
+            <div class="paginacion-container">
+                <div class="paginacion-info">
+                    Página {{ grados_secciones.number }} de {{ grados_secciones.paginator.num_pages }}
+                </div>
+                <div class="paginacion-botones">
+                    {% if grados_secciones.has_previous %}
+                        <a href="?page={{ grados_secciones.previous_page_number }}" class="btn-pagina">Anterior</a>
+                    {% else %}
+                        <span class="btn-pagina deshabilitado">Anterior</span>
+                    {% endif %}
+
+                    {% if grados_secciones.has_next %}
+                        <a href="?page={{ grados_secciones.next_page_number }}" class="btn-pagina">Siguiente</a>
+                    {% else %}
+                        <span class="btn-pagina deshabilitado">Siguiente</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

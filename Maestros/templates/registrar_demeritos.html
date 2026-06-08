@@ -83,31 +83,35 @@
                     <div class="fila-datos info-estudiante">
                         <div class="dato nombre-estudiante">
                             <label>Nombre del estudiante:</label>
-                            <input class="input-dato" type="text" readonly >
+                            <input class="input-dato" type="text" readonly value="{{ alumno.nombre }} {{ alumno.apellido }}">
                         </div>
                         <div class="dato">
                             <label>NIE:</label>
-                            <input class="input-dato" type="text" readonly>
+                            <input class="input-dato" type="text" readonly value="{{ alumno.NIE }}">
                         </div>
                     </div>
 
                     <div class="fila-datos tres-columnas">
                         <div class="dato">
                             <label>Sexo:</label>
-                            <input class="input-dato" type="text" readonly>
+                            <input class="input-dato" type="text" readonly value="{{ alumno.get_sexo_display }}">
                         </div>
                         <div class="dato">
                             <label>Grado:</label>
-                            <input class="input-dato" type="text" readonly >
+                            <input class="input-dato" type="text" readonly value="{{ alumno.grado_seccion.get_grado_display }}">
                         </div>
                         <div class="dato">
                             <label>Sección:</label>
-                            <input class="input-dato" type="text" readonly>
+                            <input class="input-dato" type="text" readonly value="{{ alumno.grado_seccion.seccion }}">
                         </div>
                     </div>
                 </div>
             </div>
-            
+            <div class="acciones-tarjeta">
+                <button type="button" id="btnAgregarIncidencia" class="btn-primario">
+                    + Registrar Incidencia
+                </button>
+            </div>
             <div class="contenedor-tabla">
                 <table>
                     <thead>
@@ -128,25 +132,82 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% for h in historial %}
                         <tr>
-                            <td>1</td>
-                            <td>02/Jun/2026</td>
-                            <td></td><td></td><td>X</td><td></td> <td></td><td></td><td></td><td></td> <td></td><td></td><td></td><td></td> <td class="text-left">Prof. Carlos Mendoza</td>
-                            <td>(Firma)</td>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ h.fecha|date:"d/b/Y" }}</td>
+                            <td>{% if h.tipo == 'D' and h.sub_letra == 'A' %}X{% endif %}</td>
+                            <td>{% if h.tipo == 'D' and h.sub_letra == 'B' %}X{% endif %}</td>
+                            <td>{% if h.tipo == 'D' and h.sub_letra == 'C' %}X{% endif %}</td>
+                            <td>{% if h.tipo == 'D' and h.sub_letra == 'D' %}X{% endif %}</td>
+                            <td>{% if h.tipo == 'R' and h.sub_letra == 'A' %}X{% endif %}</td>
+                            <td>{% if h.tipo == 'R' and h.sub_letra == 'B' %}X{% endif %}</td>
+                            <td>{% if h.tipo == 'R' and h.sub_letra == 'C' %}X{% endif %}</td>
+                            <td>{% if h.tipo == 'R' and h.sub_letra == 'D' %}X{% endif %}</td>
+                            <td>{% if h.tipo == 'RC' and h.sub_letra == 'A' %}X{% endif %}</td>
+                            <td>{% if h.tipo == 'RC' and h.sub_letra == 'B' %}X{% endif %}</td>
+                            <td>{% if h.tipo == 'RC' and h.sub_letra == 'C' %}X{% endif %}</td>
+                            <td>{% if h.tipo == 'RC' and h.sub_letra == 'D' %}X{% endif %}</td>
+                            <td class="text-left">
+                                {% if h.tipo != 'R' %}
+                                    Prof. {{ h.maestro_registra.last_name }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if h.tipo == 'R' %}
+                                    Prof. {{ h.maestro_registra.last_name }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
                             <td>(Firma)</td>
                         </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="17" style="text-align: center; color: #94a3b8; padding: 20px;">Este alumno no cuenta con registros actualmente.</td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
                     <tfoot>
                         <tr>
                             <td colspan="2" class="text-bold">Total</td>
-                            <td>0</td><td>0</td><td>1</td><td>0</td> <td>0</td><td>0</td><td>0</td><td>0</td> <td>0</td><td>0</td><td>0</td><td>0</td> <td colspan="3" class="alerta-conductual">
-                                <strong>Total Deméritos Acumulados: 1.</strong>
+                            <td>{{ totales.D_A }}</td><td>{{ totales.D_B }}</td><td>{{ totales.D_C }}</td><td>{{ totales.D_D }}</td>
+                            <td>{{ totales.R_A }}</td><td>{{ totales.R_B }}</td><td>{{ totales.R_C }}</td><td>{{ totales.R_D }}</td>
+                            <td>{{ totales.RC_A }}</td><td>{{ totales.RC_B }}</td><td>{{ totales.RC_C }}</td><td>{{ totales.RC_D }}</td>
+                            <td colspan="3" class="alerta-conductual">
+                                <strong>Total Deméritos Acumulados: {{ totales.total_demeritos }}</strong>
                             </td>
                         </tr>
                     </tfoot>
                 </table>
+                {% if historial.has_other_pages %}
+                <div class="paginacion-container" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 15px; font-family: 'Inter', sans-serif;">
+                    {% if historial.has_previous %}
+                        <a href="?page={{ historial.previous_page_number }}" style="text-decoration: none; color: #2E5299; font-weight: bold; font-size: 14px;">&laquo; Anterior</a>
+                    {% else %}
+                        <span style="color: #cbd5e1; font-size: 14px;">&laquo; Anterior</span>
+                    {% endif %}
+
+                    <span style="font-size: 13px; color: #475569;">Página <strong>{{ historial.number }}</strong> de {{ historial.paginator.num_pages }}</span>
+
+                    {% if historial.has_next %}
+                        <a href="?page={{ historial.next_page_number }}" style="text-decoration: none; color: #2E5299; font-weight: bold; font-size: 14px;">Siguiente &raquo;</a>
+                    {% else %}
+                        <span style="color: #cbd5e1; font-size: 14px;">Siguiente &raquo;</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
             </div>
         </section>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.alumnoNie = "{{ alumno.NIE }}";
+        window.csrfToken = "{{ csrf_token }}";
+    </script>
+    <script src="{% static 'js/registro_demerito.js' %}"></script>
 </body>
 </html>

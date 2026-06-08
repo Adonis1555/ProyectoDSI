@@ -6,6 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'estilos/dashboard.css' %}">
     <title>Maestros</title>
+    <style>
+        .paginacion-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 10px 5px;
+        }
+        .paginacion-info {
+            font-size: 14px;
+            color: #64748b;
+        }
+        .paginacion-botones {
+            display: flex;
+            gap: 8px;
+        }
+    </style>
 </head>
 <body>
    
@@ -17,20 +34,23 @@
            
             <div class="opciones">
                 <ul>
-
                     <li class="item-menu">
                         <i class="ti ti-demerito"></i> Demeritos
                     </li>
                     <li class="item-menu activo">
                         <i class="ti ti-maestros"></i> Maestros
                     </li>
+                    <a href="{% url 'grado_seccion_control' %}" style="text-decoration: none;">
+                        <li class="item-menu">
+                            <i class="ti ti-grado_seccion"></i> Control de Grados
+                        </li>
+                    </a>
                 </ul>
                 <div class="cerrar-sesion-container">
                     <form action="{% url 'logout' %}" method="post">
                         {% csrf_token %}
-                        <button type="submit"class="btnCerrarSesion">cerrar sesión</button>
+                        <button type="submit" class="btnCerrarSesion">cerrar sesión</button>
                     </form>
-                    
                 </div>
             </div>
         </section>
@@ -40,7 +60,6 @@
                     <a href="{% url 'registro_maestro' %}">
                         <button type="button" class="btnRegistrarMaestro">+ Registrar Maestro</button>
                     </a>
-                    
                 </div>
                 <input type="text" class="inputBuscarMaestro" placeholder="Buscar Maestro">
                 <div class="containerTabla">
@@ -75,29 +94,28 @@
                         {% endfor %}
                     </tbody>
                 </table>
-
                 </div>
+
                 {% if maestros.has_other_pages %}
-<div class="paginacion-container" style="display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 10px;">
-    
-    {% if maestros.has_previous %}
-        <a href="?page={{ maestros.previous_page_number }}" class="btn-pagina">&lsaquo; Anterior</a>
-    {% else %}
-        <span class="btn-pagina deshabilitado">&lsaquo; Anterior</span>
-    {% endif %}
+                <div class="paginacion-container">
+                    <div class="paginacion-info">
+                        Página {{ maestros.number }} de {{ maestros.paginator.num_pages }}
+                    </div>
+                    <div class="paginacion-botones">
+                        {% if maestros.has_previous %}
+                            <a href="?page={{ maestros.previous_page_number }}" class="btn-pagina">Anterior</a>
+                        {% else %}
+                            <span class="btn-pagina deshabilitado">Anterior</span>
+                        {% endif %}
 
-    <span class="pagina-actual" style="font-weight: bold; color: #4a5568; padding: 8px 12px;">
-        Página {{ maestros.number }} de {{ maestros.paginator.num_pages }}
-    </span>
-
-    {% if maestros.has_next %}
-        <a href="?page={{ maestros.next_page_number }}" class="btn-pagina">Siguiente &rsaquo;</a>
-    {% else %}
-        <span class="btn-pagina deshabilitado">Siguiente &rsaquo;</span>
-    {% endif %}
-
-</div>
-{% endif %}
+                        {% if maestros.has_next %}
+                            <a href="?page={{ maestros.next_page_number }}" class="btn-pagina">Siguiente</a>
+                        {% else %}
+                            <span class="btn-pagina deshabilitado">Siguiente</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
                 
         </section>
     </main>

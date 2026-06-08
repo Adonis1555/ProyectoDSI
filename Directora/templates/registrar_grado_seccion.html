@@ -1,0 +1,99 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'estilos/grado_seccion.css' %}">
+    <title>Registrar Grado</title>
+</head>
+<body>
+    <main class="directora-maestro">
+        <section class="menu-opciones">
+            <div class="imgContainer">
+                <img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo">
+            </div>
+            <div class="opciones">
+                <ul>
+                    <li class="item-menu"><i class="ti ti-demerito"></i> Deméritos</li>
+                    <a href="{% url 'control_maestro' %}" style="text-decoration: none;">
+                        <li class="item-menu"><i class="ti ti-maestros"></i> Maestros</li>
+                    </a>
+                    <li class="item-menu activo"><i class="ti ti-grado_seccion"></i> Control de Grados</li>
+                </ul>
+                <div class="cerrar-sesion-container">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btnCerrarSesion">cerrar sesión</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="registro-grado">
+            <div class="container-titulo-grado">
+                <h1 class="titulo-maestro">Registrar Grados</h1>
+                <a href="{% url 'grado_seccion_control' %}" class="btn-regresar" aria-label="Volver">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
+            </div>
+            
+            <form action="{% url 'registrar_grado_seccion' %}" method="post" id="formGrado" data-redirect="{% url 'grado_seccion_control' %}">
+                {% csrf_token %}
+                <div class="registro-container-grados">
+                    <div class="registro-datos-grados">
+                        
+                        <div class="container-dato">
+                            <label>Grado:</label>
+                            <select name="grado" class="input-dato" style="height: 32px; padding: 2px 8px;" required>
+                                <option value="">-- Seleccione un Grado --</option>
+                                {% for grupo, opciones in grados_listado %}
+                                    <optgroup label="{{ grupo }}">
+                                        {% for codigo, nombre_legible in opciones %}
+                                            <option value="{{ codigo }}">{{ nombre_legible }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="container-dato">
+                            <label>Sección:</label>
+                            <select name="seccion" class="input-dato" style="height: 32px; padding: 2px 8px;">
+                                <option value="">-- Seleccione una Seccion --</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                            </select>
+                        </div>
+
+                        <div class="container-dato">
+                            <label>Maestro Encargado:</label>
+                            <select name="maestro_dui" class="input-dato" style="height: 32px; padding: 2px 8px;">
+                                <option value="">-- Seleccione un Encargado --</option>
+                                {% for maestro in maestros_disponibles %}
+                                    <option value="{{ maestro.dui }}">{{ maestro.apellido }}, {{ maestro.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="container-dato">
+                            <label for="">Cupos:</label>
+                            <input class="input-dato" min="1" name="cupos" type="number">
+                        </div>
+
+                        <div class="container-botones-grado">
+                            <button type="submit" class="btnRegistrarGrado">Guardar Grado</button>
+                        </div> 
+
+                    </div>
+                </div>
+            </form>
+        </section>
+    </main>
+    <script src="{% static 'js/registro_grado.js' %}"></script>
+</body>
+</html>

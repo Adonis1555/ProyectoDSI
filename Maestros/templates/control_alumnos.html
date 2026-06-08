@@ -6,6 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'styles/control_alumnos.css' %}">
     <title>Alumnos</title>
+    <style>
+        .paginacion-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 10px 5px;
+        }
+        .paginacion-info {
+            font-size: 14px;
+            color: #64748b;
+        }
+        .paginacion-botones {
+            display: flex;
+            gap: 8px;
+        }
+    </style>
 </head>
 <body>
    
@@ -30,9 +47,8 @@
                 <div class="cerrar-sesion-container">
                     <form action="{% url 'logout' %}" method="post">
                         {% csrf_token %}
-                        <button type="submit"class="btnCerrarSesion">cerrar sesión</button>
+                        <button type="submit" class="btnCerrarSesion">cerrar sesión</button>
                     </form>
-                    
                 </div>
             </div>
         </section>
@@ -42,7 +58,6 @@
                     <a href="{% url 'registro_alumnos' %}">
                         <button type="button" class="btnRegistrarAlumno">+ Registrar Alumno</button>
                     </a>
-                    
                 </div>
                 <input type="text" class="inputBuscarAlumno" placeholder="Buscar Alumno">
                 <div class="containerTabla">
@@ -63,13 +78,13 @@
                                 <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
                                 <td>{{ alumno.NIE }}</td>
                                 <td>{{ alumno.edad }}</td>
-                                <td>{{ alumno.grado }}° Grado</td>
-                                <td>{{ alumno.seccion }}</td>
+                                <td>{{alumno.grado_seccion.get_grado_display}}</td>
+                                <td class="text-bold">{{ alumno.grado_seccion.seccion }}</td>
                                 <td></td>
                         </tr>
                         {% empty %}
                          <tr>
-                             <td colspan="5" class="tabla-vacia">
+                             <td colspan="6" class="tabla-vacia">
                                  <div class="mensaje-vacio">
                                      <span class="icono-vacio">📁</span>
                                      <p>No se encontraron alumnos registrados en el sistema.</p>
@@ -77,12 +92,30 @@
                              </td>
                          </tr>
                         {% endfor %}
-
                     </tbody>
                 </table>
-
                 </div>
                 
+                {% if alumnos.has_other_pages %}
+                <div class="paginacion-container">
+                    <div class="paginacion-info">
+                        Página {{ alumnos.number }} de {{ alumnos.paginator.num_pages }}
+                    </div>
+                    <div class="paginacion-botones">
+                        {% if alumnos.has_previous %}
+                            <a href="?page={{ alumnos.previous_page_number }}" class="btn-pagina">Anterior</a>
+                        {% else %}
+                            <span class="btn-pagina deshabilitado">Anterior</span>
+                        {% endif %}
+
+                        {% if alumnos.has_next %}
+                            <a href="?page={{ alumnos.next_page_number }}" class="btn-pagina">Siguiente</a>
+                        {% else %}
+                            <span class="btn-pagina deshabilitado">Siguiente</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
         </section>
     </main>
 </body>

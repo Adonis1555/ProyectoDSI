@@ -1,10 +1,10 @@
 import re
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
 from Login.decorators import directora_required, maestro_required, responsable_required,roles_permitidos
 from datetime import date,datetime
 from Login.models import Usuario  
-from Directora.models import Maestro
+from Directora.models import Maestro,GradoSeccion
 from django.http import JsonResponse
 from django.db import transaction
 from django.core.paginator import Paginator
@@ -13,6 +13,8 @@ import string
 from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db import IntegrityError
+from django.contrib import messages
 
 @login_required
 @directora_required
@@ -119,3 +121,84 @@ def registro_maestro_view(request):
             return JsonResponse({'ok': False, 'error': f"Error interno: {str(e)}"})
 
     return render(request, "registro_maestro.html")
+
+@login_required
+@directora_required
+def grado_seccion_control(request):
+    grados_lista = GradoSeccion.objects.all().order_by('grado', 'seccion')
+    
+    paginator = Paginator(grados_lista, 5) 
+    
+    page_number = request.GET.get('page')
+    grados_secciones = paginator.get_page(page_number)
+    
+    context = {
+        'grados_secciones': grados_secciones
+    }
+    return render(request, "grado_seccion_control.html", context)
+
+@login_required
+@directora_required
+def registrar_grado_seccion(request):
+    if request.method == 'POST':
+        grado_codigo = request.POST.get('grado')
+        seccion_texto = request.POST.get('seccion')
+        maestro_dui = request.POST.get('maestro_dui')
+        cupos = request.POST.get('cupos')
+
+        if not grado_codigo or not seccion_texto:
+            return JsonResponse({'ok': False, 'error': 'El grado y la sección son campos obligatorios.'})
+
+        seccion_limpia = seccion_texto.strip().upper()
+        cupo_maximo = int(cupos) if cupos and cupos.isdigit() else 35
+
+        instancia_maestro = None
+
+        if maestro_dui:
+            try:
+                instancia_maestro = Maestro.objects.get(dui=maestro_dui, activo=True)
+                
+                grados_actuales_count = instancia_maestro.grados_a_cargo.count()
+                if grados_actuales_count >= 2:
+                    return JsonResponse({
+                        'ok': False, 
+                        'error': f'El Prof. {instancia_maestro.apellido} ya tiene el límite máximo de 2 grados asignados.'
+                    })
+                
+                seccion_duplicada = instancia_maestro.grados_a_cargo.filter(seccion=seccion_limpia).exists()
+                if seccion_duplicada:
+                    return JsonResponse({
+                        'ok': False, 
+                        'error': f'El Prof. {instancia_maestro.apellido} ya es encargado de un grado en la Sección "{seccion_limpia}".'
+                    })
+                    
+            except Maestro.DoesNotExist:
+                return JsonResponse({'ok': False, 'error': 'El maestro seleccionado no existe o está inactivo.'})
+
+        try:
+            nuevo_grado = GradoSeccion.objects.create(
+                grado=grado_codigo,
+                seccion=seccion_limpia,
+                cupo_maximo=cupo_maximo,
+                maestro_encargado=instancia_maestro
+            )
+
+            if instancia_maestro:
+                msg = f"¡Grado creado con cupo de {cupo_maximo} y asignado al Prof. {instancia_maestro.nombre} con éxito!"
+            else:
+                msg = f"Grado y sección creados correctamente con un cupo de {cupo_maximo} sin encargado."
+
+            return JsonResponse({'ok': True, 'mensaje': msg})
+
+        except IntegrityError:
+            return JsonResponse({'ok': False, 'error': 'La combinación de grado y sección ya existe en el sistema.'})
+
+    grados_secciones = GradoSeccion.objects.all().order_by('grado', 'seccion')
+    maestros_disponibles = Maestro.objects.filter(activo=True).order_by('apellido')
+
+    context = {
+        'grados_secciones': grados_secciones,
+        'maestros_disponibles': maestros_disponibles,
+        'grados_listado': GradoSeccion.GRADOS_EL_SALVADOR,
+    }
+    return render(request, "registrar_grado_seccion.html", context)
