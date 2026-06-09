@@ -1,44 +1,81 @@
-from django.shortcuts import render
-from  Maestros.models import Alumno 
-from django.contrib.auth.decorators import login_required
-from Login.decorators import directora_required, maestro_required, responsable_required,roles_permitidos
-from django.http import JsonResponse 
-from django.db import transaction
-from datetime import date,datetime
-from django.core.paginator import Paginator
-from Directora.models import GradoSeccion
-import re
+from datetime import date, datetime
 import json
-from django.shortcuts import render, get_object_or_404
+import re
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.db import transaction
 from django.db.models import Count, Q
-from .models import Alumno, RegistroTarjeta, Maestro
+from Login.decorators import maestro_required, roles_permitidos
+from Directora.models import GradoSeccion, Maestro
+from Maestros.models import Alumno, RegistroTarjeta
+from django.core.paginator import Paginator
+
 @login_required
 @maestro_required
 def maestro_view(request):
     return render(request, "dashboard_maestro.html")
 
 @login_required
-@roles_permitidos(['maestro','directora'])
+@roles_permitidos(['maestro', 'directora'])
 def control_alumnos(request):
-    alumno_lista = Alumno.objects.all().select_related('grado_seccion').order_by('apellido', 'nombre')
-    hoy=date.today()
+    hoy = date.today()
+    secciones_con_alumnos = {}
 
-    paginator = Paginator(alumno_lista, 5)
-    numero_pagina = request.GET.get('page', 1)
-    alumno_paginados = paginator.get_page(numero_pagina)
+    if request.user.rol == 'maestro':
+        maestro = get_object_or_404(Maestro, id_usuario=request.user)
+        secciones = GradoSeccion.objects.filter(maestro_encargado=maestro).order_by('grado', 'seccion')
+    else:
+        secciones = GradoSeccion.objects.all().order_by('grado', 'seccion')
 
-    for m in alumno_paginados:
-        if m.fecha_nac:
-           f_nac = m.fecha_nac.date() if hasattr(m.fecha_nac, 'date') else m.fecha_nac
-           m.edad = hoy.year - f_nac.year - ((hoy.month, hoy.day) < (f_nac.month, f_nac.day))
-        else:
-            m.edad = "N/A"
+    for seccion in secciones:
+        alumnos = Alumno.objects.filter(grado_seccion=seccion, activo=True).order_by('apellido', 'nombre')
+        for a in alumnos:
+            if a.fecha_nac:
+                f_nac = a.fecha_nac.date() if hasattr(a.fecha_nac, 'date') else a.fecha_nac
+                a.edad = hoy.year - f_nac.year - ((hoy.month, hoy.day) < (f_nac.month, f_nac.day))
+            else:
+                a.edad = "N/A"
+        secciones_con_alumnos[seccion] = alumnos
 
-    return render(request, "control_alumnos.html",{'alumnos': alumno_paginados})
+    return render(request, "control_alumnos.html", {'secciones_con_alumnos': secciones_con_alumnos})
+
+@login_required
+@maestro_required
+def control_demeritos(request):
+    hoy = date.today()
+    secciones_con_alumnos = {}
+
+    maestro = get_object_or_404(Maestro, id_usuario=request.user)
+    secciones = GradoSeccion.objects.filter(maestro_encargado=maestro).order_by('grado', 'seccion')
+
+    for seccion in secciones:
+        alumnos = Alumno.objects.filter(grado_seccion=seccion, activo=True).annotate(
+            m_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='R')),
+            d_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='D')),
+            rc_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='RC'))
+        ).order_by('apellido', 'nombre')
+
+        for a in alumnos:
+            if a.fecha_nac:
+                f_nac = a.fecha_nac.date() if hasattr(a.fecha_nac, 'date') else a.fecha_nac
+                a.edad = hoy.year - f_nac.year - ((hoy.month, hoy.day) < (f_nac.month, f_nac.day))
+            else:
+                a.edad = "N/A"
+            a.total_meritos = a.m_count
+            a.total_demeritos = a.d_count
+            a.total_reconocimientos = a.rc_count
+
+        secciones_con_alumnos[seccion] = alumnos
+
+    return render(request, "demeritos_control.html", {'secciones_con_alumnos': secciones_con_alumnos})
 
 @login_required
 @maestro_required
 def registrar_alumno(request):
+    maestro = get_object_or_404(Maestro, id_usuario=request.user)
+    secciones_docente = GradoSeccion.objects.filter(maestro_encargado=maestro)
+
     if request.method == 'POST':
         nie = request.POST.get('nie')
         nombre = request.POST.get('nombre')
@@ -60,13 +97,16 @@ def registrar_alumno(request):
         try:
             aula = GradoSeccion.objects.get(grado=grado_codigo, seccion=seccion_texto.strip().upper())
         except GradoSeccion.DoesNotExist:
-            return JsonResponse({'ok': False, 'error': 'La combinación de Grado y Sección seleccionada no existe en el sistema.'})
+            return JsonResponse({'ok': False, 'error': 'La combinación de Grado y Sección seleccionada no existe.'})
+
+        if aula not in secciones_docente:
+            return JsonResponse({'ok': False, 'error': 'No tiene autorización para registrar alumnos en este grado/sección.'})
 
         alumnos_matriculados = aula.alumnos.filter(activo=True).count()
         if alumnos_matriculados >= aula.cupo_maximo:
             return JsonResponse({
                 'ok': False, 
-                'error': f'Cupo agotado: {aula.get_grado_display()} Sección {aula.seccion} alcanzó su límite de {aula.cupo_maximo} alumnos.'
+                'error': f'Cupo agotado: {aula.get_grado_display()} Sección {aula.seccion} alcanzó su límite.'
             })
 
         hoy = datetime.now().date()
@@ -79,7 +119,7 @@ def registrar_alumno(request):
                 if edad < 6 and grado_num >= 1:
                     return JsonResponse({'ok': False, 'error': f'Incoherencia de matrícula: El alumno tiene {edad} años, es muy joven para ingresar a {grado_num}° Grado.'})
                 if grado_num == 9 and edad < 12:
-                    return JsonResponse({'ok': False, 'error': f'Incoherencia de matrícula: Un alumno de {edad} años no puede ser matriculado en 9° Grado (Mínimo 12 años).'})
+                    return JsonResponse({'ok': False, 'error': f'Incoherencia de matrícula: Un alumno de {edad} años no puede ser matriculado en 9° Grado.'})
                 if grado_num == 1 and edad > 10:
                      return JsonResponse({'ok': False, 'error': f'Incoherencia de matrícula: El alumno tiene {edad} años, excede la edad sugerida para 1° Grado.'})
             except ValueError:
@@ -99,64 +139,39 @@ def registrar_alumno(request):
         except Exception as e:
             return JsonResponse({'ok': False, 'error': f"Error interno: {str(e)}"})
 
-    grados_en_uso = GradoSeccion.objects.values_list('grado', flat=True).distinct()
-    
     grados_mapeados = []
     dict_choices = {}
     for grupo, opciones in GradoSeccion.GRADOS_EL_SALVADOR:
         for cod, nom in opciones:
             dict_choices[cod] = nom
 
-    for cod in dict_choices:
-        if cod in grados_en_uso:
-            grados_mapeados.append((cod, dict_choices[cod]))
+    for gs in secciones_docente:
+        if gs.grado in dict_choices and (gs.grado, dict_choices[gs.grado]) not in grados_mapeados:
+            grados_mapeados.append((gs.grado, dict_choices[gs.grado]))
 
     secciones_por_grado = {}
-    for gs in GradoSeccion.objects.all():
+    for gs in secciones_docente:
         if gs.grado not in secciones_por_grado:
             secciones_por_grado[gs.grado] = []
         secciones_por_grado[gs.grado].append(gs.seccion)
 
-    secciones_json_string = json.dumps(secciones_por_grado)
-
     context = {
         'grados_existentes': grados_mapeados,
-        'secciones_json': secciones_json_string
+        'secciones_json': json.dumps(secciones_por_grado)
     }
     return render(request, "registro_alumnos.html", context)
 
 @login_required
 @maestro_required
-def control_demeritos(request):
-    alumno_lista = Alumno.objects.filter(activo=True).select_related('grado_seccion').annotate(
-        m_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='R')),
-        d_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='D')),
-        rc_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='RC'))
-    ).order_by('apellido', 'nombre')
-    
-    hoy = date.today()
-
-    paginator = Paginator(alumno_lista, 5)
-    numero_pagina = request.GET.get('page', 1)
-    alumno_paginados = paginator.get_page(numero_pagina)
-
-    for m in alumno_paginados:
-        if m.fecha_nac:
-            f_nac = m.fecha_nac.date() if hasattr(m.fecha_nac, 'date') else m.fecha_nac
-            m.edad = hoy.year - f_nac.year - ((hoy.month, hoy.day) < (f_nac.month, f_nac.day))
-        else:
-            m.edad = "N/A"
-            
-        m.total_meritos = m.m_count
-        m.total_demeritos = m.d_count
-        m.total_reconocimientos = m.rc_count
-
-    return render(request, "demeritos_control.html", {'alumnos': alumno_paginados})
-
-@login_required
-@maestro_required
 def registro_demeritos_view(request, nie):
     alumno = get_object_or_404(Alumno.objects.select_related('grado_seccion'), NIE=nie)
+    
+    if request.user.rol == 'maestro':
+        maestro = get_object_or_404(Maestro, id_usuario=request.user)
+        secciones_asignadas = GradoSeccion.objects.filter(maestro_encargado=maestro)
+        if alumno.grado_seccion not in secciones_asignadas:
+            return redirect('control_alumnos')
+
     historial_completo = RegistroTarjeta.objects.filter(alumno=alumno).order_by('fecha').select_related('maestro_registra')
 
     totales = {
@@ -166,9 +181,19 @@ def registro_demeritos_view(request, nie):
     }
 
     for h in historial_completo:
-        clave = f"{h.tipo}_{h.sub_letra}"
-        if clave in totales:
-            totales[clave] += 1
+        if hasattr(totales, f"D_{h.sub_letra}"):
+            totales[f"D_{h.sub_letra}"] += 1
+        else:
+            clave_d = f"D_{h.sub_letra}"
+            if clave_d in totales: totales[clave_d] += 1
+            
+        if getattr(h, 'tiene_redencion', False):
+            clave_r = f"R_{h.redencion_letra}"
+            if clave_r in totales: totales[clave_r] += 1
+            
+        if getattr(h, 'tiene_reconocimiento', False):
+            clave_rc = f"RC_{h.reconocimiento_letra}"
+            if clave_rc in totales: totales[clave_rc] += 1
 
     totales['total_demeritos'] = totales['D_A'] + totales['D_B'] + totales['D_C'] + totales['D_D']
 
@@ -178,7 +203,7 @@ def registro_demeritos_view(request, nie):
 
     context = {
         'alumno': alumno,
-        'historial': historial_paginado, 
+        'historial': historial_paginado,  
         'totales': totales
     }
     return render(request, "registrar_demeritos.html", context)
@@ -197,6 +222,11 @@ def registrar_demerito(request, nie):
                 return JsonResponse({'ok': False, 'error': 'Todos los campos del reporte son obligatorios.'})
 
             alumno = get_object_or_404(Alumno, NIE=nie)
+            
+            maestro = get_object_or_404(Maestro, id_usuario=request.user)
+            secciones_asignadas = GradoSeccion.objects.filter(maestro_encargado=maestro)
+            if alumno.grado_seccion not in secciones_asignadas:
+                return JsonResponse({'ok': False, 'error': 'No está autorizado para añadir reportes a este estudiante.'})
             
             RegistroTarjeta.objects.create(
                 alumno=alumno,

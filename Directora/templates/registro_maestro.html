@@ -16,16 +16,17 @@
            
             <div class="opciones">
                 <ul>
-
-                    <li class="item-menu">
-                        <i class="ti ti-demerito"></i> Demeritos
-                    </li>
                     <li class="item-menu activo">
                         <i class="ti ti-maestros"></i> Maestros
                     </li>
                     <a href="{% url 'grado_seccion_control' %}" style="text-decoration: none;">
                         <li class="item-menu">
                             <i class="ti ti-grado_seccion"></i> Control de Grados
+                        </li>
+                    </a>
+                    <a href="{% url 'control_demerito_directora' %}" style="text-decoration: none;">
+                        <li class="item-menu">
+                            <i class="ti ti-control_demerito"></i> Control de Demeritos
                         </li>
                     </a>
                 </ul>

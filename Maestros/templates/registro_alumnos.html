@@ -23,6 +23,11 @@
                     <li class="item-menu activo">
                         <i class="ti ti-alumnos"></i> Alumnos
                     </li>
+                    <a href="{% url 'dashboard_maestro' %}" style="text-decoration: none;">
+                        <li class="item-menu">
+                            <i class="ti ti-dashboard"></i> Control de demeritos
+                        </li>
+                    </a>
                 </ul>
                 <div class="cerrar-sesion-container">
                     <form action="{% url 'logout' %}" method="post">

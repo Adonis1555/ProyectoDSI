@@ -24,6 +24,11 @@
                             <i class="ti ti-alumnos"></i> Alumnos
                         </li>
                     </a>
+                    <a href="{% url 'dashboard_maestro' %}" style="text-decoration: none;">
+                        <li class="item-menu">
+                            <i class="ti ti-dashboard"></i> Control de demeritos
+                        </li>
+                    </a>
                 </ul>
                 <div class="cerrar-sesion-container">
                     <form action="{% url 'logout' %}" method="post">
@@ -148,16 +153,16 @@
                             <td>{% if h.tipo == 'RC' and h.sub_letra == 'B' %}X{% endif %}</td>
                             <td>{% if h.tipo == 'RC' and h.sub_letra == 'C' %}X{% endif %}</td>
                             <td>{% if h.tipo == 'RC' and h.sub_letra == 'D' %}X{% endif %}</td>
-                            <td class="text-left">
+                            <td >
                                 {% if h.tipo != 'R' %}
-                                    Prof. {{ h.maestro_registra.last_name }}
+                                   (Firma)
                                 {% else %}
                                     -
                                 {% endif %}
                             </td>
                             <td>
                                 {% if h.tipo == 'R' %}
-                                    Prof. {{ h.maestro_registra.last_name }}
+                                    (Firma)
                                 {% else %}
                                     -
                                 {% endif %}

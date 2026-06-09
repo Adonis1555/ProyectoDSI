@@ -1,11 +1,274 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maestro</title>
+    <title>Consolidado Mensual - Instrumento 002</title>
+    <link rel="stylesheet" href="{% static 'styles/registro_demeritos.css' %}">
+    <style>
+        /* Ajustes específicos para la macro-tabla estadística del Instrumento 002 */
+        .FiltroContainer {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: #ffffff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            font-family: 'Inter', sans-serif;
+        }
+        .labelFiltro {
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .selectFiltro {
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+            color: #1e293b;
+            cursor: pointer;
+            outline: none;
+        }
+        .selectFiltro:focus {
+            border-color: #2E5299;
+            box-shadow: 0 0 0 3px rgba(46, 82, 153, 0.15);
+        }
+        .contenedor-tabla-consolidado {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border: 1px solid #cbd5e1;
+            overflow-x: auto;
+        }
+        .tabla-consolidado {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+        }
+        .tabla-consolidado th, .tabla-consolidado td {
+            border: 1px solid #94a3b8;
+            padding: 6px 4px;
+            text-align: center;
+        }
+        .tabla-consolidado th {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            font-weight: 600;
+        }
+        .encabezado-principal-num {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: normal;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .mes-celda {
+            font-weight: 600;
+            background-color: #f8fafc;
+            text-align: left !important;
+            padding-left: 10px !important;
+            color: #334155;
+        }
+        .total-fila td {
+            background-color: #e2e8f0;
+            font-weight: bold;
+            color: #0f172a;
+        }
+        .firma-director-seccion {
+            margin-top: 30px;
+            padding: 15px;
+            border-top: 1px dashed #94a3b8;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            color: #475569;
+        }
+    </style>
 </head>
 <body>
-    <h1>Hola maestro</h1>
+    <main class="maestro-alumno">
+        <section class="menu-opciones">
+            <div class="imgContainer">
+                <img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo Institucional">
+            </div>
+            <div class="opciones">
+                <ul>
+                    <a href="{% url 'control_demeritos' %}" style="text-decoration:none;">
+                        <li class="item-menu">
+                            <i class="ti ti-demerito"></i> Deméritos
+                        </li>
+                    </a>
+                    <a href="{% url 'control_alumnos' %}" style="text-decoration:none;">
+                        <li class="item-menu">
+                            <i class="ti ti-alumnos"></i> Alumnos
+                        </li>
+                    </a>
+                    <li class="item-menu activo">
+                        <i class="ti ti-dashboard"></i> Control de demeritos
+                    </li>
+                </ul>
+                <div class="cerrar-sesion-container">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btnCerrarSesion">cerrar sesión</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="registro-demerito">
+            <div class="titulo-demerito">
+                <h1 class="titulo">Instrumento No. 002 — Registro Consolidado Mensual de Deméritos/Redenciones/Reconocimientos</h1>
+            </div>
+
+            <div class="FiltroContainer">
+                <label class="labelFiltro" for="filtoAulaConsolidado">Seleccionar Grado y Sección:</label>
+                <select id="filtoAulaConsolidado" class="selectFiltro" onchange="cambiarConsolidado(this.value)">
+                    {% for gs in secciones_maestro %}
+                        <option value="{{ gs.id }}" {% if gs.id == seccion_actual.id %}selected{% endif %}>
+                            {{ gs.get_grado_display }} - Sección "{{ gs.seccion }}"
+                        </option>
+                    {% empty %}
+                        <option value="">Sin secciones asignadas</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="datos-generales">
+                <h2 class="titulo-dato">1-10. Datos de Identificación General</h2>
+                <div class="container-datos">
+                    <div class="fila-datos tres-columnas">
+                        <div class="dato">
+                            <label>1. Nombre del Centro Educativo:</label>
+                            <input class="input-dato" type="text" readonly value="C.E Natalia López">
+                        </div>
+                        <div class="dato">
+                            <label>2. Código del C.E:</label>
+                            <input class="input-dato" type="text" readonly value="11243">
+                        </div>
+                        <div class="dato">
+                            <label>3. Departamento del C.E:</label>
+                            <input class="input-dato" type="text" readonly value="La Libertad">
+                        </div>
+                    </div>
+                    <div class="fila-datos tres-columnas">
+                        <div class="dato">
+                            <label>4. Municipio / Distrito:</label>
+                            <input class="input-dato" type="text" readonly value="La Libertad Norte / San Matías">
+                        </div>
+                        <div class="dato">
+                            <label>6. Nombre del Docente:</label>
+                            <input class="input-dato" type="text" readonly value="{{ maestro.nombre }} {{ maestro.apellido }}">
+                        </div>
+                        <div class="dato">
+                            <label>7. Año Electivo:</label>
+                            <input class="input-dato" type="text" readonly value="2026">
+                        </div>
+                    </div>
+                    <div class="fila-datos tres-columnas">
+                        <div class="dato">
+                            <label>8. Grado:</label>
+                            <input class="input-dato" type="text" readonly value="{{ seccion_actual.get_grado_display|default:'-' }}">
+                        </div>
+                        <div class="dato">
+                            <label>9. Sección:</label>
+                            <input class="input-dato" type="text" readonly value="{{ seccion_actual.seccion|default:'-' }}">
+                        </div>
+                        <div class="dato">
+                            <label>10. Turno:</label>
+                            <input class="input-dato" type="text" readonly value="Mañana">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contenedor-tabla-consolidado">
+                <table class="tabla-consolidado">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width: 100px;"><span class="encabezado-principal-num">11.</span>Mes</th>
+                            <th colspan="3"><span class="encabezado-principal-num">12.</span>Matrícula por Sexo</th>
+                            <th colspan="3"><span class="encabezado-principal-num">13.</span>Número de Deméritos por Sexo</th>
+                            <th colspan="5"><span class="encabezado-principal-num">14.</span>Número de Deméritos por Causales</th>
+                            <th colspan="3"><span class="encabezado-principal-num">15.</span>Número Redenciones por Sexo</th>
+                            <th colspan="4"><span class="encabezado-principal-num">16.</span>Número de Redenciones por Opción</th>
+                            <th colspan="3"><span class="encabezado-principal-num">17.</span>Número Reconocimientos por Sexo</th>
+                        </tr>
+                        <tr>
+                            <th style="width: 25px;">M</th><th style="width: 25px;">H</th><th style="font-weight: bold;">Total</th>
+                            <th style="width: 25px;">M</th><th style="width: 25px;">H</th><th style="font-weight: bold;">Total</th>
+                            <th>A</th><th>B</th><th>C</th><th>D</th><th style="font-weight: bold;">Total</th>
+                            <th style="width: 25px;">M</th><th style="width: 25px;">H</th><th style="font-weight: bold;">Total</th>
+                            <th>A</th><th>B</th><th>C</th><th style="font-weight: bold;">Total</th>
+                            <th style="width: 25px;">M</th><th style="width: 25px;">H</th><th style="font-weight: bold;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fila in matriz_mensual %}
+                        <tr>
+                            <td class="mes-celda">{{ fila.mes_nombre }}</td>
+                            
+                            <td>{{ matricula_sexo.M }}</td>
+                            <td>{{ matricula_sexo.F }}</td>
+                            <td style="font-weight: bold;">{{ matricula_sexo.total }}</td>
+
+                            <td>{{ fila.d_m }}</td>
+                            <td>{{ fila.d_h }}</td>
+                            <td style="font-weight: bold;">{{ fila.d_total_sexo }}</td>
+
+                            <td>{{ fila.d_a }}</td>
+                            <td>{{ fila.d_b }}</td>
+                            <td>{{ fila.d_c }}</td>
+                            <td>{{ fila.d_d }}</td>
+                            <td style="font-weight: bold;">{{ fila.d_total_causal }}</td>
+
+                            <td>{{ fila.r_m }}</td>
+                            <td>{{ fila.r_h }}</td>
+                            <td style="font-weight: bold;">{{ fila.r_total_sexo }}</td>
+
+                            <td>{{ fila.r_a }}</td>
+                            <td>{{ fila.r_b }}</td>
+                            <td>{{ fila.r_c }}</td>
+                            <td style="font-weight: bold;">{{ fila.r_total_opcion }}</td>
+
+                            <td>{{ fila.rc_m }}</td>
+                            <td>{{ fila.rc_h }}</td>
+                            <td style="font-weight: bold;">{{ fila.rc_total }}</td>
+                        </tr>
+                        {% endfor %}
+
+                        <tr class="total-fila">
+                            <td class="mes-celda">18. Total</td>
+                            <td>{{ matricula_sexo.M }}</td><td>{{ matricula_sexo.F }}</td><td>{{ matricula_sexo.total }}</td>
+                            <td>{{ totales_anuales.d_m }}</td><td>{{ totales_anuales.d_h }}</td><td>{{ totales_anuales.d_total_sexo }}</td>
+                            <td>{{ totales_anuales.d_a }}</td><td>{{ totales_anuales.d_b }}</td><td>{{ totales_anuales.d_c }}</td><td>{{ totales_anuales.d_d }}</td><td>{{ totales_anuales.d_total_causal }}</td>
+                            <td>{{ totales_anuales.r_m }}</td><td>{{ totales_anuales.r_h }}</td><td>{{ totales_anuales.r_total_sexo }}</td>
+                            <td>{{ totales_anuales.r_a }}</td><td>{{ totales_anuales.r_b }}</td><td>{{ totales_anuales.r_c }}</td><td>{{ totales_anuales.r_total_opcion }}</td>
+                            <td>{{ totales_anuales.rc_m }}</td><td>{{ totales_anuales.rc_h }}</td><td>{{ totales_anuales.rc_total }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="firma-director-seccion">
+                    Nombre, firma y sello del Director del C. E. __________________________________________________
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Redirección inmediata al cambiar el select para calcular los totales de la otra sección
+        function cambiarConsolidado(seccionId) {
+            if(seccionId) {
+                window.location.href = "?seccion_id=" + seccionId;
+            }
+        }
+    </script>
 </body>
 </html>

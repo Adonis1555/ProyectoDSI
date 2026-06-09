@@ -1,18 +1,52 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'styles/control_alumnos.css' %}">
     <title>Alumnos</title>
     <style>
+        .FiltroContainer {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: #ffffff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            font-family: 'Inter', sans-serif;
+        }
+        .labelFiltro {
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .selectFiltro {
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+            color: #1e293b;
+            cursor: pointer;
+            outline: none;
+        }
+        .selectFiltro:focus {
+            border-color: #2E5299;
+            box-shadow: 0 0 0 3px rgba(46, 82, 153, 0.15);
+        }
+        .fila-oculta { display: none !important; }
+
+        /* Estilos para la barra de paginación dinámica */
         .paginacion-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 20px;
             padding: 10px 5px;
+            font-family: 'Inter', sans-serif;
         }
         .paginacion-info {
             font-size: 14px;
@@ -22,6 +56,28 @@
             display: flex;
             gap: 8px;
         }
+        .btn-pagina {
+            padding: 6px 12px;
+            font-size: 14px;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #334155;
+            text-decoration: none;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+        .btn-pagina:hover:not(.deshabilitado) {
+            background-color: #f1f5f9;
+            border-color: #94a3b8;
+        }
+        .btn-pagina.deshabilitado {
+            color: #cbd5e1;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+            background-color: #f8fafc;
+        }
     </style>
 </head>
 <body>
@@ -29,7 +85,7 @@
     <main class="maestro-alumno">
         <section class="menu-opciones">
             <div class="imgContainer">
-                    <img class="Logo" src="{% static 'logo.jpg' %}" alt="">
+                <img class="Logo" src="{% static 'logo.jpg' %}" alt="">
             </div>
            
             <div class="opciones">
@@ -43,6 +99,12 @@
                     <li class="item-menu activo">
                         <i class="ti ti-alumnos"></i> Alumnos
                     </li>
+
+                    <a href="{% url 'dashboard_maestro' %}" style="text-decoration: none;">
+                        <li class="item-menu">
+                            <i class="ti ti-dashboard"></i> Control de demeritos
+                        </li>
+                    </a>
                 </ul>
                 <div class="cerrar-sesion-container">
                     <form action="{% url 'logout' %}" method="post">
@@ -54,69 +116,193 @@
         </section>
         <section class="registro-alumno">
                 <div class="container-titulo-alumno">
-                    <h1 class="titulo-alumno">Alumnos</h1>
+                    <h1 class="titulo-alumno">Alumnos Registrados</h1>
                     <a href="{% url 'registro_alumnos' %}">
                         <button type="button" class="btnRegistrarAlumno">+ Registrar Alumno</button>
                     </a>
                 </div>
-                <input type="text" class="inputBuscarAlumno" placeholder="Buscar Alumno">
-                <div class="containerTabla">
-                <table class="tabla-alumno">
-                    <thead>
-                        <tr>
-                            <th>Nombre Completo</th>
-                            <th>NIE</th>
-                            <th>Edad</th>
-                            <th>Grado</th>
-                            <th>Seccion</th>
-                            <th>Acciones</th>   
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for alumno in alumnos %}
-                        <tr>
-                                <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
-                                <td>{{ alumno.NIE }}</td>
-                                <td>{{ alumno.edad }}</td>
-                                <td>{{alumno.grado_seccion.get_grado_display}}</td>
-                                <td class="text-bold">{{ alumno.grado_seccion.seccion }}</td>
-                                <td></td>
-                        </tr>
-                        {% empty %}
-                         <tr>
-                             <td colspan="6" class="tabla-vacia">
-                                 <div class="mensaje-vacio">
-                                     <span class="icono-vacio">📁</span>
-                                     <p>No se encontraron alumnos registrados en el sistema.</p>
-                                 </div>
-                             </td>
-                         </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                </div>
                 
-                {% if alumnos.has_other_pages %}
-                <div class="paginacion-container">
-                    <div class="paginacion-info">
-                        Página {{ alumnos.number }} de {{ alumnos.paginator.num_pages }}
+                <div class="FiltroContainer">
+                    <label class="labelFiltro" for="filtoAula">Seleccionar Sección:</label>
+                    <select id="filtoAula" class="selectFiltro">
+                        {% for seccion in secciones_con_alumnos.keys %}
+                            <option value="{{ seccion.grado }}_{{ seccion.seccion }}">{{ seccion.get_grado_display }} - Sección "{{ seccion.seccion }}"</option>
+                        {% empty %}
+                            <option value="">Sin secciones asignadas</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <input type="text" id="inputBuscar" class="inputBuscarAlumno" placeholder="Buscar Alumno por nombre..." style="margin: 0; flex: 1;">
+                </div>
+
+                <div class="containerTabla">
+                    <table class="tabla-alumno">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">No</th>
+                                <th>Nombre Completo</th>
+                                <th>NIE</th>
+                                <th>Edad</th>
+                                <th>Sexo</th>
+                                <th>Acciones</th>   
+                            </tr>
+                        </thead>
+                        <tbody id="tablaCuerpoAlumnos">
+                            {% for seccion, alumnos in secciones_con_alumnos.items %}
+                                {% for alumno in alumnos %}
+                                <tr data-seccion="{{ seccion.grado }}_{{ seccion.seccion }}" class="fila-alumno">
+                                    <td class="celda-indice"></td>
+                                    <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                                    <td>{{ alumno.NIE }}</td>
+                                    <td>{{ alumno.edad }}</td>
+                                    <td>{{ alumno.get_sexo_display }}</td>
+                                    <td>
+                                        <a href="{% url 'registro_demeritos_view' alumno.NIE %}" class="btn-registrar">Ver Expediente</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% empty %}
+                            <tr id="filaVaciaGlobal">
+                                <td colspan="6" class="tabla-vacia" style="text-align: center; padding: 30px; color: #64748b;">
+                                    📁 No se encontraron alumnos registrados en sus secciones.
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                            <tr id="filaNoResultados" class="fila-oculta">
+                                <td colspan="6" style="text-align: center; padding: 30px; color: #64748b;">
+                                    No se encontraron alumnos que coincidan con la búsqueda.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="paginacionContenedor" class="paginacion-container fila-oculta">
+                    <div id="paginacionInfo" class="paginacion-info">
+                        Página 1 de 1
                     </div>
                     <div class="paginacion-botones">
-                        {% if alumnos.has_previous %}
-                            <a href="?page={{ alumnos.previous_page_number }}" class="btn-pagina">Anterior</a>
-                        {% else %}
-                            <span class="btn-pagina deshabilitado">Anterior</span>
-                        {% endif %}
-
-                        {% if alumnos.has_next %}
-                            <a href="?page={{ alumnos.next_page_number }}" class="btn-pagina">Siguiente</a>
-                        {% else %}
-                            <span class="btn-pagina deshabilitado">Siguiente</span>
-                        {% endif %}
+                        <button type="button" id="btnAnterior" class="btn-pagina">Anterior</button>
+                        <button type="button" id="btnSiguiente" class="btn-pagina">Siguiente</button>
                     </div>
                 </div>
-                {% endif %}
         </section>
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectFiltro = document.getElementById('filtoAula');
+            const inputBuscar = document.getElementById('inputBuscar');
+            const filas = document.querySelectorAll('.fila-alumno');
+            const filaNoResultados = document.getElementById('filaNoResultados');
+            
+            const paginacionContenedor = document.getElementById('paginacionContenedor');
+            const paginacionInfo = document.getElementById('paginacionInfo');
+            const btnAnterior = document.getElementById('btnAnterior');
+            const btnSiguiente = document.getElementById('btnSiguiente');
+
+            const filasPorPagina = 5;
+            let paginaActual = 1;
+            let filasFiltradas = [];
+
+            function filtrarYPaginarTabla() {
+                const seccionSeleccionada = selectFiltro.value;
+                const textoBusqueda = inputBuscar.value.toLowerCase().trim();
+                
+                filasFiltradas = [];
+                let correlativo = 0;
+
+                filas.forEach(fila => {
+                    const seccionFila = fila.getAttribute('data-seccion');
+                    const nombreAlumno = fila.children[1].textContent.toLowerCase();
+                    const nieAlumno = fila.children[2].textContent;
+
+                    const coincideSeccion = (seccionFila === seccionSeleccionada);
+                    const coincideBusqueda = nombreAlumno.includes(textoBusqueda) || nieAlumno.includes(textoBusqueda);
+
+                    if (coincideSeccion && coincideBusqueda) {
+                        correlativo++;
+                        fila.children[0].textContent = correlativo;
+                        filasFiltradas.push(fila);
+                    } else {
+                        fila.classList.add('fila-oculta');
+                    }
+                });
+
+                if (filasFiltradas.length === 0 && seccionSeleccionada !== "") {
+                    filaNoResultados.classList.remove('fila-oculta');
+                    paginacionContenedor.classList.add('fila-oculta');
+                    return;
+                } else {
+                    filaNoResultados.classList.add('fila-oculta');
+                }
+
+                const totalPaginas = Math.ceil(filasFiltradas.length / filasPorPagina) || 1;
+                if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+
+                const indiceInicio = (paginaActual - 1) * filasPorPagina;
+                const indiceFin = indiceInicio + filasPorPagina;
+
+                filasFiltradas.forEach((fila, indice) => {
+                    if (indice >= indiceInicio && indice < indiceFin) {
+                        fila.classList.remove('fila-oculta');
+                    } else {
+                        fila.classList.add('fila-oculta');
+                    }
+                });
+
+                paginacionInfo.innerHTML = `Página <strong>${paginaActual}</strong> de ${totalPaginas}`;
+                
+                if (totalPaginas > 1) {
+                    paginacionContenedor.classList.remove('fila-oculta');
+                } else {
+                    paginacionContenedor.classList.add('fila-oculta');
+                }
+
+                if (paginaActual === 1) {
+                    btnAnterior.classList.add('deshabilitado');
+                } else {
+                    btnAnterior.classList.remove('deshabilitado');
+                }
+
+                if (paginaActual === totalPaginas) {
+                    btnSiguiente.classList.add('deshabilitado');
+                } else {
+                    btnSiguiente.classList.remove('deshabilitado');
+                }
+            }
+
+            btnAnterior.addEventListener('click', () => {
+                if (paginaActual > 1) {
+                    paginaActual--;
+                    filtrarYPaginarTabla();
+                }
+            });
+
+            btnSiguiente.addEventListener('click', () => {
+                const totalPaginas = Math.ceil(filasFiltradas.length / filasPorPagina);
+                if (paginaActual < totalPaginas) {
+                    paginaActual++;
+                    filtrarYPaginarTabla();
+                }
+            });
+
+            if (selectFiltro) {
+                selectFiltro.addEventListener('change', () => {
+                    paginaActual = 1;
+                    filtrarYPaginarTabla();
+                });
+            }
+            if (inputBuscar) {
+                inputBuscar.addEventListener('input', () => {
+                    paginaActual = 1;
+                    filtrarYPaginarTabla();
+                });
+            }
+
+            filtrarYPaginarTabla();
+        });
+    </script>
 </body>
 </html>
