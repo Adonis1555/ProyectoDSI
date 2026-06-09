@@ -202,3 +202,8 @@ def registrar_grado_seccion(request):
         'grados_listado': GradoSeccion.GRADOS_EL_SALVADOR,
     }
     return render(request, "registrar_grado_seccion.html", context)
+
+@login_required
+@directora_required
+def control_demeritos(request):
+    return render(request,"control_demerito.html")
