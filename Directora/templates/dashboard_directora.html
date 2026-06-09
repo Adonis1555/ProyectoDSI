@@ -1,0 +1,368 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'estilos/dashboard.css' %}">
+    <title>Consola de Dirección - Dashboard</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .dashboard-content {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            background-color: #fcfcfc;
+            border-radius: 0 1.5rem 1.5rem 0;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+        .widgets-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .widget-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .widget-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .widget-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .widget-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+        .widget-label {
+            font-size: 14px;
+            color: #718096;
+            font-weight: 500;
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        .chart-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 10px;
+        }
+        .tops-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .top-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .top-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        .top-table th, .top-table td {
+            padding: 10px 12px;
+            text-align: left;
+        }
+        .top-table th {
+            background-color: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+            border-bottom: 2px solid #edf2f7;
+        }
+        .top-table td {
+            border-bottom: 1px solid #edf2f7;
+            color: #2d3748;
+        }
+        .top-table tr:last-child td {
+            border-bottom: none;
+        }
+        .badge-count {
+            background-color: #fed7d7;
+            color: #9b2c2c;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .badge-count-success {
+            background-color: #c6f6d5;
+            color: #22543d;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        @media (max-width: 768px) {
+            .widgets-grid, .charts-grid, .tops-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="directora-maestro">
+        <section class="menu-opciones">
+            <div class="imgContainer">
+                <img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo">
+            </div>
+            <div class="opciones">
+                <ul>
+                    <li class="item-menu activo">
+                        <i class="ti ti-dashboard"></i> Dashboard
+                    </li>
+                    <a href="{% url 'control_maestro' %}" style="text-decoration: none;">
+                        <li class="item-menu"><i class="ti ti-maestros"></i> Maestros</li>
+                    </a>
+                    <a href="{% url 'grado_seccion_control' %}" style="text-decoration: none;">
+                        <li class="item-menu">
+                            <i class="ti ti-grado_seccion"></i> Control de Grados
+                        </li>
+                    </a>
+                    <a href="{% url 'control_demerito_directora' %}" style="text-decoration: none;">
+                        <li class="item-menu">
+                            <i class="ti ti-demerito"></i> Demeritos
+                        </li>
+                    </a>
+                </ul>
+                <div class="cerrar-sesion-container">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btnCerrarSesion">cerrar sesión</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-content">
+            <div class="container-titulo-maestro">
+                <h1 class="titulo-maestro">Dashboard General de Dirección</h1>
+            </div>
+
+            <!-- Indicadores -->
+            <div class="widgets-grid">
+                <div class="widget-card">
+                    <div class="widget-icon">🎓</div>
+                    <div class="widget-info">
+                        <span class="widget-value">{{ total_alumnos }}</span>
+                        <span class="widget-label">Alumnos Activos</span>
+                    </div>
+                </div>
+                <div class="widget-card">
+                    <div class="widget-icon">👨‍🏫</div>
+                    <div class="widget-info">
+                        <span class="widget-value">{{ total_maestros }}</span>
+                        <span class="widget-label">Docentes</span>
+                    </div>
+                </div>
+                <div class="widget-card">
+                    <div class="widget-icon">🏫</div>
+                    <div class="widget-info">
+                        <span class="widget-value">{{ total_secciones }}</span>
+                        <span class="widget-label">Grados y Secciones</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3 class="chart-title">Línea de Tiempo Mensual de Incidencias ({{ anio }})</h3>
+                    <div style="position: relative; height:250px; width:100%;">
+                        <canvas id="canvasMensual"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3 class="chart-title">Distribución por Severidad</h3>
+                    <div style="position: relative; height:250px; width:100%; display: flex; justify-content: center;">
+                        <canvas id="canvasSeveridad"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tablas Tops -->
+            <div class="tops-grid">
+                <div class="top-card">
+                    <h3 class="chart-title" style="margin-bottom: 10px;">Top 5 Alumnos con Mayor Índice de Deméritos</h3>
+                    <table class="top-table">
+                        <thead>
+                            <tr>
+                                <th>NIE</th>
+                                <th>Nombre Completo</th>
+                                <th>Grado y Sección</th>
+                                <th>Deméritos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alumno in top_alumnos %}
+                            <tr>
+                                <td>{{ alumno.NIE }}</td>
+                                <td style="font-weight: 500;">{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                                <td>{{ alumno.grado_seccion.get_grado_display }} - "{{ alumno.grado_seccion.seccion }}"</td>
+                                <td><span class="badge-count">{{ alumno.demeritos_count }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #a0aec0; padding: 15px;">No se registran deméritos en el sistema.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="top-card">
+                    <h3 class="chart-title" style="margin-bottom: 10px;">Top 5 Docentes con Más Reportes Realizados</h3>
+                    <table class="top-table">
+                        <thead>
+                            <tr>
+                                <th>DUI</th>
+                                <th>Nombre del Docente</th>
+                                <th>Especialidad</th>
+                                <th>Reportes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for maestro in top_maestros %}
+                            <tr>
+                                <td>{{ maestro.dui }}</td>
+                                <td style="font-weight: 500;">{{ maestro.nombre }} {{ maestro.apellido }}</td>
+                                <td>{{ maestro.especialidad }}</td>
+                                <td><span class="badge-count-success">{{ maestro.demeritos_registrados }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #a0aec0; padding: 15px;">No se registran reportes de docentes.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Script de Inicialización de Chart.js -->
+    <script>
+        const mesesLabels = JSON.parse('{{ meses_labels|safe }}');
+        const demeritosData = JSON.parse('{{ chart_demeritos|safe }}');
+        const redencionesData = JSON.parse('{{ chart_redenciones|safe }}');
+
+        const causalesLabels = JSON.parse('{{ causales_labels|safe }}');
+        const causalesData = JSON.parse('{{ causales_data|safe }}');
+
+        // 1. Gráfico Mensual (Líneas)
+        const ctxMensual = document.getElementById('canvasMensual').getContext('2d');
+        new Chart(ctxMensual, {
+            type: 'line',
+            data: {
+                labels: mesesLabels,
+                datasets: [
+                    {
+                        label: 'Deméritos',
+                        data: demeritosData,
+                        borderColor: '#e53e3e',
+                        backgroundColor: 'rgba(229, 62, 62, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Redenciones',
+                        data: redencionesData,
+                        borderColor: '#38a169',
+                        backgroundColor: 'rgba(56, 161, 105, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        // 2. Gráfico por Gravedad (Doughnut)
+        const ctxSeveridad = document.getElementById('canvasSeveridad').getContext('2d');
+        new Chart(ctxSeveridad, {
+            type: 'doughnut',
+            data: {
+                labels: causalesLabels,
+                datasets: [{
+                    data: causalesData,
+                    backgroundColor: [
+                        '#4299e1', // Leve
+                        '#ecc94b', // Grave
+                        '#ed8936', // Muy Grave
+                        '#e53e3e'  // Extrema
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

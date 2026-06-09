@@ -487,3 +487,38 @@ body {
     outline: none;
     box-shadow: 0 0 0 3px rgba(46, 82, 153, 0.25);
 }
+
+.btn-editar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e2e8f0;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.btn-editar:hover {
+    background-color: #475569;
+    color: #ffffff;
+    border-color: #475569;
+    text-decoration: none;
+    box-shadow: 0 2px 4px rgba(71, 85, 105, 0.2);
+}
+
+.btn-editar:active {
+    transform: scale(0.96);
+}
+
+.btn-editar:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.25);
+}

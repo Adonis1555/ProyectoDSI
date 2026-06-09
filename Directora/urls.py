@@ -7,5 +7,6 @@ urlpatterns = [
         path('registro_maestro/', views.registro_maestro_view,name="registro_maestro"),
         path('grado_seccion/',views.grado_seccion_control,name="grado_seccion_control"),
         path('registrar_grado/',views.registrar_grado_seccion,name="registrar_grado_seccion"),
-        path('control_demerito_directora/',views.control_demeritos,name="control_demerito_directora")
+        path('control_demerito_directora/',views.control_demeritos,name="control_demerito_directora"),
+        path('dashboard/', views.directora_dashboard, name="dashboard_directora")
 ]

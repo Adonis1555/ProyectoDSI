@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/control_alumnos.css' %}">
+    <title>Editar Alumno</title>
+</head>
+<body>
+    <main class="maestro-alumno">
+        <section class="menu-opciones">
+            <div class="imgContainer">
+                <img class="Logo" src="{% static 'logo.jpg' %}" alt="">
+            </div>
+            <div class="opciones">
+                <ul>
+                    <a href="{% url 'control_demeritos' %}" style="text-decoration:none;">
+                        <li class="item-menu">
+                            <i class="ti ti-demerito"></i> Demeritos
+                        </li>
+                    </a>
+                    <li class="item-menu activo">
+                        <i class="ti ti-alumnos"></i> Alumnos
+                    </li>
+                    <a href="{% url 'dashboard_maestro' %}" style="text-decoration: none;">
+                        <li class="item-menu">
+                            <i class="ti ti-dashboard"></i> Control de demeritos
+                        </li>
+                    </a>
+                </ul>
+                <div class="cerrar-sesion-container">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btnCerrarSesion">cerrar sesión</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="registro-alumno">
+            <div class="container-titulo-alumno">
+                <h1 class="titulo-alumno">Editar Datos de Alumno</h1>
+                <a href="{% url 'control_alumnos' %}" class="btn-regresar" aria-label="Volver">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
+            </div>
+
+            <form action="" id="formEditarAlumno" data-url="{% url 'editar_alumno' alumno.NIE %}" data-redirect="{% url 'control_alumnos' %}" data-current-grado="{{ alumno.grado_seccion.grado }}" data-current-seccion="{{ alumno.grado_seccion.seccion }}">
+                {% csrf_token %}
+                <div class="registro-container-alumno">
+                    <div class="registro-datos-alumno">
+                        <div class="container-dato">
+                            <label>Nombre:</label>
+                            <input required class="input-dato" id="inputNombre" type="text" name="nombre" value="{{ alumno.nombre }}">
+                        </div>
+                        <div class="container-dato">
+                            <label>Apellido:</label>
+                            <input required class="input-dato" id="inputApellido" type="text" name="apellido" value="{{ alumno.apellido }}">
+                        </div>
+                        <div class="container-dato">
+                            <label>Sexo:</label>
+                            <div class="container-seleccion">
+                                <div class="seleccion-sexo">
+                                    <label>Masculino: </label>
+                                    <input class="radio-sexo" id="inputMasculino" {% if alumno.sexo == 'M' %}checked{% endif %} name="sexo" type="radio" value="M">
+                                </div>
+                                <div class="seleccion-sexo">
+                                    <label>Femenino: </label>
+                                    <input class="radio-sexo" id="inputFemenino" {% if alumno.sexo == 'F' %}checked{% endif %} name="sexo" type="radio" value="F">
+                                </div>             
+                            </div>      
+                        </div>
+                        <div class="container-dato">
+                            <label>NIE:</label>
+                            <input required class="input-dato" type="text" name="nie" maxlength="8" id="inputNie" value="{{ alumno.NIE }}" readonly style="background-color: #f1f5f9; cursor: not-allowed;">
+                        </div>
+                        
+                        <div class="container-dato">
+                            <label>Grado:</label>
+                            <select required class="input-dato" name="grado" id="inputGrado">
+                                <option value="" disabled>Seleccione...</option>
+                                {% for código, nombre_legible in grados_existentes %}
+                                    <option value="{{ código }}" {% if alumno.grado_seccion.grado == código %}selected{% endif %}>{{ nombre_legible }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="container-dato">
+                            <label>Sección:</label>
+                            <select required class="input-dato" name="seccion" id="inputSeccion">
+                                <option value="" disabled>Seleccione...</option>
+                            </select>
+                        </div>
+
+                        <div class="container-dato">
+                            <label>Fecha de nacimiento:</label>
+                            <input required class="input-dato" type="date" name="fecha_nac" id="inputFechaNac" value="{{ alumno.fecha_nac|date:'Y-m-d' }}"> 
+                        </div>  
+                    </div>
+                    <div class="container-botones-alumno">
+                        <button type="submit" class="btnRegistrarAlumno">Guardar Cambios</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </main>
+    <script>
+        window.seccionesPorGrado = JSON.parse('{{ secciones_json|safe }}');
+    </script>
+    <script src="{% static 'js/editar_alumno.js' %}"></script>
+</body>
+</html>

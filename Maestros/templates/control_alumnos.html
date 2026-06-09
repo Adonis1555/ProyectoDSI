@@ -157,7 +157,10 @@
                                     <td>{{ alumno.edad }}</td>
                                     <td>{{ alumno.get_sexo_display }}</td>
                                     <td>
-                                        <a href="{% url 'registro_demeritos_view' alumno.NIE %}" class="btn-registrar">Ver Expediente</a>
+                                        <div style="display: flex; gap: 8px;">
+                                            <a href="{% url 'registro_demeritos_view' alumno.NIE %}" class="btn-registrar">Ver Expediente</a>
+                                            <a href="{% url 'editar_alumno' alumno.NIE %}" class="btn-editar">Editar</a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}

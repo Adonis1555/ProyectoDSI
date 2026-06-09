@@ -78,12 +78,14 @@ WSGI_APPLICATION = 'Cenalop_DSI.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+import os
+
 DATABASES = {
     'default': {
     'ENGINE': 'django.db.backends.postgresql',
     'NAME': 'ProyectoDSI',
     'USER':'postgres',
-    'PASSWORD': '12345678',
+    'PASSWORD': os.environ.get('DB_PASSWORD', 'cesarMP'),
     'HOST':'localhost',
     'PORT': '5432',
     }

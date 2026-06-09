@@ -9,6 +9,7 @@ urlpatterns = [
         path('control_demeritos/', views.control_demeritos, name="control_demeritos"),
         path('registro_demeritos/<str:nie>/', views.registro_demeritos_view, name="registro_demeritos_view"),
         path('registrar_demerito/<str:nie>/', views.registrar_demerito, name="registrar_demerito"),
+        path('editar_alumno/<str:nie>/', views.editar_alumno, name="editar_alumno"),
 
         
 ]

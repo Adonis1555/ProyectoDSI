@@ -206,4 +206,158 @@ def registrar_grado_seccion(request):
 @login_required
 @directora_required
 def control_demeritos(request):
-    return render(request,"control_demerito.html")
+    hoy = date.today()
+    mes_actual = int(request.GET.get('mes', hoy.month))
+    anio_actual = int(request.GET.get('anio', hoy.year))
+    
+    from Maestros.models import Alumno, RegistroTarjeta
+    
+    secciones = GradoSeccion.objects.all().order_by('grado', 'seccion')
+    
+    matriz_grados = []
+    
+    totales_globales = {
+        'mat_m': 0, 'mat_h': 0, 'mat_total': 0,
+        'd_m': 0, 'd_h': 0, 'd_total_sexo': 0,
+        'd_a': 0, 'd_b': 0, 'd_c': 0, 'd_d': 0, 'd_total_causal': 0,
+        'r_m': 0, 'r_h': 0, 'r_total_sexo': 0,
+        'r_a': 0, 'r_b': 0, 'r_c': 0, 'r_total_opcion': 0,
+        'rc_m': 0, 'rc_h': 0, 'rc_total': 0
+    }
+    
+    for seccion in secciones:
+        alumnos = Alumno.objects.filter(grado_seccion=seccion, activo=True)
+        mat_m = alumnos.filter(sexo='F').count()
+        mat_h = alumnos.filter(sexo='M').count()
+        mat_total = mat_m + mat_h
+        
+        tarjetas = RegistroTarjeta.objects.filter(
+            alumno__grado_seccion=seccion,
+            fecha__month=mes_actual,
+            fecha__year=anio_actual
+        )
+        
+        d_m = tarjetas.filter(tipo='D', alumno__sexo='F').count()
+        d_h = tarjetas.filter(tipo='D', alumno__sexo='M').count()
+        d_total_sexo = d_m + d_h
+        
+        d_a = tarjetas.filter(tipo='D', sub_letra='A').count()
+        d_b = tarjetas.filter(tipo='D', sub_letra='B').count()
+        d_c = tarjetas.filter(tipo='D', sub_letra='C').count()
+        d_d = tarjetas.filter(tipo='D', sub_letra='D').count()
+        d_total_causal = d_a + d_b + d_c + d_d
+        
+        r_m = tarjetas.filter(tipo='R', alumno__sexo='F').count()
+        r_h = tarjetas.filter(tipo='R', alumno__sexo='M').count()
+        r_total_sexo = r_m + r_h
+        
+        r_a = tarjetas.filter(tipo='R', sub_letra='A').count()
+        r_b = tarjetas.filter(tipo='R', sub_letra='B').count()
+        r_c = tarjetas.filter(tipo='R', sub_letra='C').count()
+        r_total_opcion = r_a + r_b + r_c
+        
+        rc_m = tarjetas.filter(tipo='RC', alumno__sexo='F').count()
+        rc_h = tarjetas.filter(tipo='RC', alumno__sexo='M').count()
+        rc_total = rc_m + rc_h
+        
+        fila = {
+            'seccion_obj': seccion,
+            'mat_m': mat_m, 'mat_h': mat_h, 'mat_total': mat_total,
+            'd_m': d_m, 'd_h': d_h, 'd_total_sexo': d_total_sexo,
+            'd_a': d_a, 'd_b': d_b, 'd_c': d_c, 'd_d': d_d, 'd_total_causal': d_total_causal,
+            'r_m': r_m, 'r_h': r_h, 'r_total_sexo': r_total_sexo,
+            'r_a': r_a, 'r_b': r_b, 'r_c': r_c, 'r_total_opcion': r_total_opcion,
+            'rc_m': rc_m, 'rc_h': rc_h, 'rc_total': rc_total
+        }
+        matriz_grados.append(fila)
+        
+        totales_globales['mat_m'] += mat_m
+        totales_globales['mat_h'] += mat_h
+        totales_globales['mat_total'] += mat_total
+        
+        totales_globales['d_m'] += d_m
+        totales_globales['d_h'] += d_h
+        totales_globales['d_total_sexo'] += d_total_sexo
+        
+        totales_globales['d_a'] += d_a
+        totales_globales['d_b'] += d_b
+        totales_globales['d_c'] += d_c
+        totales_globales['d_d'] += d_d
+        totales_globales['d_total_causal'] += d_total_causal
+        
+        totales_globales['r_m'] += r_m
+        totales_globales['r_h'] += r_h
+        totales_globales['r_total_sexo'] += r_total_sexo
+        
+        totales_globales['r_a'] += r_a
+        totales_globales['r_b'] += r_b
+        totales_globales['r_c'] += r_c
+        totales_globales['r_total_opcion'] += r_total_opcion
+        
+        totales_globales['rc_m'] += rc_m
+        totales_globales['rc_h'] += rc_h
+        totales_globales['rc_total'] += rc_total
+
+    context = {
+        'matriz_grados': matriz_grados,
+        'totales_globales': totales_globales,
+        'mes_actual': mes_actual,
+        'anio_actual': anio_actual,
+    }
+    return render(request, "control_demerito.html", context)
+
+@login_required
+@directora_required
+def directora_dashboard(request):
+    import json
+    from django.db.models import Count, Q
+    from Maestros.models import Alumno, RegistroTarjeta
+    
+    total_alumnos = Alumno.objects.filter(activo=True).count()
+    total_maestros = Maestro.objects.filter(activo=True).count()
+    total_secciones = GradoSeccion.objects.count()
+    
+    top_alumnos = Alumno.objects.filter(activo=True).annotate(
+        demeritos_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='D'))
+    ).filter(demeritos_count__gt=0).order_by('-demeritos_count')[:5]
+    
+    top_maestros = Maestro.objects.filter(activo=True).annotate(
+        demeritos_registrados=Count('id_usuario__demeritos_creados', filter=Q(id_usuario__demeritos_creados__tipo='D'))
+    ).filter(demeritos_registrados__gt=0).order_by('-demeritos_registrados')[:5]
+    
+    hoy = date.today()
+    anio = hoy.year
+    
+    meses_nombres = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+    chart_demeritos = [0] * 12
+    chart_redenciones = [0] * 12
+    
+    tarjetas_anio = RegistroTarjeta.objects.filter(fecha__year=anio)
+    for t in tarjetas_anio:
+        mes_idx = t.fecha.month - 1
+        if 0 <= mes_idx < 12:
+            if t.tipo == 'D':
+                chart_demeritos[mes_idx] += 1
+            elif t.tipo == 'R':
+                chart_redenciones[mes_idx] += 1
+                
+    causales_count = {'A': 0, 'B': 0, 'C': 0, 'D': 0}
+    demeritos_totales = RegistroTarjeta.objects.filter(tipo='D')
+    for d in demeritos_totales:
+        if d.sub_letra in causales_count:
+            causales_count[d.sub_letra] += 1
+            
+    context = {
+        'total_alumnos': total_alumnos,
+        'total_maestros': total_maestros,
+        'total_secciones': total_secciones,
+        'top_alumnos': top_alumnos,
+        'top_maestros': top_maestros,
+        'meses_labels': json.dumps(meses_nombres),
+        'chart_demeritos': json.dumps(chart_demeritos),
+        'chart_redenciones': json.dumps(chart_redenciones),
+        'causales_labels': json.dumps(['Leve (A)', 'Grave (B)', 'Muy Grave (C)', 'Extrema (D)']),
+        'causales_data': json.dumps([causales_count['A'], causales_count['B'], causales_count['C'], causales_count['D']]),
+        'anio': anio
+    }
+    return render(request, "dashboard_directora.html", context)
