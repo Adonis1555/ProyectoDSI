@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +13,7 @@
             align-items: center;
             margin-top: 20px;
             padding: 10px 5px;
+            font-family: 'Inter', sans-serif;
         }
         .paginacion-info {
             font-size: 14px;
@@ -22,9 +23,36 @@
             display: flex;
             gap: 8px;
         }
+        /* ESTILOS DE LOS BOTONES DE PAGINACIÓN */
+        .btn-pagina {
+            display: inline-block;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: #2E5299;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-pagina:hover:not(.deshabilitado) {
+            background-color: #f1f5f9;
+            border-color: #2E5299;
+        }
+        .btn-pagina.deshabilitado {
+            color: #94a3b8;
+            background-color: #f8fafc;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
+    <!-- Token CSRF requerido para las peticiones seguras de eliminación (POST) -->
+    {% csrf_token %}
+
     <main class="directora-maestro">
         <section class="menu-opciones">
             <div class="imgContainer">
@@ -69,6 +97,7 @@
                         <tr>
                             <th>Grado</th>
                             <th>Seccion</th>
+                            <th>Turno</th>
                             <th>Cupos</th>
                             <th>Encargado</th>
                             <th>acciones</th>
@@ -79,6 +108,7 @@
                         <tr>
                             <td>{{ gs.get_grado_display }}</td>
                             <td class="text-bold">{{ gs.seccion }}</td>
+                            <td class="text-bold" style="text-transform: capitalize;">{{ gs.turno|lower }}</td>
                             <td class="text-bold">{{ gs.cupo_maximo }} alumnos</td>
                             <td>
                                 {% if gs.maestro_encargado %}
@@ -87,11 +117,26 @@
                                     <span style="color: #94a3b8; font-style: italic;">Sin asignar</span>
                                 {% endif %}
                             </td>
-                            <td></td>
+                            <td>
+                                <button type="button" 
+                                        class="btn-eliminar-seccion" 
+                                        data-id="{{ gs.id }}" 
+                                        data-nombre="{{ gs.get_grado_display }} - Sección {{ gs.seccion }}"
+                                        style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px 8px;"
+                                        title="Eliminar Grado/Sección">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                </button>
+                            </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="tabla-vacia">
+                            <!-- CORRECCIÓN: colspan="6" para alinearse con las 6 columnas reales de la cabecera -->
+                            <td colspan="6" class="tabla-vacia">
                                 <div class="mensaje-vacio">
                                     <span class="icono-vacio">📁</span>
                                     <p>No se encontraron grados ni secciones registradas en el sistema.</p>
@@ -103,6 +148,7 @@
                 </table>
             </div>
 
+            <!-- CONTROLADOR VISUAL DE PAGINACIÓN -->
             {% if grados_secciones.has_other_pages %}
             <div class="paginacion-container">
                 <div class="paginacion-info">
@@ -125,5 +171,8 @@
             {% endif %}
         </section>
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/eliminar_grado.js' %}"></script>
 </body>
 </html>

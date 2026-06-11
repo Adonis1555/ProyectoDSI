@@ -7,7 +7,7 @@ from Login.models import Usuario
 from Directora.models import Maestro,GradoSeccion
 from django.http import JsonResponse
 from django.db import transaction
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator,PageNotAnInteger
 import secrets
 import string
 from django.contrib.auth.hashers import make_password
@@ -15,6 +15,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.db import IntegrityError
 from django.contrib import messages
+from django.views.decorators.http import require_POST
+from django.db.models import ProtectedError
+from django.shortcuts import render, get_object_or_404
 
 @login_required
 @directora_required
@@ -129,13 +132,50 @@ def grado_seccion_control(request):
     
     paginator = Paginator(grados_lista, 5) 
     
-    page_number = request.GET.get('page')
-    grados_secciones = paginator.get_page(page_number)
+    page = request.GET.get('page')
+    try:
+        grados_secciones = paginator.page(page)
+    except PageNotAnInteger:
+        grados_secciones = paginator.page(1)
+    except EmptyPage:
+        grados_secciones = paginator.page(paginator.num_pages)
     
     context = {
         'grados_secciones': grados_secciones
     }
     return render(request, "grado_seccion_control.html", context)
+
+@login_required
+@directora_required
+@require_POST
+def eliminar_grado_seccion(request, pk):
+    try:
+        grado_seccion = get_object_or_404(GradoSeccion, id=pk)
+        
+        conteo_alumnos = grado_seccion.alumnos.count() 
+        
+        if conteo_alumnos > 0:
+            return JsonResponse({
+                'ok': False, 
+                'error': f'No se puede eliminar porque este grado tiene {conteo_alumnos} alumno(s) inscrito(s). Debes trasladarlos o eliminarlos primero.'
+            })
+        
+        nombre_eliminado = f"{grado_seccion.get_grado_display()} - Sección {grado_seccion.seccion}"
+        
+        grado_seccion.delete()
+        
+        return JsonResponse({'ok': True, 'mensaje': f'El "{nombre_eliminado}" se eliminó con éxito.'})
+        
+    except ProtectedError:
+        return JsonResponse({
+            'ok': False, 
+            'error': 'No se puede eliminar el registro debido a restricciones de integridad de datos asociados.'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'ok': False, 
+            'error': f'Error interno al intentar eliminar: {str(e)}'
+        })
 
 @login_required
 @directora_required
@@ -145,12 +185,23 @@ def registrar_grado_seccion(request):
         seccion_texto = request.POST.get('seccion')
         maestro_dui = request.POST.get('maestro_dui')
         cupos = request.POST.get('cupos')
+        turno = request.POST.get('turno')  
 
-        if not grado_codigo or not seccion_texto:
-            return JsonResponse({'ok': False, 'error': 'El grado y la sección son campos obligatorios.'})
+        if not grado_codigo or not seccion_texto or not turno:
+            return JsonResponse({'ok': False, 'error': 'El grado, la sección y el turno son campos obligatorios.'})
 
         seccion_limpia = seccion_texto.strip().upper()
         cupo_maximo = int(cupos) if cupos and cupos.isdigit() else 35
+
+        if seccion_limpia == 'A':
+            turno = 'Mañana'
+
+        secciones_mismo_turno = GradoSeccion.objects.filter(grado=grado_codigo, turno=turno).count()
+        if secciones_mismo_turno >= 2:
+            return JsonResponse({
+                'ok': False, 
+                'error': f'Ya existen 2 secciones registradas en el turno de la {turno.lower()} para este grado.'
+            })
 
         instancia_maestro = None
 
@@ -163,6 +214,13 @@ def registrar_grado_seccion(request):
                     return JsonResponse({
                         'ok': False, 
                         'error': f'El Prof. {instancia_maestro.apellido} ya tiene el límite máximo de 2 grados asignados.'
+                    })
+                
+                maestro_mismo_turno = instancia_maestro.grados_a_cargo.filter(turno=turno).exists()
+                if maestro_mismo_turno:
+                    return JsonResponse({
+                        'ok': False,
+                        'error': f'El Prof. {instancia_maestro.apellido} ya tiene un grado asignado en el turno de la {turno.lower()}.'
                     })
                 
                 seccion_duplicada = instancia_maestro.grados_a_cargo.filter(seccion=seccion_limpia).exists()
@@ -180,13 +238,14 @@ def registrar_grado_seccion(request):
                 grado=grado_codigo,
                 seccion=seccion_limpia,
                 cupo_maximo=cupo_maximo,
-                maestro_encargado=instancia_maestro
+                maestro_encargado=instancia_maestro,
+                turno=turno  
             )
 
             if instancia_maestro:
-                msg = f"¡Grado creado con cupo de {cupo_maximo} y asignado al Prof. {instancia_maestro.nombre} con éxito!"
+                msg = f"¡Grado creado exitosamente en turno {turno.lower()} y asignado al Prof. {instancia_maestro.nombre}!"
             else:
-                msg = f"Grado y sección creados correctamente con un cupo de {cupo_maximo} sin encargado."
+                msg = f"Grado y sección creados correctamente en turno {turno.lower()} sin encargado."
 
             return JsonResponse({'ok': True, 'mensaje': msg})
 
