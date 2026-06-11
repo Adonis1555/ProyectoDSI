@@ -7,7 +7,7 @@ from Login.models import Usuario
 from Directora.models import Maestro,GradoSeccion
 from django.http import JsonResponse
 from django.db import transaction
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator,PageNotAnInteger
 import secrets
 import string
 from django.contrib.auth.hashers import make_password
@@ -130,7 +130,7 @@ def registro_maestro_view(request):
 def grado_seccion_control(request):
     grados_lista = GradoSeccion.objects.all().order_by('grado', 'seccion')
     
-    paginator = Paginator(lista_grados, 5) 
+    paginator = Paginator(grados_lista, 5) 
     
     page = request.GET.get('page')
     try:
