@@ -262,7 +262,7 @@
                             <td>{{ forloop.counter }}</td>
                             <td style="font-weight: 500; text-align: left; padding-left: 5px;">{{ fila.seccion_obj.get_grado_display }}</td>
                             <td style="font-weight: bold;">{{ fila.seccion_obj.seccion }}</td>
-                            <td>Mañana</td>
+                            <td style="text-transform: capitalize;">{{ fila.seccion_obj.turno|lower }}</td>
                             
                             <td>{{ fila.mat_m }}</td>
                             <td>{{ fila.mat_h }}</td>

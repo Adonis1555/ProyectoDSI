@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
 from Directora.models import Maestro,GradoSeccion
+from datetime import date, datetime
 
 class Alumno(models.Model):
     SEXO_CHOICES = [
@@ -45,7 +46,7 @@ class RegistroTarjeta(models.Model):
     ]
 
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE, related_name='registros_tarjeta')
-    fecha = models.DateField(auto_now_add=True) 
+    fecha = models.DateField(default=date.today) 
 
     tipo = models.CharField(max_length=2, choices=TIPO_CASO_CHOICES)
     sub_letra = models.CharField(max_length=1, choices=SUB_LETRA_CHOICES) 

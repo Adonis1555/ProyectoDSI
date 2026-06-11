@@ -31,6 +31,7 @@ class GradoSeccion(models.Model):
     )
     seccion=models.CharField(max_length=2)
     cupo_maximo = models.PositiveIntegerField(default=0, help_text="Cantidad máxima de estudiantes permitidos")
+    turno = models.CharField(default="mañana",max_length=50)
 
     maestro_encargado = models.ForeignKey(
         'Maestro',
