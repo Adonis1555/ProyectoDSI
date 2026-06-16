@@ -49,7 +49,7 @@
                     </a>
                     <a href="{% url 'control_demerito_directora' %}" style="text-decoration: none;">
                         <li class="item-menu">
-                            <i class="ti ti-control_demerito"></i> Control de Demeritos
+                            <i class="ti ti-control_demerito"></i> Control de conducta
                         </li>
                     </a>
                 </ul>
@@ -68,7 +68,13 @@
                         <button type="button" class="btnRegistrarMaestro">+ Registrar Maestro</button>
                     </a>
                 </div>
-                <input type="text" class="inputBuscarMaestro" placeholder="Buscar Maestro">
+                <form method="GET" action="" style="margin-bottom: 20px; display: flex; gap: 8px;">
+                    <input type="text" name="q" class="inputBuscarMaestro" placeholder="Buscar Maestro por nombre, DUI..." value="{{ q|default:'' }}" style="margin: 0; flex-grow: 1;">
+                    <button type="submit" style="background-color: #2E5299; color: white; border: none; padding: 0 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">Buscar</button>
+                    {% if q %}
+                        <a href="?" style="background-color: #cbd5e1; color: #334155; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; text-decoration: none; display: flex; align-items: center; font-weight: 500;">Limpiar</a>
+                    {% endif %}
+                </form>
                 <div class="containerTabla">
                 <table class="tabla-maestro">
                     <thead>
@@ -77,17 +83,53 @@
                             <th>Edad</th>
                             <th>Teléfono</th>
                             <th>Especialidad</th>
+                            <th>Grado(s) Asignado(s)</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for maestro in maestros %}
                         <tr>
-                            <td>{{ maestro.nombre }} {{ maestro.apellido }}</td>
+                            <td>
+                                {{ maestro.nombre }} {{ maestro.apellido }}
+                                {% if maestro.activo %}
+                                    <span style="background-color: #c6f6d5; color: #22543d; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold; margin-left: 6px;">Activo</span>
+                                {% else %}
+                                    <span style="background-color: #fed7d7; color: #9b2c2c; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold; margin-left: 6px;">Inactivo</span>
+                                {% endif %}
+                            </td>
                             <td>{{ maestro.edad }} años</td>
                             <td>{{ maestro.telefono }}</td>
                             <td>{{ maestro.especialidad }}</td>
-                            <td></td>
+                            <td>
+                                {% for gs in maestro.grados_a_cargo.all %}
+                                    <span style="display: inline-block; background-color: #e2e8f0; color: #1e293b; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 500; margin: 2px;">
+                                        {{ gs.get_grado_display }} - {{ gs.seccion }} ({{ gs.turno }})
+                                    </span>
+                                {% empty %}
+                                    <span style="color: #94a3b8; font-style: italic; font-size: 12px;">Sin grado</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="button" 
+                                            class="btn-toggle-maestro" 
+                                            data-dui="{{ maestro.dui }}" 
+                                            data-activo="{{ maestro.activo|yesno:'true,false' }}"
+                                            style="background-color: {% if maestro.activo %}#ef4444{% else %}#22c55e{% endif %}; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500;">
+                                        {% if maestro.activo %}Desactivar{% else %}Activar{% endif %}
+                                    </button>
+                                    {% if maestro.activo %}
+                                    <button type="button" 
+                                            class="btn-asignar-grado" 
+                                            data-dui="{{ maestro.dui }}" 
+                                            data-nombre="{{ maestro.nombre }} {{ maestro.apellido }}"
+                                            style="background-color: #2E5299; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500;">
+                                        Asignar Grado
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
                         </tr>
                         {% empty %}
                          <tr>
@@ -124,7 +166,261 @@
                 </div>
                 {% endif %}
                 
-        </section>
-    </main>
+    {% csrf_token %}
+    <div id="modalAsignarGrado" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); font-family: 'Inter', sans-serif;">
+        <div style="background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #cbd5e1; width: 450px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; color: #1e293b;" id="modalTitle">Asignar Grado</h3>
+            
+            <div style="margin-bottom: 20px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 13px; color: #334155; font-weight: 600;">Grados actualmente a cargo:</h4>
+                <div id="modalGradosActualesContainer" style="display: flex; flex-direction: column; gap: 8px; background-color: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                </div>
+            </div>
+
+            <form id="formAsignarGrado" style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="hidden" id="modalMaestroDui" name="maestro_dui">
+                <div>
+                    <label for="selectGradoModal" style="display: block; font-size: 13px; color: #334155; margin-bottom: 6px; font-weight: 600;">Asignar nuevo grado:</label>
+                    <select id="selectGradoModal" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; background: #ffffff; font-family: 'Inter', sans-serif; font-size: 13px;">
+                        <option value="" disabled selected>Seleccione...</option>
+                        {% for gs in grados_disponibles %}
+                            <option value="{{ gs.id }}">
+                                {{ gs.get_grado_display }} - Sección "{{ gs.seccion }}" ({{ gs.turno }})
+                                {% if gs.maestro_encargado %}
+                                    - Encargado: {{ gs.maestro_encargado.nombre }} {{ gs.maestro_encargado.apellido }}
+                                {% else %}
+                                    - Disponible
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                    <button type="button" id="btnCerrarModal" style="background-color: #cbd5e1; color: #334155; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">Cerrar</button>
+                    <button type="submit" style="background-color: #2E5299; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">Asignar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const tokenCsrf = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+
+        document.querySelectorAll('.btn-toggle-maestro').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const dui = this.getAttribute('data-dui');
+                const activo = this.getAttribute('data-activo') === 'true';
+                const accionStr = activo ? 'desactivar' : 'activar';
+                
+                Swal.fire({
+                    title: `¿Quieres ${accionStr} este maestro?`,
+                    text: `El maestro y su usuario cambiarán a estado ${activo ? 'inactivo' : 'activo'}.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#2E5299',
+                    cancelButtonColor: '#cbd5e1',
+                    confirmButtonText: 'Sí, cambiar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/directora/toggle_maestro_activo/${dui}/`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': tokenCsrf,
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.ok) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Actualizado!',
+                                    text: data.mensaje,
+                                    confirmButtonColor: '#2E5299'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: data.error,
+                                    confirmButtonColor: '#2E5299'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        const modal = document.getElementById('modalAsignarGrado');
+        const btnCerrar = document.getElementById('btnCerrarModal');
+        const formAsignar = document.getElementById('formAsignarGrado');
+        const inputDui = document.getElementById('modalMaestroDui');
+        const modalTitle = document.getElementById('modalTitle');
+
+        function cargarGradosActuales(dui) {
+            const container = document.getElementById('modalGradosActualesContainer');
+            container.innerHTML = '<span style="color: #64748b; font-size: 12px; font-style: italic;">Cargando grados actuales...</span>';
+            
+            fetch(`/directora/get_maestro_grados/${dui}/`)
+            .then(res => res.json())
+            .then(data => {
+                container.innerHTML = '';
+                if (data.ok) {
+                    if (data.grados.length === 0) {
+                        container.innerHTML = '<span style="color: #94a3b8; font-size: 12px; font-style: italic;">Ningún grado asignado actualmente.</span>';
+                    } else {
+                        data.grados.forEach(g => {
+                            const div = document.createElement('div');
+                            div.style.display = 'flex';
+                            div.style.justify = 'space-between';
+                            div.style.alignItems = 'center';
+                            div.style.backgroundColor = '#ffffff';
+                            div.style.padding = '6px 10px';
+                            div.style.borderRadius = '4px';
+                            div.style.border = '1px solid #e2e8f0';
+                            
+                            const span = document.createElement('span');
+                            span.style.fontSize = '12px';
+                            span.style.color = '#334155';
+                            span.style.fontWeight = '500';
+                            span.textContent = g.nombre;
+                            
+                            const btnDesasignar = document.createElement('button');
+                            btnDesasignar.type = 'button';
+                            btnDesasignar.textContent = 'Desasignar';
+                            btnDesasignar.style.backgroundColor = '#ef4444';
+                            btnDesasignar.style.color = '#ffffff';
+                            btnDesasignar.style.border = 'none';
+                            btnDesasignar.style.padding = '3px 8px';
+                            btnDesasignar.style.borderRadius = '4px';
+                            btnDesasignar.style.cursor = 'pointer';
+                            btnDesasignar.style.fontSize = '11px';
+                            btnDesasignar.style.fontWeight = '600';
+                            
+                            btnDesasignar.addEventListener('click', function() {
+                                desasignarGrado(g.id);
+                            });
+                            
+                            div.appendChild(span);
+                            div.appendChild(btnDesasignar);
+                            container.appendChild(div);
+                        });
+                    }
+                } else {
+                    container.innerHTML = `<span style="color: #ef4444; font-size: 12px;">Error: ${data.error}</span>`;
+                }
+            });
+        }
+
+        function desasignarGrado(gradoId) {
+            Swal.fire({
+                title: '¿Quieres desasignar este grado?',
+                text: 'El maestro ya no será el encargado de esta sección.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#cbd5e1',
+                confirmButtonText: 'Sí, desasignar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/directora/desasignar_grado_maestro/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': tokenCsrf,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            grado_id: gradoId
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.ok) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Desasignado!',
+                                text: data.mensaje,
+                                confirmButtonColor: '#2E5299'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.error,
+                                confirmButtonColor: '#2E5299'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        document.querySelectorAll('.btn-asignar-grado').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const dui = this.getAttribute('data-dui');
+                const nombre = this.getAttribute('data-nombre');
+                inputDui.value = dui;
+                modalTitle.textContent = `Asignar Grado - Prof. ${nombre}`;
+                cargarGradosActuales(dui);
+                modal.style.display = 'block';
+            });
+        });
+
+        btnCerrar.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        formAsignar.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const dui = inputDui.value;
+            const gradoId = document.getElementById('selectGradoModal').value;
+
+            fetch('/directora/asignar_grado_maestro/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': tokenCsrf,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    maestro_dui: dui,
+                    grado_id: gradoId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Asignado!',
+                        text: data.mensaje,
+                        confirmButtonColor: '#2E5299'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.error,
+                        confirmButtonColor: '#2E5299'
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

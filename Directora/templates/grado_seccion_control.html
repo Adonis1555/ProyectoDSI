@@ -71,7 +71,7 @@
                     <li class="item-menu activo"><i class="ti ti-grado_seccion"></i> Control de Grados</li>
                     <a href="{% url 'control_demerito_directora' %}" style="text-decoration: none;">
                         <li class="item-menu">
-                            <i class="ti ti-control_demerito"></i> Control de Demeritos
+                            <i class="ti ti-control_demerito"></i> Control de conducta
                         </li>
                     </a>
                 </ul>
@@ -82,30 +82,30 @@
                     </form>
                 </div>
             </div>
-        </section>
-
-        <section class="registro-grado">
+        </section>        <section class="registro-grado" style="padding: 20px; display: flex; flex-direction: column; gap: 20px;">
             <div class="container-titulo-grado">
-                <h1 class="titulo-maestro">Grados</h1>
+                <h1 class="titulo-maestro">Grados y Secciones</h1>
                 <a href="{% url 'registrar_grado_seccion' %}">
                     <button type="button" class="btnRegistrarGrado">+ Registrar Grado</button>
                 </a>
             </div>
+
+            <h2 style="font-family: 'Inter', sans-serif; font-size: 15px; color: #1e293b; margin-top: 15px; margin-bottom: 5px; border-bottom: 2px solid #2E5299; padding-bottom: 3px; width: fit-content;">Parvularia</h2>
             <div class="containerTabla">
                 <table class="tabla-grado">
                     <thead>
                         <tr>
                             <th>Grado</th>
-                            <th>Seccion</th>
+                            <th>Sección</th>
                             <th>Turno</th>
                             <th>Cupos</th>
                             <th>Encargado</th>
-                            <th>acciones</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for gs in grados_secciones %}
-                        <tr>
+                        {% for gs in parvularia %}
+                        <tr style="opacity: {% if not gs.activo %}0.65{% else %}1.0{% endif %};">
                             <td>{{ gs.get_grado_display }}</td>
                             <td class="text-bold">{{ gs.seccion }}</td>
                             <td class="text-bold" style="text-transform: capitalize;">{{ gs.turno|lower }}</td>
@@ -119,60 +119,220 @@
                             </td>
                             <td>
                                 <button type="button" 
-                                        class="btn-eliminar-seccion" 
+                                        class="btn-toggle-grado" 
                                         data-id="{{ gs.id }}" 
+                                        data-activo="{{ gs.activo|yesno:'true,false' }}"
                                         data-nombre="{{ gs.get_grado_display }} - Sección {{ gs.seccion }}"
-                                        style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px 8px;"
-                                        title="Eliminar Grado/Sección">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg>
+                                        style="background-color: {% if gs.activo %}#ef4444{% else %}#22c55e{% endif %}; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500;">
+                                    {% if gs.activo %}Desactivar{% else %}Activar{% endif %}
                                 </button>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <!-- CORRECCIÓN: colspan="6" para alinearse con las 6 columnas reales de la cabecera -->
-                            <td colspan="6" class="tabla-vacia">
-                                <div class="mensaje-vacio">
-                                    <span class="icono-vacio">📁</span>
-                                    <p>No se encontraron grados ni secciones registradas en el sistema.</p>
-                                </div>
-                            </td>
+                            <td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px; font-style: italic;">No hay grados registrados en Parvularia.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
 
-            <!-- CONTROLADOR VISUAL DE PAGINACIÓN -->
-            {% if grados_secciones.has_other_pages %}
-            <div class="paginacion-container">
-                <div class="paginacion-info">
-                    Página {{ grados_secciones.number }} de {{ grados_secciones.paginator.num_pages }}
-                </div>
-                <div class="paginacion-botones">
-                    {% if grados_secciones.has_previous %}
-                        <a href="?page={{ grados_secciones.previous_page_number }}" class="btn-pagina">Anterior</a>
-                    {% else %}
-                        <span class="btn-pagina deshabilitado">Anterior</span>
-                    {% endif %}
-
-                    {% if grados_secciones.has_next %}
-                        <a href="?page={{ grados_secciones.next_page_number }}" class="btn-pagina">Siguiente</a>
-                    {% else %}
-                        <span class="btn-pagina deshabilitado">Siguiente</span>
-                    {% endif %}
-                </div>
+            <h2 style="font-family: 'Inter', sans-serif; font-size: 15px; color: #1e293b; margin-top: 15px; margin-bottom: 5px; border-bottom: 2px solid #2E5299; padding-bottom: 3px; width: fit-content;">Básica Ciclo I (1° - 3°)</h2>
+            <div class="containerTabla">
+                <table class="tabla-grado">
+                    <thead>
+                        <tr>
+                            <th>Grado</th>
+                            <th>Sección</th>
+                            <th>Turno</th>
+                            <th>Cupos</th>
+                            <th>Encargado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gs in ciclo_1 %}
+                        <tr style="opacity: {% if not gs.activo %}0.65{% else %}1.0{% endif %};">
+                            <td>{{ gs.get_grado_display }}</td>
+                            <td class="text-bold">{{ gs.seccion }}</td>
+                            <td class="text-bold" style="text-transform: capitalize;">{{ gs.turno|lower }}</td>
+                            <td class="text-bold">{{ gs.cupo_maximo }} alumnos</td>
+                            <td>
+                                {% if gs.maestro_encargado %}
+                                    {{ gs.maestro_encargado.nombre }} {{ gs.maestro_encargado.apellido }}
+                                {% else %}
+                                    <span style="color: #94a3b8; font-style: italic;">Sin asignar</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" 
+                                        class="btn-toggle-grado" 
+                                        data-id="{{ gs.id }}" 
+                                        data-activo="{{ gs.activo|yesno:'true,false' }}"
+                                        data-nombre="{{ gs.get_grado_display }} - Sección {{ gs.seccion }}"
+                                        style="background-color: {% if gs.activo %}#ef4444{% else %}#22c55e{% endif %}; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500;">
+                                    {% if gs.activo %}Desactivar{% else %}Activar{% endif %}
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px; font-style: italic;">No hay grados registrados en Básica Ciclo I.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            {% endif %}
+
+            <h2 style="font-family: 'Inter', sans-serif; font-size: 15px; color: #1e293b; margin-top: 15px; margin-bottom: 5px; border-bottom: 2px solid #2E5299; padding-bottom: 3px; width: fit-content;">Básica Ciclo II (4° - 6°)</h2>
+            <div class="containerTabla">
+                <table class="tabla-grado">
+                    <thead>
+                        <tr>
+                            <th>Grado</th>
+                            <th>Sección</th>
+                            <th>Turno</th>
+                            <th>Cupos</th>
+                            <th>Encargado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gs in ciclo_2 %}
+                        <tr style="opacity: {% if not gs.activo %}0.65{% else %}1.0{% endif %};">
+                            <td>{{ gs.get_grado_display }}</td>
+                            <td class="text-bold">{{ gs.seccion }}</td>
+                            <td class="text-bold" style="text-transform: capitalize;">{{ gs.turno|lower }}</td>
+                            <td class="text-bold">{{ gs.cupo_maximo }} alumnos</td>
+                            <td>
+                                {% if gs.maestro_encargado %}
+                                    {{ gs.maestro_encargado.nombre }} {{ gs.maestro_encargado.apellido }}
+                                {% else %}
+                                    <span style="color: #94a3b8; font-style: italic;">Sin asignar</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" 
+                                        class="btn-toggle-grado" 
+                                        data-id="{{ gs.id }}" 
+                                        data-activo="{{ gs.activo|yesno:'true,false' }}"
+                                        data-nombre="{{ gs.get_grado_display }} - Sección {{ gs.seccion }}"
+                                        style="background-color: {% if gs.activo %}#ef4444{% else %}#22c55e{% endif %}; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500;">
+                                    {% if gs.activo %}Desactivar{% else %}Activar{% endif %}
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px; font-style: italic;">No hay grados registrados en Básica Ciclo II.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 style="font-family: 'Inter', sans-serif; font-size: 15px; color: #1e293b; margin-top: 15px; margin-bottom: 5px; border-bottom: 2px solid #2E5299; padding-bottom: 3px; width: fit-content;">Básica Ciclo III (7° - 9°)</h2>
+            <div class="containerTabla">
+                <table class="tabla-grado">
+                    <thead>
+                        <tr>
+                            <th>Grado</th>
+                            <th>Sección</th>
+                            <th>Turno</th>
+                            <th>Cupos</th>
+                            <th>Encargado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gs in ciclo_3 %}
+                        <tr style="opacity: {% if not gs.activo %}0.65{% else %}1.0{% endif %};">
+                            <td>{{ gs.get_grado_display }}</td>
+                            <td class="text-bold">{{ gs.seccion }}</td>
+                            <td class="text-bold" style="text-transform: capitalize;">{{ gs.turno|lower }}</td>
+                            <td class="text-bold">{{ gs.cupo_maximo }} alumnos</td>
+                            <td>
+                                {% if gs.maestro_encargado %}
+                                    {{ gs.maestro_encargado.nombre }} {{ gs.maestro_encargado.apellido }}
+                                {% else %}
+                                    <span style="color: #94a3b8; font-style: italic;">Sin asignar</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" 
+                                        class="btn-toggle-grado" 
+                                        data-id="{{ gs.id }}" 
+                                        data-activo="{{ gs.activo|yesno:'true,false' }}"
+                                        data-nombre="{{ gs.get_grado_display }} - Sección {{ gs.seccion }}"
+                                        style="background-color: {% if gs.activo %}#ef4444{% else %}#22c55e{% endif %}; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500;">
+                                    {% if gs.activo %}Desactivar{% else %}Activar{% endif %}
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px; font-style: italic;">No hay grados registrados en Básica Ciclo III.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </section>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{% static 'js/eliminar_grado.js' %}"></script>
+    <script>
+        const tokenCsrf = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+
+        document.querySelectorAll('.btn-toggle-grado').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const activo = this.getAttribute('data-activo') === 'true';
+                const nombre = this.getAttribute('data-nombre');
+                const accionStr = activo ? 'desactivar' : 'activar';
+                
+                Swal.fire({
+                    title: `¿Quieres ${accionStr} este grado?`,
+                    text: `El grado "${nombre}" cambiará a estado ${activo ? 'inactivo' : 'activo'}.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#2E5299',
+                    cancelButtonColor: '#cbd5e1',
+                    confirmButtonText: 'Sí, cambiar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/directora/toggle_grado_activo/${id}/`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': tokenCsrf,
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.ok) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Actualizado!',
+                                    text: data.mensaje,
+                                    confirmButtonColor: '#2E5299'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: data.error,
+                                    confirmButtonColor: '#2E5299'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

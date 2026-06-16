@@ -133,6 +133,48 @@
             font-size: 13px;
             color: #475569;
         }
+        @media print {
+            .menu-opciones,
+            .FiltroContainer,
+            .no-print,
+            .cerrar-sesion-container {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            .directora-maestro {
+                display: block !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .registro-maestro {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+            }
+            .contenedor-tabla-director {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            .tabla-consolidado-director {
+                width: 100% !important;
+                border-collapse: collapse !important;
+            }
+            .tabla-consolidado-director th, 
+            .tabla-consolidado-director td {
+                border: 1px solid black !important;
+                color: black !important;
+            }
+            .total-fila-director td {
+                background-color: #e2e8f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
     </style>
 </head>
 <body>
@@ -160,7 +202,7 @@
                     </a>
 
                     <li class="item-menu activo">
-                        <i class="ti ti-demerito"></i> Demeritos
+                        <i class="ti ti-demerito"></i> Control de conducta
                     </li>
                 </ul>
                 <div class="cerrar-sesion-container">
@@ -173,8 +215,18 @@
         </section>
 
         <section class="registro-maestro">
-            <div class="container-titulo-maestro">
+            <div class="container-titulo-maestro" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <h1 class="titulo-maestro">Consolidado Mensual Institucional</h1>
+                <div class="no-print" style="display: flex; gap: 10px;">
+                    <button type="button" onclick="window.print()" class="btn-print" style="background-color: #2E5299; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'Inter', sans-serif;">
+                        Imprimir Reporte (PDF)
+                    </button>
+                    <a href="{% url 'exportar_excel_conducta' %}?mes={{ mes_actual }}&anio={{ anio_actual }}" style="text-decoration: none;">
+                        <button type="button" class="btn-export" style="background-color: #16a34a; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'Inter', sans-serif;">
+                            Exportar a Excel
+                        </button>
+                    </a>
+                </div>
             </div>
 
             <div class="FiltroContainer">
@@ -317,10 +369,10 @@
     </main>
 
     <script>
-        // Redirecciona pasándole el mes por parámetro en la URL para recalcular la matriz institucional
         function actualizarReporte() {
             const mes = document.getElementById('selectMesFiltro').value;
-            window.location.href = "?mes=" + mes;
+            const anio = document.getElementById('selectAnioFiltro').value;
+            window.location.href = "?mes=" + mes + "&anio=" + anio;
         }
     </script>
 </body>

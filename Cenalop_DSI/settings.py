@@ -85,7 +85,7 @@ DATABASES = {
     'ENGINE': 'django.db.backends.postgresql',
     'NAME': 'ProyectoDSI',
     'USER':'postgres',
-    'PASSWORD':12345678,
+    'PASSWORD': os.environ.get('DB_PASSWORD', 'cesarMP'),
     'HOST':'localhost',
     'PORT': '5432',
     }

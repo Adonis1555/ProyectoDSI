@@ -162,7 +162,7 @@
                     </a>
                     <a href="{% url 'control_demerito_directora' %}" style="text-decoration: none;">
                         <li class="item-menu">
-                            <i class="ti ti-demerito"></i> Demeritos
+                            <i class="ti ti-demerito"></i> Control de conducta
                         </li>
                     </a>
                 </ul>
@@ -193,14 +193,14 @@
                     <div class="widget-icon">👨‍🏫</div>
                     <div class="widget-info">
                         <span class="widget-value">{{ total_maestros }}</span>
-                        <span class="widget-label">Docentes</span>
+                        <span class="widget-label">Docentes Activos</span>
                     </div>
                 </div>
                 <div class="widget-card">
                     <div class="widget-icon">🏫</div>
                     <div class="widget-info">
                         <span class="widget-value">{{ total_secciones }}</span>
-                        <span class="widget-label">Grados y Secciones</span>
+                        <span class="widget-label">Grados y Secciones Activas</span>
                     </div>
                 </div>
             </div>
@@ -251,27 +251,27 @@
                     </table>
                 </div>
                 <div class="top-card">
-                    <h3 class="chart-title" style="margin-bottom: 10px;">Top 5 Docentes con Más Reportes Realizados</h3>
+                    <h3 class="chart-title" style="margin-bottom: 10px;">Top 5 Alumnos con Mayor Índice de Reconocimientos</h3>
                     <table class="top-table">
                         <thead>
                             <tr>
-                                <th>DUI</th>
-                                <th>Nombre del Docente</th>
-                                <th>Especialidad</th>
-                                <th>Reportes</th>
+                                <th>NIE</th>
+                                <th>Nombre Completo</th>
+                                <th>Grado y Sección</th>
+                                <th>Reconocimientos</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for maestro in top_maestros %}
+                            {% for alumno in top_alumnos_reconocimientos %}
                             <tr>
-                                <td>{{ maestro.dui }}</td>
-                                <td style="font-weight: 500;">{{ maestro.nombre }} {{ maestro.apellido }}</td>
-                                <td>{{ maestro.especialidad }}</td>
-                                <td><span class="badge-count-success">{{ maestro.demeritos_registrados }}</span></td>
+                                <td>{{ alumno.NIE }}</td>
+                                <td style="font-weight: 500;">{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                                <td>{{ alumno.grado_seccion.get_grado_display }} - "{{ alumno.grado_seccion.seccion }}"</td>
+                                <td><span class="badge-count-success">{{ alumno.reconocimientos_count }}</span></td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" style="text-align: center; color: #a0aec0; padding: 15px;">No se registran reportes de docentes.</td>
+                                <td colspan="4" style="text-align: center; color: #a0aec0; padding: 15px;">No se registran reconocimientos en el sistema.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
