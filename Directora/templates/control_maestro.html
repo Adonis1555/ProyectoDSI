@@ -84,7 +84,6 @@
                             <th>Teléfono</th>
                             <th>Especialidad</th>
                             <th>Grado(s) Asignado(s)</th>
-                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -92,11 +91,6 @@
                         <tr>
                             <td>
                                 {{ maestro.nombre }} {{ maestro.apellido }}
-                                {% if maestro.activo %}
-                                    <span style="background-color: #c6f6d5; color: #22543d; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold; margin-left: 6px;">Activo</span>
-                                {% else %}
-                                    <span style="background-color: #fed7d7; color: #9b2c2c; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold; margin-left: 6px;">Inactivo</span>
-                                {% endif %}
                             </td>
                             <td>{{ maestro.edad }} años</td>
                             <td>{{ maestro.telefono }}</td>
@@ -109,26 +103,6 @@
                                 {% empty %}
                                     <span style="color: #94a3b8; font-style: italic; font-size: 12px;">Sin grado</span>
                                 {% endfor %}
-                            </td>
-                            <td>
-                                <div style="display: flex; gap: 8px;">
-                                    <button type="button" 
-                                            class="btn-toggle-maestro" 
-                                            data-dui="{{ maestro.dui }}" 
-                                            data-activo="{{ maestro.activo|yesno:'true,false' }}"
-                                            style="background-color: {% if maestro.activo %}#ef4444{% else %}#22c55e{% endif %}; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500;">
-                                        {% if maestro.activo %}Desactivar{% else %}Activar{% endif %}
-                                    </button>
-                                    {% if maestro.activo %}
-                                    <button type="button" 
-                                            class="btn-asignar-grado" 
-                                            data-dui="{{ maestro.dui }}" 
-                                            data-nombre="{{ maestro.nombre }} {{ maestro.apellido }}"
-                                            style="background-color: #2E5299; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500;">
-                                        Asignar Grado
-                                    </button>
-                                    {% endif %}
-                                </div>
                             </td>
                         </tr>
                         {% empty %}

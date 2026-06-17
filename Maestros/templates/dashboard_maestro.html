@@ -141,47 +141,47 @@
             </div>
 
             <div class="datos-generales">
-                <h2 class="titulo-dato">1-10. Datos de Identificación General</h2>
+                <h2 class="titulo-dato">Datos de Identificación General</h2>
                 <div class="container-datos">
                     <div class="fila-datos tres-columnas">
                         <div class="dato">
-                            <label>1. Nombre del Centro Educativo:</label>
+                            <label>Centro Educativo:</label>
                             <input class="input-dato" type="text" readonly value="C.E Natalia López">
                         </div>
                         <div class="dato">
-                            <label>2. Código del C.E:</label>
+                            <label>Código del C.E:</label>
                             <input class="input-dato" type="text" readonly value="11243">
                         </div>
                         <div class="dato">
-                            <label>3. Departamento del C.E:</label>
+                            <label>Departamento:</label>
                             <input class="input-dato" type="text" readonly value="La Libertad">
                         </div>
                     </div>
                     <div class="fila-datos tres-columnas">
                         <div class="dato">
-                            <label>4. Municipio / Distrito:</label>
-                            <input class="input-dato" type="text" readonly value="La Libertad Norte / San Matías">
+                            <label>Distrito:</label>
+                            <input class="input-dato" type="text" readonly value="San Matías">
                         </div>
                         <div class="dato">
-                            <label>6. Nombre del Docente:</label>
+                            <label>Nombre del Docente:</label>
                             <input class="input-dato" type="text" readonly value="{{ maestro.nombre }} {{ maestro.apellido }}">
                         </div>
                         <div class="dato">
-                            <label>7. Año Electivo:</label>
+                            <label>Año Electivo:</label>
                             <input class="input-dato" type="text" readonly value="2026">
                         </div>
                     </div>
                     <div class="fila-datos tres-columnas">
                         <div class="dato">
-                            <label>8. Grado:</label>
+                            <label>Grado:</label>
                             <input class="input-dato" type="text" readonly value="{{ seccion_actual.get_grado_display|default:'-' }}">
                         </div>
                         <div class="dato">
-                            <label>9. Sección:</label>
+                            <label>Sección:</label>
                             <input class="input-dato" type="text" readonly value="{{ seccion_actual.seccion|default:'-' }}">
                         </div>
                         <div class="dato">
-                            <label>10. Turno:</label>
+                            <label>Turno:</label>
                             <input class="input-dato" type="text" readonly value="Mañana">
                         </div>
                     </div>
@@ -192,13 +192,13 @@
                 <table class="tabla-consolidado">
                     <thead>
                         <tr>
-                            <th rowspan="2" style="width: 100px;"><span class="encabezado-principal-num">11.</span>Mes</th>
-                            <th colspan="3"><span class="encabezado-principal-num">12.</span>Matrícula por Sexo</th>
-                            <th colspan="3"><span class="encabezado-principal-num">13.</span>Número de Deméritos por Sexo</th>
-                            <th colspan="5"><span class="encabezado-principal-num">14.</span>Número de Deméritos por Causales</th>
-                            <th colspan="3"><span class="encabezado-principal-num">15.</span>Número Redenciones por Sexo</th>
-                            <th colspan="4"><span class="encabezado-principal-num">16.</span>Número de Redenciones por Opción</th>
-                            <th colspan="3"><span class="encabezado-principal-num">17.</span>Número Reconocimientos por Sexo</th>
+                            <th rowspan="2" style="width: 100px;"><span class="encabezado-principal-num"></span>Mes</th>
+                            <th colspan="3"><span class="encabezado-principal-num"></span>Matrícula por Sexo</th>
+                            <th colspan="3"><span class="encabezado-principal-num"></span>Número de Deméritos por Sexo</th>
+                            <th colspan="5"><span class="encabezado-principal-num"></span>Número de Deméritos por Causales</th>
+                            <th colspan="3"><span class="encabezado-principal-num"></span>Número Redenciones por Sexo</th>
+                            <th colspan="4"><span class="encabezado-principal-num"></span>Número de Redenciones por Opción</th>
+                            <th colspan="3"><span class="encabezado-principal-num"></span>Número Reconocimientos por Sexo</th>
                         </tr>
                         <tr>
                             <th style="width: 25px;">M</th><th style="width: 25px;">H</th><th style="font-weight: bold;">Total</th>
@@ -214,8 +214,9 @@
                         <tr>
                             <td class="mes-celda">{{ fila.mes_nombre }}</td>
                             
-                            <td>{{ matricula_sexo.M }}</td>
                             <td>{{ matricula_sexo.F }}</td>
+                            <td>{{ matricula_sexo.M }}</td>
+                            
                             <td style="font-weight: bold;">{{ matricula_sexo.total }}</td>
 
                             <td>{{ fila.d_m }}</td>
@@ -244,8 +245,8 @@
                         {% endfor %}
 
                         <tr class="total-fila">
-                            <td class="mes-celda">18. Total</td>
-                            <td>{{ matricula_sexo.M }}</td><td>{{ matricula_sexo.F }}</td><td>{{ matricula_sexo.total }}</td>
+                            <td class="mes-celda">Total</td>
+                            <td>{{ matricula_sexo.F }}</td><td>{{ matricula_sexo.M }}</td><td>{{ matricula_sexo.total }}</td>
                             <td>{{ totales_anuales.d_m }}</td><td>{{ totales_anuales.d_h }}</td><td>{{ totales_anuales.d_total_sexo }}</td>
                             <td>{{ totales_anuales.d_a }}</td><td>{{ totales_anuales.d_b }}</td><td>{{ totales_anuales.d_c }}</td><td>{{ totales_anuales.d_d }}</td><td>{{ totales_anuales.d_total_causal }}</td>
                             <td>{{ totales_anuales.r_m }}</td><td>{{ totales_anuales.r_h }}</td><td>{{ totales_anuales.r_total_sexo }}</td>
