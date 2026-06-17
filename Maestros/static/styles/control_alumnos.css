@@ -35,6 +35,7 @@
     transition: 0.3s;
     height: fit-content;
     white-space: nowrap; 
+    margin-left: 25px;
 }
 
 .btnCerrarSesion:hover {

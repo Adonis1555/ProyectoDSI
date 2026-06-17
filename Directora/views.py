@@ -232,12 +232,48 @@ def grado_seccion_control(request):
 def toggle_grado_activo(request, pk):
     try:
         gs = get_object_or_404(GradoSeccion, id=pk)
-        gs.activo = not gs.activo
+        nuevo_estado = not gs.activo
+        
+        if nuevo_estado:  
+            instancia_maestro = gs.maestro_encargado
+            
+            if instancia_maestro:
+                grados_activos_docente = instancia_maestro.grados_a_cargo.filter(activo=True).count()
+                if grados_activos_docente >= 2:
+                    return JsonResponse({
+                        'ok': False,
+                        'error': f'No se puede reactivar. El Prof. {instancia_maestro.apellido} ya alcanzó el límite máximo de 2 grados activos.'
+                    })
+
+                turno_duplicado = instancia_maestro.grados_a_cargo.filter(activo=True, turno=gs.turno).exists()
+                if turno_duplicado:
+                    return JsonResponse({
+                        'ok': False,
+                        'error': f'No se puede reactivar. El Prof. {instancia_maestro.apellido} ya tiene un grado activo en el turno de la {gs.turno.lower()}.'
+                    })
+
+                seccion_duplicada = instancia_maestro.grados_a_cargo.filter(activo=True, seccion=gs.seccion).exists()
+                if seccion_duplicada:
+                    return JsonResponse({
+                        'ok': False,
+                        'error': f'No se puede reactivar. El Prof. {instancia_maestro.apellido} ya es encargado de un aula activa en la Sección "{gs.seccion}".'
+                    })
+
+            colision_institucional = GradoSeccion.objects.filter(grado=gs.grado, seccion=gs.seccion, activo=True).exists()
+            if colision_institucional:
+                return JsonResponse({
+                    'ok': False,
+                    'error': 'No se puede reactivar. Ya existe otra sección activa con la misma combinación de Grado y Letra.'
+                })
+
+        gs.activo = nuevo_estado
         gs.save()
+        
         status_str = "activo" if gs.activo else "inactivo"
         return JsonResponse({'ok': True, 'mensaje': f'El grado/sección ahora está {status_str}.'})
+        
     except Exception as e:
-        return JsonResponse({'ok': False, 'error': str(e)})
+        return JsonResponse({'ok': False, 'error': f'Error interno en el servidor: {str(e)}'})
 
 @login_required
 @directora_required
@@ -290,11 +326,11 @@ def registrar_grado_seccion(request):
         if seccion_limpia == 'A':
             turno = 'Mañana'
 
-        secciones_mismo_turno = GradoSeccion.objects.filter(grado=grado_codigo, turno=turno).count()
+        secciones_mismo_turno = GradoSeccion.objects.filter(grado=grado_codigo, turno=turno, activo=True).count()
         if secciones_mismo_turno >= 2:
             return JsonResponse({
                 'ok': False, 
-                'error': f'Ya existen 2 secciones registradas en el turno de la {turno.lower()} para este grado.'
+                'error': f'Ya existen 2 secciones activas en el turno de la {turno.lower()} para este grado.'
             })
 
         instancia_maestro = None
@@ -303,29 +339,33 @@ def registrar_grado_seccion(request):
             try:
                 instancia_maestro = Maestro.objects.get(dui=maestro_dui, activo=True)
                 
-                grados_actuales_count = instancia_maestro.grados_a_cargo.count()
+                grados_actuales_count = instancia_maestro.grados_a_cargo.filter(activo=True).count()
                 if grados_actuales_count >= 2:
                     return JsonResponse({
                         'ok': False, 
-                        'error': f'El Prof. {instancia_maestro.apellido} ya tiene el límite máximo de 2 grados asignados.'
+                        'error': f'El Prof. {instancia_maestro.apellido} ya tiene el límite máximo de 2 grados activos asignados.'
                     })
                 
-                maestro_mismo_turno = instancia_maestro.grados_a_cargo.filter(turno=turno).exists()
+                maestro_mismo_turno = instancia_maestro.grados_a_cargo.filter(turno=turno, activo=True).exists()
                 if maestro_mismo_turno:
                     return JsonResponse({
                         'ok': False,
-                        'error': f'El Prof. {instancia_maestro.apellido} ya tiene un grado asignado en el turno de la {turno.lower()}.'
+                        'error': f'El Prof. {instancia_maestro.apellido} ya tiene un grado activo asignado en el turno de la {turno.lower()}.'
                     })
                 
-                seccion_duplicada = instancia_maestro.grados_a_cargo.filter(seccion=seccion_limpia).exists()
+                seccion_duplicada = instancia_maestro.grados_a_cargo.filter(seccion=seccion_limpia, activo=True).exists()
                 if seccion_duplicada:
                     return JsonResponse({
                         'ok': False, 
-                        'error': f'El Prof. {instancia_maestro.apellido} ya es encargado de un grado en la Sección "{seccion_limpia}".'
+                        'error': f'El Prof. {instancia_maestro.apellido} ya es encargado de un grado activo en la Sección "{seccion_limpia}".'
                     })
                     
             except Maestro.DoesNotExist:
                 return JsonResponse({'ok': False, 'error': 'El maestro seleccionado no existe o está inactivo.'})
+
+        colision_institucional = GradoSeccion.objects.filter(grado=grado_codigo, seccion=seccion_limpia, activo=True).exists()
+        if colision_institucional:
+            return JsonResponse({'ok': False, 'error': 'Ya existe una sección activa con la misma combinación de Grado y Letra.'})
 
         try:
             nuevo_grado = GradoSeccion.objects.create(
@@ -333,7 +373,8 @@ def registrar_grado_seccion(request):
                 seccion=seccion_limpia,
                 cupo_maximo=cupo_maximo,
                 maestro_encargado=instancia_maestro,
-                turno=turno  
+                turno=turno,
+                activo=True
             )
 
             if instancia_maestro:
