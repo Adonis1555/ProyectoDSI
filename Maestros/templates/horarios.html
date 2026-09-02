@@ -1,11 +1,11 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'styles/control_alumnos.css' %}">
-    <title>Registro alumnos</title>
+    <link rel="stylesheet" href="{% static 'styles/horarios.css' %}">
+    <title>Horarios</title>
 </head>
 <body>
     <main class="maestro-alumno">
@@ -20,19 +20,20 @@
                             <i class="ti ti-demerito"></i> Demeritos
                         </li>
                     </a>
-                    <li class="item-menu activo">
-                        <i class="ti ti-alumnos"></i> Alumnos
-                    </li>
+                    <a href="{% url 'control_alumnos' %}" style="text-decoration:none;">
+                        <li class="item-menu">
+                            <i class="ti ti-alumnos"></i> Alumnos
+                        </li>
+                    </a>
+                    
                     <a href="{% url 'dashboard_maestro' %}" style="text-decoration: none;">
                         <li class="item-menu">
                             <i class="ti ti-dashboard"></i> Control de demeritos
                         </li>
                     </a>
-                    <a href="{% url 'horarios' %}" style="text-decoration: none;">
-                        <li class="item-menu">
-                            <i class="ti ti-dashboard"></i>Horarios
-                        </li>
-                    </a>
+                    <li class="item-menu activo">
+                        <i class="ti ti-alumnos"></i> Horarios
+                    </li>
                 </ul>
                 <div class="cerrar-sesion-container">
                     <form action="{% url 'logout' %}" method="post">
@@ -113,9 +114,5 @@
             </form>
         </section>
     </main>
-    <script>
-        window.seccionesPorGrado = JSON.parse('{{ secciones_json|safe }}');
-    </script>
-    <script src="{% static 'js/registrar_alumnos.js' %}"></script>
 </body>
 </html>

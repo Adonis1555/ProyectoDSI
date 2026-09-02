@@ -135,5 +135,6 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'adonisaquiles24@gmail.com'
-EMAIL_HOST_PASSWORD = 'root bhin ldzt jszt'
+EMAIL_HOST_PASSWORD = 'cxlb pfmo ifbi slud'
+
 

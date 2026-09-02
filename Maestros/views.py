@@ -470,3 +470,8 @@ def editar_alumno(request, nie):
         'secciones_json': json.dumps(secciones_por_grado)
     }
     return render(request, "editar_alumno.html", context)
+
+@login_required
+@maestro_required
+def Horarios(request):
+    return render(request,"horarios.html")
