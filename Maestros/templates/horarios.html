@@ -1,38 +1,39 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'styles/horarios.css' %}">
-    <title>Horarios</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <title>Horarios - Propuesta Escolar</title>
 </head>
 <body>
     <main class="maestro-alumno">
+        <!-- Barra Lateral -->
         <section class="menu-opciones">
             <div class="imgContainer">
-                <img class="Logo" src="{% static 'logo.jpg' %}" alt="">
+                <img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo C.E. Natalia López">
             </div>
             <div class="opciones">
                 <ul>
                     <a href="{% url 'control_demeritos' %}" style="text-decoration:none;">
                         <li class="item-menu">
-                            <i class="ti ti-demerito"></i> Demeritos
+                            <i class="ti "></i> Demeritos
                         </li>
                     </a>
                     <a href="{% url 'control_alumnos' %}" style="text-decoration:none;">
                         <li class="item-menu">
-                            <i class="ti ti-alumnos"></i> Alumnos
+                            <i class="ti "></i> Alumnos
                         </li>
                     </a>
-                    
                     <a href="{% url 'dashboard_maestro' %}" style="text-decoration: none;">
                         <li class="item-menu">
-                            <i class="ti ti-dashboard"></i> Control de demeritos
+                            <i class="ti "></i> Control de demeritos
                         </li>
                     </a>
                     <li class="item-menu activo">
-                        <i class="ti ti-alumnos"></i> Horarios
+                        <i class="ti "></i> Horarios
                     </li>
                 </ul>
                 <div class="cerrar-sesion-container">
@@ -44,74 +45,85 @@
             </div>
         </section>
 
-        <section class="registro-alumno">
-            <div class="container-titulo-alumno">
-                <h1 class="titulo-alumno">Registro de Alumnos</h1>
-                <a href="{% url 'control_alumnos' %}" class="btn-regresar" aria-label="Volver">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                </a>
+        <!-- Contenedor Principal de Horario -->
+        <section class="horario-container">
+            <div class="titulo-horario">
+                <h1>Horario propuesto</h1>
             </div>
 
-            <form action="" id="formRegistroAlumno" data-url="{% url 'registro_alumnos' %}" data-redirect="{% url 'control_alumnos' %}">
-                {% csrf_token %}
-                <div class="registro-container-alumno">
-                    <div class="registro-datos-alumno">
-                        <div class="container-dato">
-                            <label>Nombre:</label>
-                            <input required class="input-dato" id="inputNombre" type="text" name="nombre">
-                        </div>
-                        <div class="container-dato">
-                            <label>Apellido:</label>
-                            <input required class="input-dato" id="inputApellido" type="text" name="apellido">
-                        </div>
-                        <div class="container-dato">
-                            <label>Sexo:</label>
-                            <div class="container-seleccion">
-                                <div class="seleccion-sexo">
-                                    <label>Masculino: </label>
-                                    <input class="radio-sexo" id="inputMasculino" checked name="sexo" type="radio" value="M">
-                                </div>
-                                <div class="seleccion-sexo">
-                                    <label>Femenino: </label>
-                                    <input class="radio-sexo" id="inputFemenino" name="sexo" type="radio" value="F">
-                                </div>             
-                            </div>      
-                        </div>
-                        <div class="container-dato">
-                            <label>NIE:</label>
-                            <input required class="input-dato" type="text" name="nie" maxlength="8" id="inputNie" placeholder="00000000">
+            <div class="core-seccion">
+                <div class="container-tabla">
+                    <table class="tabla-horario">
+                        <thead>
+                            <tr>
+                                <th>Hora</th>
+                                <th>Lunes</th>
+                                <th>Martes</th>
+                                <th>Miércoles</th>
+                                <th>Jueves</th>
+                                <th>Viernes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>07:00 - 08:30</td>
+                                <td>Matemáticas</td>
+                                <td>Lenguaje</td>
+                                <td>Matemáticas</td>
+                                <td>Ciencias</td>
+                                <td>Matemáticas</td>
+                            </tr>
+                            <tr>
+                                <td>08:30 - 09:00</td>
+                                <td>Receso</td>
+                                <td>Receso</td>
+                                <td>Receso</td>
+                                <td>Receso</td>
+                                <td>Receso</td>
+                            </tr>
+                            <tr>
+                                <td>09:00 - 10:00</td>
+                                <td>Ciencias</td>
+                                <td>Lenguaje</td>
+                                <td>Educación Física</td>
+                                <td>Historia</td>
+                                <td>Arte</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <aside class="seccion-progreso">
+                    <div class="card-progreso">
+                        <div class="titulo-progresion">
+                            <h2>Progreso de carga</h2>
+                            <p>Distribución de materias por semana</p>
                         </div>
                         
-                        <div class="container-dato">
-                            <label>Grado:</label>
-                            <select required class="input-dato" name="grado" id="inputGrado">
-                                <option value="" disabled selected>Seleccione...</option>
-                                {% for código, nombre_legible in grados_existentes %}
-                                    <option value="{{ código }}">{{ nombre_legible }}</option>
-                                {% endfor %}
-                            </select>
+                        <div class="progresion">
+                            <div class="item-progreso">
+                                <div class="item-progreso-info">
+                                    <span>Matemáticas</span>
+                                    <strong>3/3</strong>
+                                </div>
+                                <div class="barra-base"><div class="barra-relleno" style="width: 100%;"></div></div>
+                            </div>
+                            <div class="item-progreso">
+                                <div class="item-progreso-info">
+                                    <span>Lenguaje</span>
+                                    <strong>2/3</strong>
+                                </div>
+                                <div class="barra-base"><div class="barra-relleno" style="width: 66%;"></div></div>
+                            </div>
                         </div>
 
-                        <div class="container-dato">
-                            <label>Sección:</label>
-                            <select required class="input-dato" name="seccion" id="inputSeccion" disabled>
-                                <option value="" disabled selected>Seleccione grado primero...</option>
-                            </select>
+                        <div class="botones-seccion">
+                            <button type="button" class="btn-borrador">Guardar borrador</button>
+                            <button type="button" class="btn-enviar">Enviar a dirección</button>
                         </div>
-
-                        <div class="container-dato">
-                            <label>Fecha de nacimiento:</label>
-                            <input required class="input-dato" type="date" name="fecha_nac" id="inputFechaNac"> 
-                        </div>  
                     </div>
-                    <div class="container-botones-alumno">
-                        <button type="submit" class="btnRegistrarAlumno">Guardar Alumno</button>
-                    </div>
-                </div>
-            </form>
+                </aside>
+            </div>
         </section>
     </main>
 </body>
