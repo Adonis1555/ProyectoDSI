@@ -7,9 +7,11 @@ from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import Count, Q
 from Login.decorators import maestro_required, roles_permitidos
-from Directora.models import GradoSeccion, Maestro
+from Directora.models import GradoSeccion, Maestro,Materia
 from Maestros.models import Alumno, RegistroTarjeta
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
+from .models import obtener_materias_docente,HorarioClase
 
 @login_required
 @maestro_required
@@ -149,7 +151,7 @@ def maestro_view(request):
     return render(request, "dashboard_maestro.html", context)
 
 @login_required
-@roles_permitidos(['maestro', 'directora'])
+@roles_permitidos(['maestro'])
 def control_alumnos(request):
     hoy = date.today()
     secciones_con_alumnos = {}
@@ -379,7 +381,7 @@ def registrar_demerito(request, nie):
     return JsonResponse({'ok': False, 'error': 'Método de petición no permitido.'})
 
 @login_required
-@roles_permitidos(['maestro', 'directora'])
+@roles_permitidos(['maestro'])
 def editar_alumno(request, nie):
     alumno = get_object_or_404(Alumno, NIE=nie)
     
@@ -471,7 +473,157 @@ def editar_alumno(request, nie):
     }
     return render(request, "editar_alumno.html", context)
 
+
+BLOQUES_HORARIO = [
+    {'id': 1, 'hora': '07:00 - 07:45', 'es_receso': False},
+    {'id': 2, 'hora': '07:45 - 08:30', 'es_receso': False},
+    {'id': 0, 'hora': '08:30 - 09:00', 'es_receso': True, 'nombre': 'Receso'},
+    {'id': 3, 'hora': '09:00 - 09:45', 'es_receso': False},
+    {'id': 4, 'hora': '09:45 - 10:30', 'es_receso': False},
+    {'id': 5, 'hora': '10:30 - 11:15', 'es_receso': False},
+]
+
+DIAS_SEMANA = [
+    {'id': 1, 'nombre': 'Lunes'},
+    {'id': 2, 'nombre': 'Martes'},
+    {'id': 3, 'nombre': 'Miércoles'},
+    {'id': 4, 'nombre': 'Jueves'},
+    {'id': 5, 'nombre': 'Viernes'},
+]
+
+
 @login_required
 @maestro_required
-def Horarios(request):
-    return render(request,"horarios.html")
+def horario_maestro(request):
+    maestro = get_object_or_404(Maestro, id_usuario=request.user)
+    anio_actual = datetime.now().year
+
+    # Materias disponibles para este maestro mediante el método del modelo
+    materias_disponibles = obtener_materias_docente(maestro, anio=anio_actual)
+
+    # Clases agendadas por este maestro
+    clases = HorarioClase.objects.filter(
+        docente=maestro,
+        anio_lectivo=anio_actual
+    ).select_related('materia', 'grado_seccion')
+
+    # Mapa rápido: (dia, bloque) -> objeto HorarioClase
+    mapa_horario = {(c.dia, c.bloque): c for c in clases}
+
+    # Armar grilla semanal
+    grilla = []
+    for b in BLOQUES_HORARIO:
+        fila = {'info': b, 'celdas': []}
+        if not b['es_receso']:
+            for d in DIAS_SEMANA:
+                clase_slot = mapa_horario.get((d['id'], b['id']))
+                fila['celdas'].append({
+                    'dia_id': d['id'],
+                    'bloque_id': b['id'],
+                    'clase': clase_slot
+                })
+        grilla.append(fila)
+
+    # Calcular progreso semanal
+    conteo_materias = {}
+    for c in clases:
+        clave = f"{c.materia.nombre} ({c.grado_seccion})"
+        conteo_materias[clave] = conteo_materias.get(clave, 0) + 1
+
+    progreso = []
+    for m in materias_disponibles:
+        nombre_clave = f"{m['materia'].nombre} ({m['grado_seccion']})"
+        asignadas = conteo_materias.get(nombre_clave, 0)
+        meta_sugerida = 4
+        porcentaje = min(int((asignadas / meta_sugerida) * 100), 100)
+        progreso.append({
+            'nombre': nombre_clave,
+            'asignadas': asignadas,
+            'meta': meta_sugerida,
+            'porcentaje': porcentaje
+        })
+
+    contexto = {
+        'maestro': maestro,
+        'dias': DIAS_SEMANA,
+        'grilla': grilla,
+        'materias_disponibles': materias_disponibles,
+        'progreso': progreso,
+        'anio_actual': anio_actual,
+    }
+
+    return render(request, 'horarios.html', contexto)
+
+
+@login_required
+@require_POST
+def guardar_bloque_horario(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        maestro = get_object_or_404(Maestro, id_usuario=request.user)
+        dia = int(data.get('dia'))
+        bloque = int(data.get('bloque'))
+        grado_seccion_id = int(data.get('grado_seccion_id'))
+        materia_id = int(data.get('materia_id'))
+        anio = int(data.get('anio_lectivo', datetime.now().year))
+
+        grado_seccion = GradoSeccion.objects.get(id=grado_seccion_id)
+        materia = Materia.objects.get(id=materia_id)
+
+        # Validación 1: Verificar si el aula ya está ocupada por otro docente
+        choque_aula = HorarioClase.objects.filter(
+            grado_seccion=grado_seccion,
+            dia=dia,
+            bloque=bloque,
+            anio_lectivo=anio
+        ).exclude(docente=maestro).first()
+
+        if choque_aula:
+            return JsonResponse({
+                'success': False,
+                'error': f'Conflicto: {grado_seccion} ya tiene la clase de {choque_aula.materia.nombre} con {choque_aula.docente.nombre} en este bloque.'
+            }, status=400)
+
+        # Guardar o actualizar clase del docente
+        clase, _ = HorarioClase.objects.update_or_create(
+            docente=maestro,
+            dia=dia,
+            bloque=bloque,
+            anio_lectivo=anio,
+            defaults={
+                'grado_seccion': grado_seccion,
+                'materia': materia
+            }
+        )
+
+        return JsonResponse({
+            'success': True,
+            'materia_nombre': materia.nombre,
+            'materia_color': materia.color,
+            'seccion_nombre': f"{grado_seccion.get_grado_display()} '{grado_seccion.seccion}'"
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def eliminar_bloque_horario(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        maestro = get_object_or_404(Maestro, id_usuario=request.user)
+        dia = int(data.get('dia'))
+        bloque = int(data.get('bloque'))
+        anio = int(data.get('anio_lectivo', datetime.now().year))
+
+        HorarioClase.objects.filter(
+            docente=maestro,
+            dia=dia,
+            bloque=bloque,
+            anio_lectivo=anio
+        ).delete()
+
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'styles/horarios.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-    <title>Horarios - Propuesta Escolar</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Horarios - C.E. Natalia López</title>
 </head>
 <body>
     <main class="maestro-alumno">
@@ -18,19 +19,13 @@
             <div class="opciones">
                 <ul>
                     <a href="{% url 'control_demeritos' %}" style="text-decoration:none;">
-                        <li class="item-menu">
-                            <i class="ti "></i> Demeritos
-                        </li>
+                        <li class="item-menu"><i class="ti"></i> Demeritos</li>
                     </a>
                     <a href="{% url 'control_alumnos' %}" style="text-decoration:none;">
-                        <li class="item-menu">
-                            <i class="ti "></i> Alumnos
-                        </li>
+                        <li class="item-menu"><i class="ti"></i> Alumnos</li>
                     </a>
                     <a href="{% url 'dashboard_maestro' %}" style="text-decoration: none;">
-                        <li class="item-menu">
-                            <i class="ti "></i> Control de demeritos
-                        </li>
+                        <li class="item-menu"><i class="ti"></i> Control de demeritos</li>
                     </a>
                     <li class="item-menu activo">
                         <i class="ti "></i> Horarios
@@ -48,7 +43,12 @@
         <!-- Contenedor Principal de Horario -->
         <section class="horario-container">
             <div class="titulo-horario">
-                <h1>Horario propuesto</h1>
+                <div>
+                    <h1>Horario semanal propuesto</h1>
+                    <p style="font-size: 13px; color: #6b7280; margin-top: 3px;">
+                        Docente: {{ maestro.nombre }} {{ maestro.apellido }} — Año {{ anio_actual }}
+                    </p>
+                </div>
             </div>
 
             <div class="core-seccion">
@@ -56,39 +56,48 @@
                     <table class="tabla-horario">
                         <thead>
                             <tr>
-                                <th>Hora</th>
-                                <th>Lunes</th>
-                                <th>Martes</th>
-                                <th>Miércoles</th>
-                                <th>Jueves</th>
-                                <th>Viernes</th>
+                                <th style="width: 130px;">Hora</th>
+                                {% for d in dias %}
+                                <th>{{ d.nombre }}</th>
+                                {% endfor %}
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>07:00 - 08:30</td>
-                                <td>Matemáticas</td>
-                                <td>Lenguaje</td>
-                                <td>Matemáticas</td>
-                                <td>Ciencias</td>
-                                <td>Matemáticas</td>
-                            </tr>
-                            <tr>
-                                <td>08:30 - 09:00</td>
-                                <td>Receso</td>
-                                <td>Receso</td>
-                                <td>Receso</td>
-                                <td>Receso</td>
-                                <td>Receso</td>
-                            </tr>
-                            <tr>
-                                <td>09:00 - 10:00</td>
-                                <td>Ciencias</td>
-                                <td>Lenguaje</td>
-                                <td>Educación Física</td>
-                                <td>Historia</td>
-                                <td>Arte</td>
-                            </tr>
+                            {% for fila in grilla %}
+                                {% if fila.info.es_receso %}
+                                <tr class="fila-receso">
+                                    <td class="hora-col">{{ fila.info.hora }}</td>
+                                    <td colspan="5" class="celda-receso-banner">
+                                        <i class="ti ti-coffee"></i> RECESO ESCOLAR
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td class="hora-col">{{ fila.info.hora }}</td>
+                                    {% for c in fila.celdas %}
+                                        {% if c.clase %}
+                                        <td class="celda-clase ocupada" 
+                                            data-dia="{{ c.dia_id }}" 
+                                            data-bloque="{{ c.bloque_id }}">
+                                            <div class="tarjeta-horario" style="background-color: {{ c.clase.materia.color }};">
+                                                <button type="button" class="btn-quitar-clase" title="Quitar clase">&times;</button>
+                                                <span class="materia-tag">{{ c.clase.materia.nombre }}</span>
+                                                <span class="seccion-tag">{{ c.clase.grado_seccion.get_grado_display }} "{{ c.clase.grado_seccion.seccion }}"</span>
+                                            </div>
+                                        </td>
+                                        {% else %}
+                                        <td class="celda-clase vacia" 
+                                            data-dia="{{ c.dia_id }}" 
+                                            data-bloque="{{ c.bloque_id }}">
+                                            <button type="button" class="btn-asignar-bloque" title="Asignar clase">
+                                                <i class="ti ti-plus"></i>
+                                            </button>
+                                        </td>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -101,30 +110,169 @@
                         </div>
                         
                         <div class="progresion">
+                            {% for p in progreso %}
                             <div class="item-progreso">
                                 <div class="item-progreso-info">
-                                    <span>Matemáticas</span>
-                                    <strong>3/3</strong>
+                                    <span title="{{ p.nombre }}">{{ p.nombre }}</span>
+                                    <strong>{{ p.asignadas }}/{{ p.meta }}</strong>
                                 </div>
-                                <div class="barra-base"><div class="barra-relleno" style="width: 100%;"></div></div>
-                            </div>
-                            <div class="item-progreso">
-                                <div class="item-progreso-info">
-                                    <span>Lenguaje</span>
-                                    <strong>2/3</strong>
+                                <div class="barra-base">
+                                    <div class="barra-relleno" style="width: {{ p.porcentaje }}%;"></div>
                                 </div>
-                                <div class="barra-base"><div class="barra-relleno" style="width: 66%;"></div></div>
                             </div>
+                            {% empty %}
+                            <p style="font-size: 12px; color: #9ca3af; text-align: center;">Sin materias asignadas aún.</p>
+                            {% endfor %}
                         </div>
 
                         <div class="botones-seccion">
-                            <button type="button" class="btn-borrador">Guardar borrador</button>
-                            <button type="button" class="btn-enviar">Enviar a dirección</button>
+                            <button type="button" class="btn-borrador" onclick="window.location.reload();">Actualizar Horario</button>
+                            <button type="button" class="btn-enviar" onclick="Swal.fire('Completado', 'Tu horario queda listo en el sistema.', 'success');">Confirmar Horario</button>
                         </div>
                     </div>
                 </aside>
             </div>
         </section>
     </main>
+
+    <!-- Token CSRF -->
+    <form style="display:none;">{% csrf_token %}</form>
+
+    <script>
+        const getCsrfToken = () => {
+            const input = document.querySelector('[name=csrfmiddlewaretoken]');
+            return input ? input.value : '';
+        };
+
+        // Materias que este docente puede elegir
+        const materias_disponibles = [
+            {% for m in materias_disponibles %}
+            {
+                grado_seccion_id: {{ m.grado_seccion.id }},
+                grado_seccion_nombre: "{{ m.grado_seccion.get_grado_display }} \"{{ m.grado_seccion.seccion }}\"",
+                materia_id: {{ m.materia.id }},
+                materia_nombre: "{{ m.materia.nombre }}",
+                materia_color: "{{ m.materia.color }}"
+            },
+            {% endfor %}
+        ];
+
+        // 1. Asignar Materia a un Bloque
+        document.querySelectorAll('.btn-asignar-bloque').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const td = e.target.closest('.celda-clase');
+                const dia = td.getAttribute('data-dia');
+                const bloque = td.getAttribute('data-bloque');
+
+                if (materias_disponibles.length === 0) {
+                    Swal.fire('Aviso', 'No tienes materias asignadas para programar.', 'warning');
+                    return;
+                }
+
+                let selectOptions = '<option value="">-- Elige una materia y grado --</option>';
+                materias_disponibles.forEach((item, index) => {
+                    selectOptions += `<option value="${index}">${item.materia_nombre} - ${item.grado_seccion_nombre}</option>`;
+                });
+
+                Swal.fire({
+                    title: 'Asignar a este Bloque',
+                    html: `
+                        <div style="text-align: left; font-size: 14px; margin-top: 10px;">
+                            <label style="font-weight: 600; color: #374151; display: block; margin-bottom: 6px;">
+                                Materia y Sección a Impartir:
+                            </label>
+                            <select id="swal-select-clase" class="swal2-select" style="width: 100%; margin: 0; padding: 10px; font-size: 13px; border-radius: 8px;">
+                                ${selectOptions}
+                            </select>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Asignar Bloque',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#2E5299',
+                    cancelButtonColor: '#94a3b8',
+                    preConfirm: () => {
+                        const index = document.getElementById('swal-select-clase').value;
+                        if (index === "") {
+                            Swal.showValidationMessage('Debes seleccionar una materia');
+                            return false;
+                        }
+                        return materias_disponibles[index];
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const seleccion = result.value;
+                        fetch("{% url 'guardar_bloque_horario' %}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCsrfToken()
+                            },
+                            body: JSON.stringify({
+                                dia: dia,
+                                bloque: bloque,
+                                grado_seccion_id: seleccion.grado_seccion_id,
+                                materia_id: seleccion.materia_id,
+                                anio_lectivo: {{ anio_actual }}
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.reload();
+                            } else {
+                                Swal.fire('Conflicto de Horario', data.error || 'No se pudo asignar el bloque', 'error');
+                            }
+                        })
+                        .catch(() => Swal.fire('Error', 'Fallo de conexión con el servidor', 'error'));
+                    }
+                });
+            });
+        });
+
+        // 2. Quitar Bloque Asignado
+        document.querySelectorAll('.btn-quitar-clase').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const td = e.target.closest('.celda-clase');
+                const dia = td.getAttribute('data-dia');
+                const bloque = td.getAttribute('data-bloque');
+
+                Swal.fire({
+                    title: '¿Liberar este bloque?',
+                    text: "Esta hora volverá a quedar disponible.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#C0392B',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: 'Sí, liberar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch("{% url 'eliminar_bloque_horario' %}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCsrfToken()
+                            },
+                            body: JSON.stringify({
+                                dia: dia,
+                                bloque: bloque,
+                                anio_lectivo: {{ anio_actual }}
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.reload();
+                            } else {
+                                Swal.fire('Error', data.error, 'error');
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

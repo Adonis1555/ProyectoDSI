@@ -1,0 +1,547 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    font-family: 'Inter', sans-serif;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #F0F4FA;
+    padding: 20px;
+}
+
+.btnRegistrarMateria {
+    padding: 12px 24px;
+    background-color: #111827;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.3s;
+    height: fit-content;
+    white-space: nowrap; 
+}
+
+.btnRegistrarMateria:hover {
+    background-color: #1f2937;
+    transform: translateY(-1px);
+}
+
+/* Contenedor Base Dashboard */
+.maestro-alumno {
+    width: 100%;
+    max-width: 1280px; 
+    background: #fff;
+    display: grid;
+    grid-template-columns: 240px 1fr; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    border-radius: 1.5rem;
+    min-height: 70vh;
+    overflow: hidden;
+}
+
+/* ==========================================
+   BARRA LATERAL
+   ========================================== */
+.menu-opciones {
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 1.5rem 0 0 1.5rem; 
+    padding: 30px 20px;
+    border-right: 1px solid #f0f0f0;
+}
+
+.imgContainer {
+    width: 110px;
+    margin-bottom: 35px;
+}
+
+.Logo {
+    width: 100%;
+    object-fit: contain;
+}
+
+.opciones {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    width: 100%;
+    gap: 100px;
+}
+
+.menu-opciones ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.item-menu {
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    gap: 10px;
+    padding: 12px 16px;
+    color: #4b5563; 
+    cursor: pointer;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    width: 100%; 
+}
+
+.item-menu:hover {
+    background-color: #2E5299;
+    color: #fff; 
+}
+
+.item-menu.activo {
+    background-color: #2E5299;
+    font-weight: 600;
+    color: #fff;
+}
+
+.cerrar-sesion-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding-top: 20px;
+}
+
+.btnCerrarSesion {
+    background-color: #C0392B;
+    padding: 12px 24px;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.3s;
+    height: fit-content;
+    white-space: nowrap; 
+    margin-left: 25px;
+}
+
+.btnCerrarSesion:hover {
+    background-color: #A93226;
+    transform: translateY(-1px);
+}
+
+/* ==========================================
+   SECCION PRINCIPAL MATERIA
+   ========================================== */
+.materia-container {
+    width: 100%;
+    min-width: 0; 
+    padding: 35px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background-color: #fcfcfc;
+    border-radius: 0 1.5rem 1.5rem 0;
+}
+
+/* Pestañas Superiores */
+.contenedor-tabs {
+    display: flex;
+    background: #e2e8f0;
+    padding: 5px;
+    border-radius: 12px;
+    width: fit-content;
+    gap: 4px;
+}
+
+.tab-btn {
+    border: none;
+    background: transparent;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    color: #1e293b;
+}
+
+.tab-btn.activo {
+    background-color: #2E5299;
+    color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.tab-contenido {
+    display: none;
+    width: 100%;
+}
+
+.tab-contenido.activo {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.titulo-materia h1 {
+    font-size: 22px;
+    color: #111827;
+    font-weight: 700;
+}
+
+.titulo-materia {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0 20px 0;
+    align-items: center;
+}
+
+.core-seccion {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    align-items: flex-start;
+    gap: 24px;
+    min-width: 0;
+}
+
+/* ==========================================
+   TABLA DE MATERIAS (CENTRADA H Y V)
+   ========================================== */
+.container-tabla {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto; 
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.tabla-materia {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 550px;
+    table-layout: fixed;
+}
+
+.tabla-materia th, 
+.tabla-materia td {
+    padding: 14px 18px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.tabla-materia th {
+    background-color: #f8fafc;
+    color: #4b5563;
+    font-weight: 600;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.tabla-materia td {
+    border-bottom: 1px solid #edf2f7;
+    color: #1f2937;
+}
+
+.tabla-materia tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.tabla-materia tr:last-child td {
+    border-bottom: none;
+}
+
+.color-preview {
+    width: 36px;
+    height: 18px;
+    border-radius: 5px;
+    box-shadow: 0 0 0 2.5px rgba(0, 0, 0, 0.12);
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.acciones-tabla {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-accion-editar,
+.btn-accion-eliminar {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+.btn-accion-editar {
+    color: #2E5299;
+}
+
+.btn-accion-editar:hover {
+    background-color: #edf2f7;
+}
+
+.btn-accion-eliminar {
+    color: #C0392B;
+}
+
+.btn-accion-eliminar:hover {
+    background-color: #fee2e2;
+}
+
+/* ==========================================
+   MATRIZ DE DISTRIBUCIÓN
+   ========================================== */
+.distribucion-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.matrix-distribucion {
+    display: flex;
+    flex-direction: column;
+    min-width: 850px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+.fila {
+    display: flex;
+    width: 100%;
+    border-bottom: 1px solid #edf2f7;
+}
+
+.fila:last-child {
+    border-bottom: none;
+}
+
+.fila:not(.encabezado-matrix):hover {
+    background-color: #f8fafc;
+}
+
+.celda-grado,
+.celda-materia,
+.celda-carga-completa {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 13px;
+    padding: 12px 10px;
+    flex: 1;
+    min-width: 120px;
+}
+
+.fixed-col {
+    flex: 0 0 220px;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    background-color: #fcfcfc;
+    border-right: 2px solid #edf2f7;
+    padding: 12px 16px;
+}
+
+.fixed-col strong {
+    font-size: 14px;
+    color: #111827;
+}
+
+.nombre-orientador {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 3px;
+}
+
+.encabezado-matrix {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: #4b5563;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.encabezado-matrix .celda-materia {
+    border-right: 1px solid #e2e8f0;
+}
+
+.encabezado-matrix .celda-materia:last-child {
+    border-right: none;
+}
+
+.etiqueta-nivel {
+    background: #f1f5f9;
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* Básica: Carga Completa */
+.celda-carga-completa {
+    flex: 1;
+    justify-content: center;
+    gap: 10px;
+    color: #2E5299;
+    font-weight: 600;
+    background-color: rgba(46, 82, 153, 0.05);
+}
+
+/* Tercer Ciclo: Interactivo */
+.tercer-ciclo .fila .celda-materia {
+    border-right: 1px solid #edf2f7;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: 0.2s;
+}
+
+.tercer-ciclo .fila .celda-materia:last-child {
+    border-right: none;
+}
+
+.celda-materia.asignada {
+    background-color: rgba(34, 197, 94, 0.03);
+}
+
+.celda-materia.asignada .iniciales {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #2E5299;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.celda-materia.asignada .nombre-profe {
+    font-size: 11px;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 95%;
+}
+
+.celda-materia.asignada i {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 13px;
+    color: #94a3b8;
+    opacity: 0;
+    transition: 0.2s;
+}
+
+.celda-materia.asignada:hover i {
+    opacity: 1;
+}
+
+.celda-materia.asignada:hover {
+    background-color: rgba(34, 197, 94, 0.08);
+}
+
+.celda-materia.vacia {
+    color: #94a3b8;
+    border: 1px dashed #cbd5e1;
+    background-color: #ffffff;
+}
+
+.celda-materia.vacia:hover {
+    background-color: #f8fafc;
+    color: #2E5299;
+    border-color: #94a3b8;
+}
+
+.celda-materia.vacia i {
+    font-size: 18px;
+}
+
+.celda-materia.vacia .accion {
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* ==========================================
+   RESPONSIVE / MEDIA QUERIES
+   ========================================== */
+@media (max-width: 980px) {
+    .core-seccion {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .maestro-alumno {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    .menu-opciones {
+        border-radius: 1.5rem 1.5rem 0 0;
+        border-right: none;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 20px;
+    }
+
+    .imgContainer {
+        margin-bottom: 15px;
+        width: 90px;
+    }
+
+    .menu-opciones ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .item-menu {
+        width: auto; 
+        margin-bottom: 0;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .materia-container {
+        padding: 20px;
+        border-radius: 0 0 1.5rem 1.5rem;
+    }
+}

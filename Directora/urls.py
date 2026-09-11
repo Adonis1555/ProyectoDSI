@@ -15,4 +15,7 @@ urlpatterns = [
         path('control_demerito_directora/',views.control_demeritos,name="control_demerito_directora"),
         path('exportar_excel_conducta/', views.exportar_excel_conducta, name="exportar_excel_conducta"),
         path('dashboard/', views.directora_dashboard, name="dashboard_directora"),
+        path('materia/', views.directora_materia, name="directora_materia"),
+        path('guardar-materia/', views.guardar_materia, name='guardar_materia'),
+        path('asignar-materia-docente/', views.asignar_materia_docente, name='asignar_materia_docente'),
 ]
