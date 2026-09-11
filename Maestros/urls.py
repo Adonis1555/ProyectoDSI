@@ -13,6 +13,7 @@ urlpatterns = [
         path('horario/', views.horario_maestro, name='horarios'),
         path('guardar-bloque-horario/', views.guardar_bloque_horario, name='guardar_bloque_horario'),
         path('eliminar-bloque-horario/', views.eliminar_bloque_horario, name='eliminar_bloque_horario'),
+        path('enviar-horario-revision/', views.enviar_horario_revision, name='enviar_horario_revision'),
 
         
 ]

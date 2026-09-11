@@ -28,7 +28,7 @@
                         <li class="item-menu"><i class="ti"></i> Control de demeritos</li>
                     </a>
                     <li class="item-menu activo">
-                        <i class="ti "></i> Horarios
+                        <i class="ti"></i> Horarios
                     </li>
                 </ul>
                 <div class="cerrar-sesion-container">
@@ -80,7 +80,9 @@
                                             data-dia="{{ c.dia_id }}" 
                                             data-bloque="{{ c.bloque_id }}">
                                             <div class="tarjeta-horario" style="background-color: {{ c.clase.materia.color }};">
+                                                {% if estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' %}
                                                 <button type="button" class="btn-quitar-clase" title="Quitar clase">&times;</button>
+                                                {% endif %}
                                                 <span class="materia-tag">{{ c.clase.materia.nombre }}</span>
                                                 <span class="seccion-tag">{{ c.clase.grado_seccion.get_grado_display }} "{{ c.clase.grado_seccion.seccion }}"</span>
                                             </div>
@@ -89,9 +91,13 @@
                                         <td class="celda-clase vacia" 
                                             data-dia="{{ c.dia_id }}" 
                                             data-bloque="{{ c.bloque_id }}">
+                                            {% if estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' %}
                                             <button type="button" class="btn-asignar-bloque" title="Asignar clase">
                                                 <i class="ti ti-plus"></i>
                                             </button>
+                                            {% else %}
+                                            <span style="color: #cbd5e1; font-size: 11px;">Bloque libre</span>
+                                            {% endif %}
                                         </td>
                                         {% endif %}
                                     {% endfor %}
@@ -126,8 +132,19 @@
                         </div>
 
                         <div class="botones-seccion">
-                            <button type="button" class="btn-borrador" onclick="window.location.reload();">Actualizar Horario</button>
-                            <button type="button" class="btn-enviar" onclick="Swal.fire('Completado', 'Tu horario queda listo en el sistema.', 'success');">Confirmar Horario</button>
+                            {% if estado_actual == 'ENVIADO' %}
+                                <div style="background: #fef3c7; color: #92400e; padding: 10px; border-radius: 8px; font-size: 12px; text-align: center; font-weight: 600; border: 1px solid #fde68a;">
+                                    <i class="ti ti-clock"></i> Horario en revisión por Dirección
+                                </div>
+                                <button type="button" class="btn-borrador" onclick="window.location.reload();">Actualizar Vista</button>
+                            {% elif estado_actual == 'APROBADO' %}
+                                <div style="background: #dcfce7; color: #166534; padding: 10px; border-radius: 8px; font-size: 12px; text-align: center; font-weight: 600; border: 1px solid #bbf7d0;">
+                                    <i class="ti ti-circle-check"></i> Horario Aprobado
+                                </div>
+                            {% else %}
+                                <button type="button" class="btn-borrador" onclick="window.location.reload();">Guardar borrador</button>
+                                <button type="button" id="btnEnviarDireccion" class="btn-enviar">Enviar a dirección</button>
+                            {% endif %}
                         </div>
                     </div>
                 </aside>
@@ -273,6 +290,48 @@
                 });
             });
         });
+
+        // 3. Enviar Horario a Dirección
+        const btnEnviar = document.getElementById('btnEnviarDireccion');
+        if (btnEnviar) {
+            btnEnviar.addEventListener('click', () => {
+                Swal.fire({
+                    title: '¿Enviar horario a Dirección?',
+                    text: 'Una vez enviado, la Dirección Escolar evaluará si existen choques de horario con otras aulas.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#2E5299',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: 'Sí, enviar revisión',
+                    cancelButtonText: 'Seguir editando'
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        fetch("{% url 'enviar_horario_revision' %}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCsrfToken()
+                            }
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Enviado!',
+                                    text: data.mensaje,
+                                    timer: 1800,
+                                    showConfirmButton: false
+                                }).then(() => window.location.reload());
+                            } else {
+                                Swal.fire('Atención', data.error, 'warning');
+                            }
+                        })
+                        .catch(() => Swal.fire('Error', 'Fallo de conexión al enviar propuesta', 'error'));
+                    }
+                });
+            });
+        }
     </script>
 </body>
 </html>

@@ -542,6 +542,11 @@ def horario_maestro(request):
             'meta': meta_sugerida,
             'porcentaje': porcentaje
         })
+    
+    estado_actual = 'BORRADOR'
+    primer_registro = clases.first()
+    if primer_registro:
+      estado_actual = primer_registro.estado
 
     contexto = {
         'maestro': maestro,
@@ -550,6 +555,7 @@ def horario_maestro(request):
         'materias_disponibles': materias_disponibles,
         'progreso': progreso,
         'anio_actual': anio_actual,
+        'estado_actual': estado_actual,
     }
 
     return render(request, 'horarios.html', contexto)
@@ -625,5 +631,30 @@ def eliminar_bloque_horario(request):
         ).delete()
 
         return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+@require_POST
+def enviar_horario_revision(request):
+    try:
+        maestro = get_object_or_404(Maestro, id_usuario=request.user)
+        anio = datetime.now().year
+
+        clases = HorarioClase.objects.filter(docente=maestro, anio_lectivo=anio)
+
+        if not clases.exists():
+            return JsonResponse({
+                'success': False, 
+                'error': 'No tienes ninguna clase programada en tu horario para enviar.'
+            }, status=400)
+
+        # Transición de estado masiva
+        clases.update(estado='ENVIADO')
+
+        return JsonResponse({
+            'success': True,
+            'mensaje': 'Tu horario propuesto fue enviado exitosamente a Dirección para su validación.'
+        })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
