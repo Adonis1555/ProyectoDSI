@@ -1,8 +1,8 @@
-from django.db import models
-from django.contrib.auth.models import User
-from django.conf import settings
-from Directora.models import Maestro,GradoSeccion
 from datetime import date, datetime
+from django.db import models
+from django.conf import settings
+from Directora.models import Maestro, GradoSeccion, Materia
+
 
 class Alumno(models.Model):
     SEXO_CHOICES = [
@@ -23,7 +23,7 @@ class Alumno(models.Model):
         'Directora.GradoSeccion', 
         on_delete=models.PROTECT, 
         related_name='alumnos',
-        null=True,
+        null=True, 
         blank=True
     )
 
@@ -69,3 +69,79 @@ class RegistroTarjeta(models.Model):
         return f"{self.get_tipo_display()} ({self.sub_letra}) - Alumno: {self.alumno.nombre} {self.alumno.apellido}"
 
 
+class HorarioClase(models.Model):
+    DIAS_SEMANA = [
+        (1, 'Lunes'),
+        (2, 'Martes'),
+        (3, 'Miércoles'),
+        (4, 'Jueves'),
+        (5, 'Viernes'),
+    ]
+
+    docente = models.ForeignKey(
+        Maestro, 
+        on_delete=models.CASCADE, 
+        related_name='horarios_clase'
+    )
+    grado_seccion = models.ForeignKey(
+        GradoSeccion, 
+        on_delete=models.CASCADE, 
+        related_name='horarios'
+    )
+    materia = models.ForeignKey(
+        Materia, 
+        on_delete=models.CASCADE
+    )
+    dia = models.PositiveSmallIntegerField(choices=DIAS_SEMANA)
+    bloque = models.PositiveSmallIntegerField(
+        help_text="Número de bloque de clase (1 a 7)"
+    )
+    anio_lectivo = models.PositiveIntegerField(default=2026)
+
+    class Meta:
+        verbose_name = "Horario de Clase"
+        verbose_name_plural = "Horarios de Clases"
+        unique_together = [
+            ('docente', 'dia', 'bloque', 'anio_lectivo'),
+            ('grado_seccion', 'dia', 'bloque', 'anio_lectivo'),
+        ]
+
+    def __str__(self):
+        return f"{self.get_dia_display()} Bloque {self.bloque}: {self.materia} ({self.grado_seccion})"
+
+
+# Función auxiliar que recibe la instancia del maestro
+def obtener_materias_docente(maestro, anio=None):
+    if anio is None:
+        anio = datetime.now().year
+
+    materias_permitidas = []
+    from Directora.models import AsignacionMateria
+
+    # 1. Caso Educación Básica: Es titular de la sección
+    secciones_titular = maestro.grados_a_cargo.filter(activo=True)
+    todas_las_materias = list(Materia.objects.all())
+
+    for sec in secciones_titular:
+        if not sec.es_tercer_ciclo:
+            for mat in todas_las_materias:
+                materias_permitidas.append({
+                    'grado_seccion': sec,
+                    'materia': mat,
+                    'tipo': 'Basica (Titular)'
+                })
+
+    # 2. Caso Tercer Ciclo: Asignaciones específicas
+    asignaciones = AsignacionMateria.objects.filter(
+        docente=maestro,
+        anio_lectivo=anio
+    ).select_related('grado_seccion', 'materia')
+
+    for asig in asignaciones:
+        materias_permitidas.append({
+            'grado_seccion': asig.grado_seccion,
+            'materia': asig.materia,
+            'tipo': 'Tercer Ciclo (Especialista)'
+        })
+
+    return materias_permitidas

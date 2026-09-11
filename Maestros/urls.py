@@ -10,7 +10,9 @@ urlpatterns = [
         path('registro_demeritos/<str:nie>/', views.registro_demeritos_view, name="registro_demeritos_view"),
         path('registrar_demerito/<str:nie>/', views.registrar_demerito, name="registrar_demerito"),
         path('editar_alumno/<str:nie>/', views.editar_alumno, name="editar_alumno"),
-        path('horarios',views.Horarios,name="horarios",)
+        path('horario/', views.horario_maestro, name='horarios'),
+        path('guardar-bloque-horario/', views.guardar_bloque_horario, name='guardar_bloque_horario'),
+        path('eliminar-bloque-horario/', views.eliminar_bloque_horario, name='eliminar_bloque_horario'),
 
         
 ]

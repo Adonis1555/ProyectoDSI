@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from Login.decorators import directora_required, maestro_required, responsable_required,roles_permitidos
 from datetime import date,datetime
 from Login.models import Usuario  
-from Directora.models import Maestro,GradoSeccion
+from Directora.models import Maestro,GradoSeccion,Materia,AsignacionMateria
 from django.http import JsonResponse
 from django.db import transaction
 from django.core.paginator import Paginator,PageNotAnInteger
@@ -18,6 +18,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.db.models import ProtectedError
 from django.shortcuts import render, get_object_or_404
+import json
 
 @login_required
 @directora_required
@@ -831,6 +832,7 @@ def desasignar_grado_maestro(request):
     except Exception as e:
         return JsonResponse({'ok': False, 'error': str(e)})
 
+
 @login_required
 @directora_required
 def directora_dashboard(request):
@@ -886,3 +888,151 @@ def directora_dashboard(request):
         'anio': anio
     }
     return render(request, "dashboard_directora.html", context)
+
+@login_required
+@directora_required
+def directora_materia(request):
+    anio_actual = datetime.now().year
+
+    # 1. Catálogo completo de materias
+    materias = Materia.objects.all().order_by('nombre')
+
+    # 2. Secciones activas con su orientador
+    secciones_activas = GradoSeccion.objects.filter(activo=True).select_related('maestro_encargado')
+
+    # 3. Separar secciones por nivel
+    codigos_tercer_ciclo = ['7G', '8G', '9G']
+    secciones_basica = [s for s in secciones_activas if s.grado not in codigos_tercer_ciclo]
+    secciones_tercer_ciclo = [s for s in secciones_activas if s.grado in codigos_tercer_ciclo]
+
+    # 4. Asignaciones existentes para el año actual en Tercer Ciclo
+    asignaciones = AsignacionMateria.objects.filter(
+        anio_lectivo=anio_actual
+    ).select_related('docente', 'materia', 'grado_seccion')
+
+    # Mapeo rápido: {(id_grado_seccion, id_materia): objeto_docente}
+    mapa_asignaciones = {
+        (asig.grado_seccion_id, asig.materia_id): asig.docente
+        for asig in asignaciones
+    }
+
+    # 5. Estructurar la matriz para el renderizado
+    matriz_tercer_ciclo = []
+    for seccion in secciones_tercer_ciclo:
+        fila_materias = []
+        for materia in materias:
+            docente = mapa_asignaciones.get((seccion.id, materia.id))
+            
+            iniciales = ""
+            if docente:
+                ini_nom = docente.nombre[0] if docente.nombre else ""
+                ini_ape = docente.apellido[0] if docente.apellido else ""
+                iniciales = f"{ini_nom}{ini_ape}".upper()
+
+            fila_materias.append({
+                'materia': materia,
+                'asignado': docente is not None,
+                'docente': docente,
+                'iniciales': iniciales,
+            })
+
+        matriz_tercer_ciclo.append({
+            'seccion': seccion,
+            'materias': fila_materias
+        })
+
+    # 6. Lista de maestros activos para el modal de asignación
+    maestros = Maestro.objects.filter(activo=True).order_by('nombre', 'apellido')
+
+    contexto = {
+        'materias': materias,
+        'secciones_basica': secciones_basica,
+        'matriz_tercer_ciclo': matriz_tercer_ciclo,
+        'maestros': maestros,
+        'anio_actual': anio_actual,
+    }
+
+    return render(request, "gestionar_materia.html", contexto)
+
+
+@login_required
+@directora_required
+@require_POST
+def guardar_materia(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        nombre = data.get('nombre', '').strip()
+        codigo = data.get('codigo', '').strip()
+        color = data.get('color', '').strip()
+
+        if not nombre:
+            return JsonResponse({'success': False, 'error': 'El nombre es obligatorio'}, status=400)
+
+        materia = Materia.objects.create(
+            nombre=nombre,
+            codigo=codigo if codigo else None,
+            color=color or '#D6E4FF'
+        )   
+
+        return JsonResponse({
+            'success': True,
+            'id': materia.id,
+            'nombre': materia.nombre,
+            'codigo': materia.codigo or '',
+            'color': materia.color
+        })
+    except Exception as e:
+        print("Error en guardar_materia:", e)
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@directora_required
+@require_POST
+def asignar_materia_docente(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        grado_seccion_id = data.get('grado_seccion_id')
+        materia_id = data.get('materia_id')
+        dui_maestro = data.get('dui_maestro')
+        anio_lectivo = data.get('anio_lectivo', datetime.now().year)
+
+        if not grado_seccion_id or not materia_id or not dui_maestro:
+            return JsonResponse({'success': False, 'error': 'Faltan datos obligatorios.'}, status=400)
+
+        seccion = GradoSeccion.objects.get(id=grado_seccion_id)
+        if not seccion.es_tercer_ciclo:
+            return JsonResponse({
+                'success': False,
+                'error': 'Solo se pueden distribuir materias por especialista en Tercer Ciclo (7° a 9°).'
+            }, status=400)
+
+        materia = Materia.objects.get(id=materia_id)
+        docente = Maestro.objects.get(dui=dui_maestro)
+
+        asignacion, created = AsignacionMateria.objects.update_or_create(
+            grado_seccion=seccion,
+            materia=materia,
+            anio_lectivo=anio_lectivo,
+            defaults={'docente': docente}
+        )
+
+        ini_nom = docente.nombre[0] if docente.nombre else ""
+        ini_ape = docente.apellido[0] if docente.apellido else ""
+        iniciales = f"{ini_nom}{ini_ape}".upper()
+
+        return JsonResponse({
+            'success': True,
+            'docente_nombre': f"{docente.nombre} {docente.apellido}",
+            'docente_iniciales': iniciales,
+            'docente_dui': docente.dui
+        })
+
+    except GradoSeccion.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Grado o sección no encontrada.'}, status=404)
+    except Materia.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Materia no encontrada.'}, status=404)
+    except Maestro.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Docente no encontrado.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

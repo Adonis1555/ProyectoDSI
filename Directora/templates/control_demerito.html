@@ -204,6 +204,12 @@
                     <li class="item-menu activo">
                         <i class="ti ti-demerito"></i> Control de conducta
                     </li>
+
+                    <a href="{% url 'directora_materia' %}" style="text-decoration: none;">
+                        <li class="item-menu">
+                            <i class="ti ti-grado_seccion"></i> Materias
+                        </li>
+                    </a>
                 </ul>
                 <div class="cerrar-sesion-container">
                     <form action="{% url 'logout' %}" method="post">

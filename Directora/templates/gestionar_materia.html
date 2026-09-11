@@ -1,0 +1,420 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'estilos/materias.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    
+    <!-- CDN SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <title>Gestión y Distribución de Materias</title>
+</head>
+<body>
+    <main class="maestro-alumno">
+        <!-- Menú Lateral -->
+        <section class="menu-opciones">
+            <div class="imgContainer">
+                <img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo C.E. Natalia López">
+            </div>
+            <div class="opciones">
+                <ul>
+                    <a href="{% url 'dashboard_directora' %}" style="text-decoration: none;">
+                        <li class="item-menu"><i class="ti"></i> Dashboard</li>
+                    </a>
+                    <a href="{% url 'control_maestro' %}" style="text-decoration: none;">
+                        <li class="item-menu"><i class="ti"></i> Maestros</li>
+                    </a>
+                    <a href="{% url 'grado_seccion_control' %}" style="text-decoration: none;">
+                        <li class="item-menu"><i class="ti"></i> Control de Grados</li>
+                    </a>
+                    <a href="{% url 'control_demerito_directora' %}" style="text-decoration: none;">
+                        <li class="item-menu"><i class="ti"></i> Control de conducta</li>
+                    </a>
+                    <li class="item-menu activo"><i class="ti"></i> Materias</li>
+                </ul>
+                <div class="cerrar-sesion-container">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btnCerrarSesion">cerrar sesión</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contenedor Principal con Tabs -->
+        <section class="materia-container">
+            <!-- Barra Superior de Pestañas -->
+            <div class="contenedor-tabs">
+                <button type="button" class="tab-btn activo" data-tab="tab-catalogo">Gestión de Materias</button>
+                <button type="button" class="tab-btn" data-tab="tab-distribucion">Distribución Académica</button>
+            </div>
+
+            <!-- ==========================================
+                 TAB 1: CATÁLOGO DE MATERIAS
+                 ========================================== -->
+            <div id="tab-catalogo" class="tab-contenido activo">
+                <div class="titulo-materia">
+                    <h1>Lista de materias</h1>
+                    <button type="button" id="btnAbrirModalMateria" class="btnRegistrarMateria">+ Registrar Materia</button>
+                </div>
+                <div class="core-seccion">
+                    <div class="container-tabla">
+                        <table class="tabla-materia">
+                            <thead>
+                                <tr>
+                                    <th>Color</th>
+                                    <th>Código</th>
+                                    <th>Nombre de la materia</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-materias-body">
+                                {% for materia in materias %}
+                                <tr>
+                                    <td>
+                                        <div class="color-preview" style="background-color: {{ materia.color }};"></div>
+                                    </td>
+                                    <td>{{ materia.codigo|default:"---" }}</td>
+                                    <td>{{ materia.nombre }}</td>
+                                    <td>
+                                        <div class="acciones-tabla">
+                                            <button class="btn-accion-eliminar" title="Eliminar"><i class="ti ti-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: #9ca3af; padding: 20px;">
+                                        No hay materias registradas aún.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 TAB 2: DISTRIBUCIÓN ACADÉMICA (MATRIZ)
+                 ========================================== -->
+            <div id="tab-distribucion" class="tab-contenido">
+                <div class="titulo-materia">
+                    <div>
+                        <h1>Mapa de Distribución Académica</h1>
+                        <p style="font-size: 13px; color: #6b7280; margin-top: 4px;">
+                            Visualiza y gestiona las asignaciones docentes para el año {{ anio_actual }}.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="distribucion-container">
+                    <!-- MATRIZ COMPLETA -->
+                    <div class="matrix-distribucion">
+                        <!-- Cabecera de Materias -->
+                        <div class="fila encabezado-matrix">
+                            <div class="celda-grado fixed-col">Grado / Sección</div>
+                            {% for m in materias %}
+                            <div class="celda-materia">{{ m.nombre }}</div>
+                            {% empty %}
+                            <div class="celda-materia">Sin materias registradas</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- 1. BLOQUE BÁSICA (Docente único) -->
+                        <div class="bloque-nivel">
+                            <div class="etiqueta-nivel">Educación Básica (Carga Completa Automática)</div>
+                            {% for sec in secciones_basica %}
+                            <div class="fila">
+                                <div class="celda-grado fixed-col">
+                                    <strong>{{ sec.get_grado_display }} "{{ sec.seccion }}"</strong>
+                                    <span class="nombre-orientador">
+                                        {% if sec.maestro_encargado %}
+                                            Titular: {{ sec.maestro_encargado.nombre }} {{ sec.maestro_encargado.apellido }}
+                                        {% else %}
+                                            <em style="color:#ef4444;">Sin orientador asignado</em>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="celda-carga-completa">
+                                    <i class="ti ti-school"></i> 
+                                    Carga Académica Completa 
+                                    {% if sec.maestro_encargado %}
+                                        ({{ sec.maestro_encargado.nombre }} {{ sec.maestro_encargado.apellido }})
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="fila">
+                                <div class="celda-grado fixed-col" style="width: 100%; border: none;">No hay secciones de básica activas.</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- 2. BLOQUE TERCER CICLO (Especialistas) -->
+                        <div class="bloque-nivel tercer-ciclo">
+                            <div class="etiqueta-nivel">Tercer Ciclo (Distribución por Especialista)</div>
+                            {% for item in matriz_tercer_ciclo %}
+                            <div class="fila">
+                                <div class="celda-grado fixed-col">
+                                    <strong>{{ item.seccion.get_grado_display }} "{{ item.seccion.seccion }}"</strong>
+                                    <span class="nombre-orientador">
+                                        Orientador: {{ item.seccion.maestro_encargado|default:"Sin asignar" }}
+                                    </span>
+                                </div>
+                                
+                                {% for slot in item.materias %}
+                                    {% if slot.asignado %}
+                                    <div class="celda-materia asignada celda-interactiva" 
+                                         data-seccion-id="{{ item.seccion.id }}" 
+                                         data-seccion-nombre='{{ item.seccion.get_grado_display }} "{{ item.seccion.seccion }}"'
+                                         data-materia-id="{{ slot.materia.id }}" 
+                                         data-materia-nombre="{{ slot.materia.nombre }}"
+                                         data-dui-actual="{{ slot.docente.dui }}"
+                                         title="Clic para reasignar">
+                                        <span class="iniciales">{{ slot.iniciales }}</span>
+                                        <span class="nombre-profe">{{ slot.docente.nombre }} {{ slot.docente.apellido }}</span>
+                                        <i class="ti ti-edit"></i>
+                                    </div>
+                                    {% else %}
+                                    <div class="celda-materia vacia celda-interactiva" 
+                                         data-seccion-id="{{ item.seccion.id }}" 
+                                         data-seccion-nombre='{{ item.seccion.get_grado_display }} "{{ item.seccion.seccion }}"'
+                                         data-materia-id="{{ slot.materia.id }}" 
+                                         data-materia-nombre="{{ slot.materia.nombre }}"
+                                         data-dui-actual=""
+                                         title="Asignar profesor">
+                                        <i class="ti ti-plus"></i>
+                                        <span class="accion">Asignar</span>
+                                    </div>
+                                    {% endif %}
+                                {% empty %}
+                                    <div class="celda-materia vacia" style="flex:1;">No hay materias disponibles.</div>
+                                {% endfor %}
+                            </div>
+                            {% empty %}
+                            <div class="fila">
+                                <div class="celda-grado fixed-col" style="width: 100%; border: none;">No hay secciones de tercer ciclo registradas.</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Token CSRF Global -->
+    <form style="display:none;">{% csrf_token %}</form>
+
+    <script>
+        const getCsrfToken = () => {
+            const input = document.querySelector('[name=csrfmiddlewaretoken]');
+            return input ? input.value : '';
+        };
+
+        /* ==========================================
+           1. CONTROLADOR DE PESTAÑAS (TABS)
+           ========================================== */
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContenidos = document.querySelectorAll('.tab-contenido');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('activo'));
+                tabContenidos.forEach(c => c.classList.remove('activo'));
+
+                btn.classList.add('activo');
+                const target = btn.getAttribute('data-tab');
+                document.getElementById(target).classList.add('activo');
+            });
+        });
+
+        /* ==========================================
+           2. MODAL: REGISTRAR MATERIA (CATÁLOGO)
+           ========================================== */
+        const btnRegistrar = document.getElementById('btnAbrirModalMateria');
+        if (btnRegistrar) {
+            btnRegistrar.addEventListener('click', () => {
+                Swal.fire({
+                    title: 'Crear Nueva Materia',
+                    html: `
+                        <div style="display: flex; flex-direction: column; gap: 14px; text-align: left; margin-top: 10px;">
+                            <div>
+                                <label style="font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px;">
+                                    Nombre de la Materia *
+                                </label>
+                                <input id="swal-nombre" class="swal2-input" placeholder="Ej: Ciencias Naturales" 
+                                       style="width: 100%; margin: 0; font-size: 14px; padding: 10px; border-radius: 8px; border: 1px solid #d1d5db;">
+                            </div>
+                            <div>
+                                <label style="font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px;">
+                                    Código (Opcional)
+                                </label>
+                                <input id="swal-codigo" class="swal2-input" placeholder="Ej: CIE101" 
+                                       style="width: 100%; margin: 0; font-size: 14px; padding: 10px; border-radius: 8px; border: 1px solid #d1d5db;">
+                            </div>
+                            <div>
+                                <label style="font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px;">
+                                    Color Representativo
+                                </label>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <input type="color" id="swal-color" value="#D6E4FF" 
+                                           style="width: 44px; height: 38px; padding: 0; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; background: transparent;">
+                                    <span style="font-size: 12px; color: #6b7280;">Color de tarjeta para el horario</span>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Guardar Materia',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#2E5299',
+                    cancelButtonColor: '#94a3b8',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const nombre = document.getElementById('swal-nombre').value.trim();
+                        const codigo = document.getElementById('swal-codigo').value.trim();
+                        const color = document.getElementById('swal-color').value;
+
+                        if (!nombre) {
+                            Swal.showValidationMessage('El nombre de la materia es obligatorio');
+                            return false;
+                        }
+                        return { nombre, codigo, color };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch("{% url 'guardar_materia' %}", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRFToken": getCsrfToken()
+                            },
+                            body: JSON.stringify(result.value)
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Materia Guardada!',
+                                    timer: 1200,
+                                    showConfirmButton: false
+                                }).then(() => window.location.reload());
+                            } else {
+                                Swal.fire('Error', data.error || 'No se pudo guardar la materia', 'error');
+                            }
+                        })
+                        .catch(() => Swal.fire('Error', 'Hubo un fallo de conexión', 'error'));
+                    }
+                });
+            });
+        }
+
+        /* ==========================================
+           3. MODAL INTERACTIVO: ASIGNACIÓN MATRIZ
+           ========================================== */
+        // Objeto con opciones de maestros generadas desde el servidor
+        const catalogoMaestros = {
+            {% for m in maestros %}
+            "{{ m.dui }}": "{{ m.nombre }} {{ m.apellido }} ({{ m.especialidad|default:'General' }})",
+            {% endfor %}
+        };
+
+        document.querySelectorAll('.celda-interactiva').forEach(celda => {
+            celda.addEventListener('click', () => {
+                const seccionId = celda.getAttribute('data-seccion-id');
+                const seccionNombre = celda.getAttribute('data-seccion-nombre');
+                const materiaId = celda.getAttribute('data-materia-id');
+                const materiaNombre = celda.getAttribute('data-materia-nombre');
+                const duiActual = celda.getAttribute('data-dui-actual');
+
+                let optionsHtml = '<option value="">-- Seleccione un docente --</option>';
+                for (const [dui, etiqueta] of Object.entries(catalogoMaestros)) {
+                    const selected = (dui === duiActual) ? 'selected' : '';
+                    optionsHtml += `<option value="${dui}" ${selected}>${etiqueta}</option>`;
+                }
+
+                Swal.fire({
+                    title: `Asignar Materia`,
+                    html: `
+                        <div style="text-align: left; font-size: 14px; margin-top: 10px;">
+                            <p style="margin-bottom: 6px;"><strong>Grado y Sección:</strong> ${seccionNombre}</p>
+                            <p style="margin-bottom: 14px;"><strong>Materia:</strong> ${materiaNombre}</p>
+                            <label style="font-weight: 600; color: #374151; display: block; margin-bottom: 6px;">
+                                Seleccionar Docente Especialista *
+                            </label>
+                            <select id="swal-select-docente" class="swal2-select" style="width: 100%; margin: 0; padding: 10px; font-size: 14px; border-radius: 8px; border: 1px solid #d1d5db;">
+                                ${optionsHtml}
+                            </select>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Guardar Asignación',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#2E5299',
+                    cancelButtonColor: '#94a3b8',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const select = document.getElementById('swal-select-docente');
+                        const dui = select.value;
+                        if (!dui) {
+                            Swal.showValidationMessage('Debes seleccionar a un docente');
+                            return false;
+                        }
+                        return dui;
+                    }
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        const duiSeleccionado = res.value;
+
+                        fetch("{% url 'asignar_materia_docente' %}", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRFToken": getCsrfToken()
+                            },
+                            body: JSON.stringify({
+                                grado_seccion_id: seccionId,
+                                materia_id: materiaId,
+                                dui_maestro: duiSeleccionado,
+                                anio_lectivo: {{ anio_actual }}
+                            })
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Actualizar la celda visualmente sin recargar
+                                celda.classList.remove('vacia');
+                                celda.classList.add('asignada');
+                                celda.setAttribute('data-dui-actual', data.docente_dui);
+                                celda.innerHTML = `
+                                    <span class="iniciales">${data.docente_iniciales}</span>
+                                    <span class="nombre-profe">${data.docente_nombre}</span>
+                                    <i class="ti ti-edit"></i>
+                                `;
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Asignación Guardada',
+                                    timer: 1000,
+                                    showConfirmButton: false
+                                });
+                            } else {
+                                Swal.fire('Error', data.error || 'No se pudo guardar la asignación', 'error');
+                            }
+                        })
+                        .catch(() => {
+                            Swal.fire('Error', 'Problema de comunicación con el servidor', 'error');
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
