@@ -9,6 +9,9 @@ class Alumno(models.Model):
         ('M', 'Masculino'),
         ('F', 'Femenino'),
     ]
+
+   
+
     NIE = models.CharField(max_length=10, primary_key=True, unique=True)
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
@@ -78,6 +81,13 @@ class HorarioClase(models.Model):
         (5, 'Viernes'),
     ]
 
+    ESTADOS = [
+        ('BORRADOR', 'Borrador'),
+        ('ENVIADO', 'Enviado para Aprobación'),
+        ('APROBADO', 'Aprobado'),
+        ('RECHAZADO', 'Rechazado'),
+    ]
+
     docente = models.ForeignKey(
         Maestro, 
         on_delete=models.CASCADE, 
@@ -98,6 +108,18 @@ class HorarioClase(models.Model):
     )
     anio_lectivo = models.PositiveIntegerField(default=2026)
 
+    estado = models.CharField(
+        max_length=15,
+        choices=ESTADOS,
+        default='BORRADOR',
+        verbose_name="Estado de Aprobación"
+    )
+    observaciones = models.TextField(
+        blank=True, 
+        null=True, 
+        help_text="Retroalimentación o motivo de rechazo de Dirección"
+    )
+
     class Meta:
         verbose_name = "Horario de Clase"
         verbose_name_plural = "Horarios de Clases"
@@ -105,6 +127,7 @@ class HorarioClase(models.Model):
             ('docente', 'dia', 'bloque', 'anio_lectivo'),
             ('grado_seccion', 'dia', 'bloque', 'anio_lectivo'),
         ]
+
 
     def __str__(self):
         return f"{self.get_dia_display()} Bloque {self.bloque}: {self.materia} ({self.grado_seccion})"
