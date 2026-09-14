@@ -507,19 +507,40 @@ def horario_maestro(request):
     maestro = get_object_or_404(Maestro, id_usuario=request.user)
     anio_actual = datetime.now().year
     turno_actual = 'Tarde' if request.GET.get('turno', '').lower() == 'tarde' else 'Mañana'
+    grados_basica = ['PK', '1G', '2G', '3G', '4G', '5G', '6G']
+    grados_tercer = ['7G', '8G', '9G']
+    nivel_solicitado = request.GET.get('nivel', 'basica').lower()
 
-    # Materias disponibles para este maestro mediante el método del modelo
+    todas_las_materias = obtener_materias_docente(maestro, anio=anio_actual)
+    todas_las_clases = HorarioClase.objects.filter(
+        docente=maestro, anio_lectivo=anio_actual
+    ).select_related('materia', 'grado_seccion')
+
+    niveles_disponibles = {
+        'tercer' if opcion['grado_seccion'].es_tercer_ciclo else 'basica'
+        for opcion in todas_las_materias
+    }
+    niveles_disponibles.update(
+        'tercer' if clase.grado_seccion.es_tercer_ciclo else 'basica'
+        for clase in todas_las_clases
+    )
+    if nivel_solicitado not in {'basica', 'tercer'}:
+        nivel_solicitado = 'basica'
+    if niveles_disponibles and nivel_solicitado not in niveles_disponibles:
+        nivel_solicitado = 'basica' if 'basica' in niveles_disponibles else 'tercer'
+    nivel_actual = nivel_solicitado
+    grados_nivel = grados_tercer if nivel_actual == 'tercer' else grados_basica
+
     materias_disponibles = [
-        opcion for opcion in obtener_materias_docente(maestro, anio=anio_actual)
+        opcion for opcion in todas_las_materias
         if normalizar_turno(opcion['grado_seccion'].turno) == turno_actual
+        and opcion['grado_seccion'].grado in grados_nivel
     ]
 
     # Clases agendadas por este maestro
-    clases = HorarioClase.objects.filter(
-        docente=maestro,
-        anio_lectivo=anio_actual,
-        turno=turno_actual,
-    ).select_related('materia', 'grado_seccion')
+    clases = todas_las_clases.filter(
+        turno=turno_actual, grado_seccion__grado__in=grados_nivel
+    )
     bloques_asignados = set(AsignacionBloqueMaestro.objects.filter(
         maestro=maestro,
         anio_lectivo=anio_actual,
@@ -565,10 +586,34 @@ def horario_maestro(request):
             'porcentaje': porcentaje
         })
     
-    estado_actual = 'BORRADOR'
-    primer_registro = clases.first()
-    if primer_registro:
-      estado_actual = primer_registro.estado
+    estados_encontrados = set(clases.values_list('estado', flat=True))
+    estado_actual = next(iter(estados_encontrados)) if len(estados_encontrados) == 1 else (
+        'MIXTO' if estados_encontrados else 'BORRADOR'
+    )
+    motivo_rechazo = next((
+        clase.observaciones.strip() for clase in clases
+        if clase.estado == 'RECHAZADO' and clase.observaciones and clase.observaciones.strip()
+    ), '')
+
+    combinaciones = {}
+    for opcion in todas_las_materias:
+        nivel = 'tercer' if opcion['grado_seccion'].es_tercer_ciclo else 'basica'
+        turno = normalizar_turno(opcion['grado_seccion'].turno)
+        combinaciones.setdefault((nivel, turno), set())
+    for clase in todas_las_clases:
+        nivel = 'tercer' if clase.grado_seccion.es_tercer_ciclo else 'basica'
+        combinaciones.setdefault((nivel, normalizar_turno(clase.turno)), set()).add(clase.estado)
+    estados_propuestas = []
+    for (nivel, turno), estados in sorted(combinaciones.items()):
+        estado = next(iter(estados)) if len(estados) == 1 else ('MIXTO' if estados else 'BORRADOR')
+        estados_propuestas.append({
+            'nivel': nivel,
+            'nivel_nombre': 'Tercer ciclo' if nivel == 'tercer' else 'Niveles básicos',
+            'turno': turno,
+            'turno_query': turno.lower().replace('ñ', 'n'),
+            'estado': estado,
+            'seleccionado': nivel == nivel_actual and turno == turno_actual,
+        })
 
     contexto = {
         'maestro': maestro,
@@ -578,6 +623,10 @@ def horario_maestro(request):
         'progreso': progreso,
         'anio_actual': anio_actual,
         'estado_actual': estado_actual,
+        'motivo_rechazo': motivo_rechazo,
+        'estados_propuestas': estados_propuestas,
+        'nivel_actual': nivel_actual,
+        'titulo_nivel_actual': 'Tercer ciclo' if nivel_actual == 'tercer' else 'Niveles básicos',
         'turno_actual': turno_actual,
     }
 
@@ -707,8 +756,20 @@ def enviar_horario_revision(request):
         anio = datetime.now().year
         data = json.loads(request.body.decode('utf-8') or '{}')
         turno = 'Tarde' if str(data.get('turno', '')).lower() == 'tarde' else 'Mañana'
+        nivel = str(data.get('nivel', '')).lower()
+        if nivel == 'tercer':
+            grados_nivel = ['7G', '8G', '9G']
+            nombre_nivel = 'tercer ciclo'
+        elif nivel == 'basica':
+            grados_nivel = ['PK', '1G', '2G', '3G', '4G', '5G', '6G']
+            nombre_nivel = 'niveles básicos'
+        else:
+            return JsonResponse({'success': False, 'error': 'El nivel educativo no es válido.'}, status=400)
 
-        clases = HorarioClase.objects.filter(docente=maestro, anio_lectivo=anio, turno=turno)
+        clases = HorarioClase.objects.filter(
+            docente=maestro, anio_lectivo=anio, turno=turno,
+            grado_seccion__grado__in=grados_nivel,
+        )
 
         if not clases.exists():
             return JsonResponse({
@@ -728,7 +789,7 @@ def enviar_horario_revision(request):
 
         return JsonResponse({
             'success': True,
-            'mensaje': 'Tu horario propuesto fue enviado exitosamente a Dirección para su validación.'
+            'mensaje': f'Tu horario de {nombre_nivel} para el turno {turno.lower()} fue enviado a Dirección.'
         })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)

@@ -46,15 +46,37 @@
                 <div>
                     <h1>Horario semanal propuesto</h1>
                     <p style="font-size: 13px; color: #6b7280; margin-top: 3px;">
-                        Docente: {{ maestro.nombre }} {{ maestro.apellido }} — Año {{ anio_actual }}
+                        Docente: {{ maestro.nombre }} {{ maestro.apellido }} — {{ titulo_nivel_actual }} — Año {{ anio_actual }}
                     </p>
                 </div>
             </div>
 
             <nav class="selector-turno" aria-label="Seleccionar turno">
-                <a href="{% url 'horarios' %}?turno=manana" class="{% if turno_actual == 'Mañana' %}activo{% endif %}">Mañana</a>
-                <a href="{% url 'horarios' %}?turno=tarde" class="{% if turno_actual == 'Tarde' %}activo{% endif %}">Tarde</a>
+                <a href="{% url 'horarios' %}?nivel={{ nivel_actual }}&turno=manana" class="{% if turno_actual == 'Mañana' %}activo{% endif %}">Mañana</a>
+                <a href="{% url 'horarios' %}?nivel={{ nivel_actual }}&turno=tarde" class="{% if turno_actual == 'Tarde' %}activo{% endif %}">Tarde</a>
             </nav>
+
+            <nav class="selector-nivel" aria-label="Seleccionar nivel educativo">
+                <a href="{% url 'horarios' %}?nivel=basica&turno={% if turno_actual == 'Tarde' %}tarde{% else %}manana{% endif %}" class="{% if nivel_actual == 'basica' %}activo{% endif %}">Niveles básicos</a>
+                <a href="{% url 'horarios' %}?nivel=tercer&turno={% if turno_actual == 'Tarde' %}tarde{% else %}manana{% endif %}" class="{% if nivel_actual == 'tercer' %}activo{% endif %}">Tercer ciclo</a>
+            </nav>
+
+            {% if estados_propuestas %}
+            <section class="resumen-propuestas" aria-label="Estados de propuestas">
+                <div class="resumen-propuestas-titulo">
+                    <strong>Estado de mis propuestas</strong>
+                    <span>Cada nivel y turno se revisa por separado.</span>
+                </div>
+                <div class="lista-estados-propuesta">
+                    {% for propuesta in estados_propuestas %}
+                    <a href="{% url 'horarios' %}?nivel={{ propuesta.nivel }}&turno={{ propuesta.turno_query }}" class="estado-propuesta estado-{{ propuesta.estado|lower }} {% if propuesta.seleccionado %}seleccionado{% endif %}">
+                        <span>{{ propuesta.nivel_nombre }} · {{ propuesta.turno }}</span>
+                        <strong>{{ propuesta.estado }}</strong>
+                    </a>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
 
             <div class="core-seccion">
                 <div class="container-tabla">
@@ -139,6 +161,13 @@
                         </div>
 
                         <div class="botones-seccion">
+                            {% if estado_actual == 'RECHAZADO' and motivo_rechazo %}
+                                <div class="aviso-rechazo" role="alert">
+                                    <div><i class="ti ti-message-exclamation"></i><strong>Corrección solicitada</strong></div>
+                                    <p>{{ motivo_rechazo }}</p>
+                                    <small>Modifica esta propuesta y vuelve a enviarla a Dirección.</small>
+                                </div>
+                            {% endif %}
                             {% if estado_actual == 'ENVIADO' %}
                                 <div style="background: #fef3c7; color: #92400e; padding: 10px; border-radius: 8px; font-size: 12px; text-align: center; font-weight: 600; border: 1px solid #fde68a;">
                                     <i class="ti ti-clock"></i> Horario en revisión por Dirección
@@ -152,6 +181,8 @@
                                 <div style="background: #e8eef9; color: #2E5299; padding: 10px; border-radius: 8px; font-size: 12px; text-align: center; font-weight: 600; border: 1px solid #cbd8ef;">
                                     <i class="ti ti-world-check"></i> Horario oficial publicado
                                 </div>
+                            {% elif estado_actual == 'MIXTO' %}
+                                <div class="aviso-estado-mixto"><i class="ti ti-alert-triangle"></i> Esta propuesta contiene estados anteriores mezclados. Actualiza las clases pendientes antes de enviarla.</div>
                             {% else %}
                                 <button type="button" class="btn-borrador" onclick="window.location.reload();">Guardar borrador</button>
                                 <button type="button" id="btnEnviarDireccion" class="btn-enviar">Enviar a dirección</button>
@@ -324,7 +355,7 @@
                                 'Content-Type': 'application/json',
                                 'X-CSRFToken': getCsrfToken()
                             },
-                            body: JSON.stringify({ turno: "{{ turno_actual }}" })
+                            body: JSON.stringify({ turno: "{{ turno_actual }}", nivel: "{{ nivel_actual }}" })
                         })
                         .then(r => r.json())
                         .then(data => {

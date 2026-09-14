@@ -143,6 +143,79 @@ body {
     font-weight: 700;
 }
 
+.selector-nivel {
+    display: flex;
+    width: fit-content;
+    padding: 4px;
+    gap: 4px;
+    border-radius: 10px;
+    background: #e8edf5;
+}
+
+.selector-nivel a {
+    padding: 8px 16px;
+    border-radius: 7px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.selector-nivel a.activo {
+    color: #fff;
+    background: #2E5299;
+}
+
+.resumen-propuestas {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.resumen-propuestas-titulo { min-width: 180px; }
+.resumen-propuestas-titulo strong,
+.resumen-propuestas-titulo span { display: block; }
+.resumen-propuestas-titulo strong { color: #1f2937; font-size: 13px; }
+.resumen-propuestas-titulo span { margin-top: 3px; color: #64748b; font-size: 10px; }
+.lista-estados-propuesta { display: flex; flex-wrap: wrap; gap: 8px; }
+.estado-propuesta {
+    min-width: 145px;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #475569;
+    background: #f8fafc;
+    text-decoration: none;
+}
+.estado-propuesta span,
+.estado-propuesta strong { display: block; }
+.estado-propuesta span { font-size: 10px; }
+.estado-propuesta strong { margin-top: 3px; font-size: 10px; }
+.estado-propuesta.seleccionado { box-shadow: 0 0 0 2px rgba(46, 82, 153, .2); border-color: #2E5299; }
+.estado-propuesta.estado-enviado strong { color: #92400e; }
+.estado-propuesta.estado-aprobado strong,
+.estado-propuesta.estado-publicado strong { color: #166534; }
+.estado-propuesta.estado-rechazado strong { color: #b42318; }
+
+.aviso-rechazo,
+.aviso-estado-mixto {
+    padding: 11px;
+    border: 1px solid #fecaca;
+    border-radius: 9px;
+    color: #991b1b;
+    background: #fef2f2;
+    font-size: 11px;
+    line-height: 1.45;
+}
+.aviso-rechazo div { display: flex; align-items: center; gap: 6px; }
+.aviso-rechazo p { margin: 7px 0 5px; color: #7f1d1d; }
+.aviso-rechazo small { color: #b91c1c; }
+.aviso-estado-mixto { border-color: #fed7aa; color: #9a3412; background: #fff7ed; }
+
 
 .core-seccion {
     display: flex;
