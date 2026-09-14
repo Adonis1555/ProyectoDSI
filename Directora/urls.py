@@ -18,4 +18,10 @@ urlpatterns = [
         path('materia/', views.directora_materia, name="directora_materia"),
         path('guardar-materia/', views.guardar_materia, name='guardar_materia'),
         path('asignar-materia-docente/', views.asignar_materia_docente, name='asignar_materia_docente'),
+        path('bloques-maestro/<str:dui>/', views.obtener_bloques_maestro, name='obtener_bloques_maestro'),
+        path('guardar-bloques-maestro/', views.guardar_bloques_maestro, name='guardar_bloques_maestro'),
+        path('horarios-revision/', views.horarios_revision, name='horarios_revision'),
+        path('resolver-horario-tercer-ciclo/', views.resolver_horario_tercer_ciclo, name='resolver_horario_tercer_ciclo'),
+        path('resolver-horario-niveles-basicos/', views.resolver_horario_niveles_basicos, name='resolver_horario_niveles_basicos'),
+        path('publicar-horario/', views.publicar_horario, name='publicar_horario'),
 ]

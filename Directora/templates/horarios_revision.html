@@ -1,0 +1,229 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'estilos/horarios_revision.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Revisión de horarios escolares</title>
+</head>
+<body>
+    <main class="maestro-alumno">
+        <section class="menu-opciones">
+            <div class="imgContainer"><img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo C.E. Natalia López"></div>
+            <div class="opciones">
+                <ul>
+                    <a href="{% url 'dashboard_directora' %}"><li class="item-menu">Dashboard</li></a>
+                    <a href="{% url 'control_maestro' %}"><li class="item-menu">Maestros</li></a>
+                    <a href="{% url 'grado_seccion_control' %}"><li class="item-menu">Control de Grados</li></a>
+                    <a href="{% url 'control_demerito_directora' %}"><li class="item-menu">Control de conducta</li></a>
+                    <a href="{% url 'directora_materia' %}"><li class="item-menu">Materias</li></a>
+                    <li class="item-menu activo">Horarios</li>
+                </ul>
+                <div class="cerrar-sesion-container">
+                    <form action="{% url 'logout' %}" method="post">{% csrf_token %}<button type="submit" class="btnCerrarSesion">cerrar sesión</button></form>
+                </div>
+            </div>
+        </section>
+
+        <section class="revision-container">
+            <div class="encabezado-revision">
+                <div>
+                    <h1>Revisión de horarios escolares</h1>
+                    <p>Consulta y resuelve las propuestas enviadas por los docentes para el año {{ anio_actual }}.</p>
+                </div>
+                <span class="etiqueta-nivel">{{ descripcion_nivel }}</span>
+            </div>
+
+            <div class="selector-nivel" aria-label="Nivel educativo">
+                <a href="{% url 'horarios_revision' %}?nivel=tercer" class="{% if nivel == 'tercer' %}activo{% endif %}">Tercer ciclo</a>
+                <a href="{% url 'horarios_revision' %}?nivel=basica" class="{% if nivel == 'basica' %}activo{% endif %}">Niveles básicos</a>
+            </div>
+
+            <div class="contenido-revision">
+                <aside class="lista-horarios">
+                    <div class="titulo-lista">
+                        <h2>Horarios docentes</h2>
+                        <span>{{ horarios|length }}</span>
+                    </div>
+                    {% for item in horarios %}
+                    <a class="tarjeta-docente {% if item.docente.dui == dui_seleccionado and item.turno == turno_seleccionado %}seleccionada{% endif %}"
+                       href="{% url 'horarios_revision' %}?nivel={{ nivel }}&maestro={{ item.docente.dui }}&turno={{ item.turno }}">
+                        <div class="avatar-docente">{{ item.docente.nombre|first }}{{ item.docente.apellido|first }}</div>
+                        <div class="datos-docente">
+                            <strong>{{ item.docente.nombre }} {{ item.docente.apellido }}</strong>
+                            <small>{{ item.turno }} · {{ item.total_clases }} clases · {{ item.grados }}</small>
+                        </div>
+                        <span class="estado estado-{{ item.estado|lower }}">{{ item.estado }}</span>
+                    </a>
+                    {% empty %}
+                    <div class="estado-vacio">
+                        <i class="ti ti-calendar-off"></i>
+                        <p>No existen horarios de {{ titulo_nivel|lower }} para revisar.</p>
+                    </div>
+                    {% endfor %}
+                </aside>
+
+                <section class="detalle-horario">
+                    {% if horario_seleccionado %}
+                    <div class="cabecera-detalle">
+                        <div>
+                            <h2>{{ horario_seleccionado.docente.nombre }} {{ horario_seleccionado.docente.apellido }}</h2>
+                            <p>{{ horario_seleccionado.docente.especialidad }} · {{ horario_seleccionado.turno }} · {{ horario_seleccionado.grados }}</p>
+                            {% if horario_seleccionado.fecha_publicacion %}
+                            <p class="fecha-publicacion"><i class="ti ti-calendar-check"></i> Publicado el {{ horario_seleccionado.fecha_publicacion|date:"d/m/Y H:i" }}</p>
+                            {% endif %}
+                        </div>
+                        <span class="estado estado-{{ horario_seleccionado.estado|lower }}">{{ horario_seleccionado.estado }}</span>
+                    </div>
+
+                    <div class="tabla-horario-contenedor">
+                        <table class="tabla-horario">
+                            <thead><tr><th>Hora</th>{% for dia in dias %}<th>{{ dia.nombre }}</th>{% endfor %}</tr></thead>
+                            <tbody>
+                                {% for fila in grilla %}
+                                    {% if fila.info.es_receso %}
+                                    <tr class="fila-receso"><td>{{ fila.info.hora }}</td><td colspan="5"><i class="ti ti-coffee"></i> Receso</td></tr>
+                                    {% else %}
+                                    <tr>
+                                        <th><span>Bloque {{ fila.info.id }}</span><small>{{ fila.info.hora }}</small></th>
+                                        {% for celda in fila.celdas %}
+                                        <td>
+                                            {% if celda.clase %}
+                                            <div class="clase-horario" style="border-top-color: {{ celda.clase.materia.color }};">
+                                                <strong>{{ celda.clase.materia.nombre }}</strong>
+                                                <span>{{ celda.clase.grado_seccion }}</span>
+                                            </div>
+                                            {% else %}<span class="bloque-vacio">Libre</span>{% endif %}
+                                        </td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if horario_seleccionado.puede_resolverse %}
+                    <div class="acciones-revision">
+                        <p><i class="ti ti-info-circle"></i> Revisa todas las clases antes de emitir una resolución.</p>
+                        <div>
+                            <button type="button" id="btn-rechazar" class="btn-rechazar"><i class="ti ti-x"></i> Rechazar</button>
+                            <button type="button" id="btn-aprobar" class="btn-aprobar"><i class="ti ti-check"></i> Aprobar horario</button>
+                        </div>
+                    </div>
+                    {% elif horario_seleccionado.puede_publicarse %}
+                    <div class="acciones-revision acciones-publicacion">
+                        <p><i class="ti ti-info-circle"></i> El horario fue aprobado y está listo para convertirse en oficial.</p>
+                        <button type="button" id="btn-publicar" class="btn-publicar"><i class="ti ti-world-upload"></i> Publicar horario</button>
+                    </div>
+                    {% else %}
+                    <div class="resolucion-completada"><i class="ti ti-lock-check"></i> Este horario ya fue resuelto y no tiene acciones pendientes.</div>
+                    {% endif %}
+                    {% else %}
+                    <div class="estado-vacio detalle-vacio"><i class="ti ti-calendar-search"></i><p>Selecciona un horario para consultar su distribución semanal.</p></div>
+                    {% endif %}
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <form style="display:none;">{% csrf_token %}</form>
+    {% if horario_seleccionado and horario_seleccionado.puede_resolverse %}
+    <script>
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const resolverHorario = (accion, observaciones = '') => fetch("{% if nivel == 'basica' %}{% url 'resolver_horario_niveles_basicos' %}{% else %}{% url 'resolver_horario_tercer_ciclo' %}{% endif %}", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+            body: JSON.stringify({
+                dui_maestro: '{{ horario_seleccionado.docente.dui }}',
+                anio_lectivo: {{ anio_actual }},
+                turno: '{{ horario_seleccionado.turno }}',
+                accion,
+                observaciones
+            })
+        }).then(respuesta => respuesta.json().then(datos => ({ok: respuesta.ok, datos})));
+
+        document.getElementById('btn-aprobar').addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Aprobar este horario?',
+                text: 'El horario quedará validado por Dirección.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, aprobar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#1E7E34',
+                cancelButtonColor: '#94a3b8'
+            }).then(resultado => {
+                if (!resultado.isConfirmed) return;
+                resolverHorario('aprobar').then(({ok, datos}) => {
+                    if (!ok || !datos.success) throw new Error(datos.error);
+                    Swal.fire({icon: 'success', title: 'Horario aprobado', text: datos.mensaje}).then(() => window.location.reload());
+                }).catch(error => Swal.fire('Error', error.message || 'No se pudo aprobar el horario.', 'error'));
+            });
+        });
+
+        document.getElementById('btn-rechazar').addEventListener('click', () => {
+            Swal.fire({
+                title: 'Rechazar horario',
+                input: 'textarea',
+                inputLabel: 'Motivo del rechazo',
+                inputPlaceholder: 'Describe los ajustes que debe realizar el maestro...',
+                inputAttributes: {'aria-label': 'Motivo del rechazo'},
+                showCancelButton: true,
+                confirmButtonText: 'Rechazar y devolver',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#C0392B',
+                cancelButtonColor: '#94a3b8',
+                inputValidator: valor => !valor || !valor.trim() ? 'Debes indicar el motivo del rechazo.' : null
+            }).then(resultado => {
+                if (!resultado.isConfirmed) return;
+                resolverHorario('rechazar', resultado.value.trim()).then(({ok, datos}) => {
+                    if (!ok || !datos.success) throw new Error(datos.error);
+                    Swal.fire({icon: 'success', title: 'Horario rechazado', text: datos.mensaje}).then(() => window.location.reload());
+                }).catch(error => Swal.fire('Error', error.message || 'No se pudo rechazar el horario.', 'error'));
+            });
+        });
+    </script>
+    {% endif %}
+    {% if horario_seleccionado and horario_seleccionado.puede_publicarse %}
+    <script>
+        document.getElementById('btn-publicar').addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Publicar horario oficial?',
+                text: 'Después de publicarlo, el maestro podrá consultarlo pero no modificarlo.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, publicar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2E5299',
+                cancelButtonColor: '#94a3b8'
+            }).then(resultado => {
+                if (!resultado.isConfirmed) return;
+                fetch("{% url 'publicar_horario' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        dui_maestro: '{{ horario_seleccionado.docente.dui }}',
+                        anio_lectivo: {{ anio_actual }},
+                        turno: '{{ horario_seleccionado.turno }}',
+                        nivel: '{{ nivel }}'
+                    })
+                })
+                .then(respuesta => respuesta.json().then(datos => ({ok: respuesta.ok, datos})))
+                .then(({ok, datos}) => {
+                    if (!ok || !datos.success) throw new Error(datos.error);
+                    Swal.fire({icon: 'success', title: 'Horario publicado', text: datos.mensaje}).then(() => window.location.reload());
+                })
+                .catch(error => Swal.fire('Error', error.message || 'No se pudo publicar el horario.', 'error'));
+            });
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

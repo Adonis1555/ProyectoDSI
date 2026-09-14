@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from Login.decorators import directora_required, maestro_required, responsable_required,roles_permitidos
 from datetime import date,datetime
 from Login.models import Usuario  
-from Directora.models import Maestro,GradoSeccion,Materia,AsignacionMateria
+from Directora.models import Maestro,GradoSeccion,Materia,AsignacionMateria,AsignacionBloqueMaestro,especialidad_coincide_con_materia,normalizar_turno
 from django.http import JsonResponse
 from django.db import transaction
 from django.core.paginator import Paginator,PageNotAnInteger
@@ -16,6 +16,7 @@ from django.conf import settings
 from django.db import IntegrityError
 from django.contrib import messages
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 from django.db.models import ProtectedError
 from django.shortcuts import render, get_object_or_404
 import json
@@ -93,6 +94,31 @@ def asignar_grado_maestro(request):
             return JsonResponse({'ok': False, 'error': 'Debe seleccionar un grado.'})
         
         grado = get_object_or_404(GradoSeccion, id=grado_id, activo=True)
+
+        if grado.maestro_encargado and grado.maestro_encargado_id != maestro.dui:
+            return JsonResponse({
+                'ok': False,
+                'error': 'El grado seleccionado ya tiene un docente encargado.'
+            })
+
+        otros_grados = maestro.grados_a_cargo.exclude(id=grado.id)
+        if grado.es_tercer_ciclo and otros_grados.exists():
+            return JsonResponse({
+                'ok': False,
+                'error': 'Para ser orientador de tercer ciclo, el docente no debe tener otro grado asignado.'
+            })
+        if not grado.es_tercer_ciclo and otros_grados.filter(grado__in=['7G', '8G', '9G']).exists():
+            return JsonResponse({
+                'ok': False,
+                'error': 'Un orientador de tercer ciclo no puede tener otro grado a cargo.'
+            })
+        if not grado.es_tercer_ciclo:
+            conflicto_especialista = any(
+                normalizar_turno(asignacion.grado_seccion.turno) == normalizar_turno(grado.turno)
+                for asignacion in maestro.materias_impartidas.select_related('grado_seccion')
+            )
+            if conflicto_especialista:
+                return JsonResponse({'ok': False, 'error': 'El docente ya imparte tercer ciclo en ese turno.'})
         
         grados_actuales_count = maestro.grados_a_cargo.exclude(id=grado.id).count()
         if grados_actuales_count >= 2:
@@ -153,6 +179,11 @@ def registro_maestro_view(request):
         except ValueError:
             return JsonResponse({'ok': False, 'error': 'Formato de fecha inválido.'})
 
+        materia_especialidad = Materia.objects.filter(nombre=especialidad).first()
+        if not materia_especialidad:
+            return JsonResponse({'ok': False, 'error': 'Debe seleccionar una especialidad válida del catálogo de materias.'})
+        especialidad = materia_especialidad.nombre
+
         if Usuario.objects.filter(email=email).exists():
             return JsonResponse({'ok': False, 'error': 'Este correo electrónico ya ha sido registrado.'})
 
@@ -207,7 +238,9 @@ def registro_maestro_view(request):
         except Exception as e:
             return JsonResponse({'ok': False, 'error': f"Error interno: {str(e)}"})
 
-    return render(request, "registro_maestro.html")
+    return render(request, "registro_maestro.html", {
+        'materias': Materia.objects.all().order_by('nombre')
+    })
 
 @login_required
 @directora_required
@@ -316,16 +349,13 @@ def registrar_grado_seccion(request):
         seccion_texto = request.POST.get('seccion')
         maestro_dui = request.POST.get('maestro_dui')
         cupos = request.POST.get('cupos')
-        turno = request.POST.get('turno')  
+        turno = normalizar_turno(request.POST.get('turno'))
 
         if not grado_codigo or not seccion_texto or not turno:
             return JsonResponse({'ok': False, 'error': 'El grado, la sección y el turno son campos obligatorios.'})
 
         seccion_limpia = seccion_texto.strip().upper()
         cupo_maximo = int(cupos) if cupos and cupos.isdigit() else 35
-
-        if seccion_limpia == 'A':
-            turno = 'Mañana'
 
         secciones_mismo_turno = GradoSeccion.objects.filter(grado=grado_codigo, turno=turno, activo=True).count()
         if secciones_mismo_turno >= 2:
@@ -339,6 +369,17 @@ def registrar_grado_seccion(request):
         if maestro_dui:
             try:
                 instancia_maestro = Maestro.objects.get(dui=maestro_dui, activo=True)
+                es_tercer_ciclo = grado_codigo in ['7G', '8G', '9G']
+                grados_actuales = instancia_maestro.grados_a_cargo.filter(activo=True)
+                if es_tercer_ciclo and grados_actuales.exists():
+                    return JsonResponse({'ok': False, 'error': 'Para orientar tercer ciclo, el docente no debe tener otro grado asignado.'})
+                if not es_tercer_ciclo and grados_actuales.filter(grado__in=['7G', '8G', '9G']).exists():
+                    return JsonResponse({'ok': False, 'error': 'Un orientador de tercer ciclo no puede tener otro grado a cargo.'})
+                if not es_tercer_ciclo and any(
+                    normalizar_turno(asignacion.grado_seccion.turno) == turno
+                    for asignacion in instancia_maestro.materias_impartidas.select_related('grado_seccion')
+                ):
+                    return JsonResponse({'ok': False, 'error': 'El docente ya imparte tercer ciclo en ese turno.'})
                 
                 grados_actuales_count = instancia_maestro.grados_a_cargo.filter(activo=True).count()
                 if grados_actuales_count >= 2:
@@ -943,6 +984,12 @@ def directora_materia(request):
 
     # 6. Lista de maestros activos para el modal de asignación
     maestros = Maestro.objects.filter(activo=True).order_by('nombre', 'apellido')
+    for maestro in maestros:
+        maestro.turnos_basica = ','.join(sorted({
+            normalizar_turno(grado.turno)
+            for grado in maestro.grados_a_cargo.filter(activo=True)
+            if not grado.es_tercer_ciclo
+        }))
 
     contexto = {
         'materias': materias,
@@ -950,9 +997,407 @@ def directora_materia(request):
         'matriz_tercer_ciclo': matriz_tercer_ciclo,
         'maestros': maestros,
         'anio_actual': anio_actual,
+        'dias_semana': AsignacionBloqueMaestro.DIAS_SEMANA,
+        'bloques_horario': AsignacionBloqueMaestro.BLOQUES,
     }
 
     return render(request, "gestionar_materia.html", contexto)
+
+
+@login_required
+@directora_required
+def obtener_bloques_maestro(request, dui):
+    anio = request.GET.get('anio', datetime.now().year)
+    turno = normalizar_turno(request.GET.get('turno', 'Mañana'))
+    try:
+        anio = int(anio)
+    except (TypeError, ValueError):
+        return JsonResponse({'success': False, 'error': 'El año lectivo no es válido.'}, status=400)
+
+    maestro = get_object_or_404(Maestro, dui=dui, activo=True)
+    bloques = AsignacionBloqueMaestro.objects.filter(
+        maestro=maestro,
+        anio_lectivo=anio,
+        turno=turno,
+        activo=True
+    ).values('dia', 'bloque')
+
+    return JsonResponse({
+        'success': True,
+        'maestro': f'{maestro.nombre} {maestro.apellido}',
+        'bloques': list(bloques),
+        'turno': turno,
+    })
+
+
+@login_required
+@directora_required
+@require_POST
+def guardar_bloques_maestro(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        dui = data.get('dui_maestro')
+        anio = int(data.get('anio_lectivo', datetime.now().year))
+        turno = normalizar_turno(data.get('turno', 'Mañana'))
+        bloques_recibidos = data.get('bloques', [])
+
+        if not dui:
+            return JsonResponse({'success': False, 'error': 'Debe seleccionar un maestro.'}, status=400)
+        if not isinstance(bloques_recibidos, list):
+            return JsonResponse({'success': False, 'error': 'La lista de bloques no es válida.'}, status=400)
+
+        maestro = Maestro.objects.get(dui=dui, activo=True)
+        dias_validos = {dia for dia, _ in AsignacionBloqueMaestro.DIAS_SEMANA}
+        bloques_validos = {bloque for bloque, _ in AsignacionBloqueMaestro.BLOQUES}
+        seleccion = set()
+
+        for item in bloques_recibidos:
+            try:
+                dia = int(item.get('dia'))
+                bloque = int(item.get('bloque'))
+            except (AttributeError, TypeError, ValueError):
+                return JsonResponse({'success': False, 'error': 'Se recibió un bloque inválido.'}, status=400)
+            if dia not in dias_validos or bloque not in bloques_validos:
+                return JsonResponse({'success': False, 'error': 'El día o bloque seleccionado no existe.'}, status=400)
+            seleccion.add((dia, bloque))
+
+        with transaction.atomic():
+            existentes = AsignacionBloqueMaestro.objects.filter(
+                maestro=maestro,
+                anio_lectivo=anio
+                , turno=turno
+            )
+            ids_conservados = [
+                asignacion.id for asignacion in existentes
+                if (asignacion.dia, asignacion.bloque) in seleccion
+            ]
+            bloques_a_retirar = existentes.exclude(id__in=ids_conservados)
+            from Maestros.models import HorarioClase
+            ocupados = list(HorarioClase.objects.filter(
+                docente=maestro,
+                anio_lectivo=anio,
+                turno=turno,
+                dia__in=bloques_a_retirar.values_list('dia', flat=True),
+            ).values_list('dia', 'bloque'))
+            retirados = set(bloques_a_retirar.values_list('dia', 'bloque'))
+            conflictos = sorted(set(ocupados) & retirados)
+            if conflictos:
+                detalle = ', '.join(f'día {dia}, bloque {bloque}' for dia, bloque in conflictos)
+                return JsonResponse({
+                    'success': False,
+                    'error': f'No se pueden retirar bloques que contienen clases: {detalle}.'
+                }, status=400)
+            existentes.exclude(
+                id__in=ids_conservados
+            ).delete()
+
+            for dia, bloque in seleccion:
+                AsignacionBloqueMaestro.objects.update_or_create(
+                    maestro=maestro,
+                    dia=dia,
+                    bloque=bloque,
+                    anio_lectivo=anio,
+                    turno=turno,
+                    defaults={'activo': True}
+                )
+
+        return JsonResponse({
+            'success': True,
+            'mensaje': 'Los bloques del maestro fueron actualizados correctamente.',
+            'total': len(seleccion),
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'La solicitud contiene datos inválidos.'}, status=400)
+    except ValueError:
+        return JsonResponse({'success': False, 'error': 'El año lectivo no es válido.'}, status=400)
+    except Maestro.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'El maestro no existe o está inactivo.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@directora_required
+def horarios_revision(request):
+    from Maestros.models import HorarioClase
+
+    anio_actual = datetime.now().year
+    nivel = request.GET.get('nivel', 'tercer')
+    if nivel == 'basica':
+        grados_nivel = ['PK', '1G', '2G', '3G', '4G', '5G', '6G']
+        titulo_nivel = 'Niveles básicos'
+        descripcion_nivel = 'Parvularia a 6° grado'
+    else:
+        nivel = 'tercer'
+        grados_nivel = ['7G', '8G', '9G']
+        titulo_nivel = 'Tercer ciclo'
+        descripcion_nivel = '7° a 9° grado'
+
+    clases_nivel = list(HorarioClase.objects.filter(
+        anio_lectivo=anio_actual,
+        grado_seccion__grado__in=grados_nivel,
+    ).select_related('docente', 'grado_seccion', 'materia').order_by(
+        'docente__apellido', 'docente__nombre', 'bloque', 'dia'
+    ))
+
+    horarios_por_docente = {}
+    for clase in clases_nivel:
+        clave_horario = (clase.docente_id, normalizar_turno(clase.turno))
+        item = horarios_por_docente.setdefault(clave_horario, {
+            'docente': clase.docente,
+            'turno': normalizar_turno(clase.turno),
+            'clases': [],
+            'estados': set(),
+            'grados': set(),
+            'fechas_publicacion': [],
+        })
+        item['clases'].append(clase)
+        item['estados'].add(clase.estado)
+        item['grados'].add(str(clase.grado_seccion))
+        if clase.fecha_publicacion:
+            item['fechas_publicacion'].append(clase.fecha_publicacion)
+
+    horarios = []
+    for item in horarios_por_docente.values():
+        estado = next(iter(item['estados'])) if len(item['estados']) == 1 else 'MIXTO'
+        horarios.append({
+            'docente': item['docente'],
+            'turno': item['turno'],
+            'estado': estado,
+            'total_clases': len(item['clases']),
+            'grados': ', '.join(sorted(item['grados'])),
+            'puede_resolverse': estado == 'ENVIADO',
+            'puede_publicarse': estado == 'APROBADO',
+            'fecha_publicacion': max(item['fechas_publicacion']) if item['fechas_publicacion'] else None,
+        })
+
+    dui_seleccionado = request.GET.get('maestro')
+    turno_seleccionado = normalizar_turno(request.GET.get('turno', 'Mañana'))
+    if not dui_seleccionado and horarios:
+        pendiente = next((item for item in horarios if item['estado'] == 'ENVIADO'), None)
+        dui_seleccionado = (pendiente or horarios[0])['docente'].dui
+        turno_seleccionado = (pendiente or horarios[0])['turno']
+
+    horario_seleccionado = next(
+        (item for item in horarios if item['docente'].dui == dui_seleccionado and item['turno'] == turno_seleccionado),
+        None
+    )
+    mapa_clases = {}
+    if horario_seleccionado:
+        clave_seleccionada = (horario_seleccionado['docente'].dui, horario_seleccionado['turno'])
+        for clase in horarios_por_docente[clave_seleccionada]['clases']:
+            mapa_clases[(clase.bloque, clase.dia)] = clase
+
+    bloques = ([
+        {'id': 1, 'hora': '13:00 - 13:45', 'es_receso': False},
+        {'id': 2, 'hora': '13:45 - 14:30', 'es_receso': False},
+        {'id': 0, 'hora': '14:30 - 15:00', 'es_receso': True},
+        {'id': 3, 'hora': '15:00 - 15:45', 'es_receso': False},
+        {'id': 4, 'hora': '15:45 - 16:30', 'es_receso': False},
+        {'id': 5, 'hora': '16:30 - 17:15', 'es_receso': False},
+    ] if turno_seleccionado == 'Tarde' else [
+        {'id': 1, 'hora': '07:00 - 07:45', 'es_receso': False},
+        {'id': 2, 'hora': '07:45 - 08:30', 'es_receso': False},
+        {'id': 0, 'hora': '08:30 - 09:00', 'es_receso': True},
+        {'id': 3, 'hora': '09:00 - 09:45', 'es_receso': False},
+        {'id': 4, 'hora': '09:45 - 10:30', 'es_receso': False},
+        {'id': 5, 'hora': '10:30 - 11:15', 'es_receso': False},
+    ])
+    dias = [
+        {'id': 1, 'nombre': 'Lunes'},
+        {'id': 2, 'nombre': 'Martes'},
+        {'id': 3, 'nombre': 'Miércoles'},
+        {'id': 4, 'nombre': 'Jueves'},
+        {'id': 5, 'nombre': 'Viernes'},
+    ]
+    grilla = []
+    for bloque in bloques:
+        fila = {'info': bloque, 'celdas': []}
+        if not bloque['es_receso']:
+            for dia in dias:
+                fila['celdas'].append({
+                    'dia': dia,
+                    'clase': mapa_clases.get((bloque['id'], dia['id'])),
+                })
+        grilla.append(fila)
+
+    return render(request, 'horarios_revision.html', {
+        'horarios': horarios,
+        'horario_seleccionado': horario_seleccionado,
+        'dui_seleccionado': dui_seleccionado,
+        'turno_seleccionado': turno_seleccionado,
+        'dias': dias,
+        'grilla': grilla,
+        'anio_actual': anio_actual,
+        'nivel': nivel,
+        'titulo_nivel': titulo_nivel,
+        'descripcion_nivel': descripcion_nivel,
+    })
+
+
+@login_required
+@directora_required
+@require_POST
+def resolver_horario_tercer_ciclo(request):
+    from Maestros.models import HorarioClase
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        dui = data.get('dui_maestro')
+        accion = data.get('accion')
+        observaciones = data.get('observaciones', '').strip()
+        anio = int(data.get('anio_lectivo', datetime.now().year))
+        turno = normalizar_turno(data.get('turno', 'Mañana'))
+
+        if accion not in {'aprobar', 'rechazar'}:
+            return JsonResponse({'success': False, 'error': 'La acción solicitada no es válida.'}, status=400)
+        if accion == 'rechazar' and not observaciones:
+            return JsonResponse({'success': False, 'error': 'Debe indicar el motivo del rechazo.'}, status=400)
+
+        maestro = Maestro.objects.get(dui=dui, activo=True)
+        clases = HorarioClase.objects.filter(
+            docente=maestro,
+            anio_lectivo=anio,
+            grado_seccion__grado__in=['7G', '8G', '9G'],
+            estado='ENVIADO',
+            turno=turno,
+        )
+        if not clases.exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'El maestro no tiene un horario de tercer ciclo pendiente de aprobación.'
+            }, status=400)
+
+        nuevo_estado = 'APROBADO' if accion == 'aprobar' else 'RECHAZADO'
+        with transaction.atomic():
+            total = clases.update(
+                estado=nuevo_estado,
+                observaciones='' if accion == 'aprobar' else observaciones,
+            )
+
+        return JsonResponse({
+            'success': True,
+            'estado': nuevo_estado,
+            'total': total,
+            'mensaje': 'Horario aprobado correctamente.' if accion == 'aprobar' else 'Horario rechazado y devuelto al maestro.',
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'La solicitud contiene datos inválidos.'}, status=400)
+    except (TypeError, ValueError):
+        return JsonResponse({'success': False, 'error': 'Los datos enviados no son válidos.'}, status=400)
+    except Maestro.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'El maestro no existe o está inactivo.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@directora_required
+@require_POST
+def resolver_horario_niveles_basicos(request):
+    from Maestros.models import HorarioClase
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        dui = data.get('dui_maestro')
+        accion = data.get('accion')
+        observaciones = data.get('observaciones', '').strip()
+        anio = int(data.get('anio_lectivo', datetime.now().year))
+        turno = normalizar_turno(data.get('turno', 'Mañana'))
+
+        if accion not in {'aprobar', 'rechazar'}:
+            return JsonResponse({'success': False, 'error': 'La acción solicitada no es válida.'}, status=400)
+        if accion == 'rechazar' and not observaciones:
+            return JsonResponse({'success': False, 'error': 'Debe indicar el motivo del rechazo.'}, status=400)
+
+        maestro = Maestro.objects.get(dui=dui, activo=True)
+        clases = HorarioClase.objects.filter(
+            docente=maestro,
+            anio_lectivo=anio,
+            grado_seccion__grado__in=['PK', '1G', '2G', '3G', '4G', '5G', '6G'],
+            estado='ENVIADO',
+            turno=turno,
+        )
+        if not clases.exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'El maestro no tiene un horario de niveles básicos pendiente de aprobación.'
+            }, status=400)
+
+        nuevo_estado = 'APROBADO' if accion == 'aprobar' else 'RECHAZADO'
+        with transaction.atomic():
+            total = clases.update(
+                estado=nuevo_estado,
+                observaciones='' if accion == 'aprobar' else observaciones,
+            )
+
+        return JsonResponse({
+            'success': True,
+            'estado': nuevo_estado,
+            'total': total,
+            'mensaje': 'Horario aprobado correctamente.' if accion == 'aprobar' else 'Horario rechazado y devuelto al maestro.',
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'La solicitud contiene datos inválidos.'}, status=400)
+    except (TypeError, ValueError):
+        return JsonResponse({'success': False, 'error': 'Los datos enviados no son válidos.'}, status=400)
+    except Maestro.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'El maestro no existe o está inactivo.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@directora_required
+@require_POST
+def publicar_horario(request):
+    from Maestros.models import HorarioClase
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        dui = data.get('dui_maestro')
+        nivel = data.get('nivel')
+        anio = int(data.get('anio_lectivo', datetime.now().year))
+        turno = normalizar_turno(data.get('turno', 'Mañana'))
+
+        if nivel == 'tercer':
+            grados = ['7G', '8G', '9G']
+        elif nivel == 'basica':
+            grados = ['PK', '1G', '2G', '3G', '4G', '5G', '6G']
+        else:
+            return JsonResponse({'success': False, 'error': 'El nivel educativo no es válido.'}, status=400)
+
+        maestro = Maestro.objects.get(dui=dui, activo=True)
+        clases = HorarioClase.objects.filter(
+            docente=maestro,
+            anio_lectivo=anio,
+            grado_seccion__grado__in=grados,
+            estado='APROBADO',
+            turno=turno,
+        )
+        if not clases.exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'El horario debe estar aprobado antes de publicarse.'
+            }, status=400)
+
+        fecha = timezone.now()
+        with transaction.atomic():
+            total = clases.update(estado='PUBLICADO', fecha_publicacion=fecha)
+
+        return JsonResponse({
+            'success': True,
+            'total': total,
+            'mensaje': 'El horario oficial fue publicado correctamente.',
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'La solicitud contiene datos inválidos.'}, status=400)
+    except (TypeError, ValueError):
+        return JsonResponse({'success': False, 'error': 'Los datos enviados no son válidos.'}, status=400)
+    except Maestro.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'El maestro no existe o está inactivo.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @login_required
@@ -1008,7 +1453,24 @@ def asignar_materia_docente(request):
             }, status=400)
 
         materia = Materia.objects.get(id=materia_id)
-        docente = Maestro.objects.get(dui=dui_maestro)
+        docente = Maestro.objects.get(dui=dui_maestro, activo=True)
+
+        if not especialidad_coincide_con_materia(docente, materia):
+            return JsonResponse({
+                'success': False,
+                'error': f'{docente.nombre} {docente.apellido} no tiene la especialidad requerida para {materia.nombre}.'
+            }, status=400)
+
+        turnos_basica = {
+            normalizar_turno(grado.turno)
+            for grado in docente.grados_a_cargo.filter(activo=True)
+            if not grado.es_tercer_ciclo
+        }
+        if normalizar_turno(seccion.turno) in turnos_basica:
+            return JsonResponse({
+                'success': False,
+                'error': f'El docente es titular de educación básica en el turno de la {normalizar_turno(seccion.turno).lower()}.'
+            }, status=400)
 
         asignacion, created = AsignacionMateria.objects.update_or_create(
             grado_seccion=seccion,

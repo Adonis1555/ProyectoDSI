@@ -51,6 +51,11 @@
                 </div>
             </div>
 
+            <nav class="selector-turno" aria-label="Seleccionar turno">
+                <a href="{% url 'horarios' %}?turno=manana" class="{% if turno_actual == 'Mañana' %}activo{% endif %}">Mañana</a>
+                <a href="{% url 'horarios' %}?turno=tarde" class="{% if turno_actual == 'Tarde' %}activo{% endif %}">Tarde</a>
+            </nav>
+
             <div class="core-seccion">
                 <div class="container-tabla">
                     <table class="tabla-horario">
@@ -80,7 +85,7 @@
                                             data-dia="{{ c.dia_id }}" 
                                             data-bloque="{{ c.bloque_id }}">
                                             <div class="tarjeta-horario" style="background-color: {{ c.clase.materia.color }};">
-                                                {% if estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' %}
+                                                {% if estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' and estado_actual != 'PUBLICADO' %}
                                                 <button type="button" class="btn-quitar-clase" title="Quitar clase">&times;</button>
                                                 {% endif %}
                                                 <span class="materia-tag">{{ c.clase.materia.nombre }}</span>
@@ -91,10 +96,12 @@
                                         <td class="celda-clase vacia" 
                                             data-dia="{{ c.dia_id }}" 
                                             data-bloque="{{ c.bloque_id }}">
-                                            {% if estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' %}
+                                            {% if c.permitido and estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' and estado_actual != 'PUBLICADO' %}
                                             <button type="button" class="btn-asignar-bloque" title="Asignar clase">
                                                 <i class="ti ti-plus"></i>
                                             </button>
+                                            {% elif not c.permitido %}
+                                            <span class="bloque-no-asignado">No asignado</span>
                                             {% else %}
                                             <span style="color: #cbd5e1; font-size: 11px;">Bloque libre</span>
                                             {% endif %}
@@ -140,6 +147,10 @@
                             {% elif estado_actual == 'APROBADO' %}
                                 <div style="background: #dcfce7; color: #166534; padding: 10px; border-radius: 8px; font-size: 12px; text-align: center; font-weight: 600; border: 1px solid #bbf7d0;">
                                     <i class="ti ti-circle-check"></i> Horario Aprobado
+                                </div>
+                            {% elif estado_actual == 'PUBLICADO' %}
+                                <div style="background: #e8eef9; color: #2E5299; padding: 10px; border-radius: 8px; font-size: 12px; text-align: center; font-weight: 600; border: 1px solid #cbd8ef;">
+                                    <i class="ti ti-world-check"></i> Horario oficial publicado
                                 </div>
                             {% else %}
                                 <button type="button" class="btn-borrador" onclick="window.location.reload();">Guardar borrador</button>
@@ -275,6 +286,7 @@
                             body: JSON.stringify({
                                 dia: dia,
                                 bloque: bloque,
+                                turno: "{{ turno_actual }}",
                                 anio_lectivo: {{ anio_actual }}
                             })
                         })
@@ -311,7 +323,8 @@
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRFToken': getCsrfToken()
-                            }
+                            },
+                            body: JSON.stringify({ turno: "{{ turno_actual }}" })
                         })
                         .then(r => r.json())
                         .then(data => {

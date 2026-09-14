@@ -34,6 +34,9 @@
                         <li class="item-menu"><i class="ti"></i> Control de conducta</li>
                     </a>
                     <li class="item-menu activo"><i class="ti"></i> Materias</li>
+                    <a href="{% url 'horarios_revision' %}" style="text-decoration: none;">
+                        <li class="item-menu">Horarios</li>
+                    </a>
                 </ul>
                 <div class="cerrar-sesion-container">
                     <form action="{% url 'logout' %}" method="post">
@@ -50,6 +53,7 @@
             <div class="contenedor-tabs">
                 <button type="button" class="tab-btn activo" data-tab="tab-catalogo">Gestión de Materias</button>
                 <button type="button" class="tab-btn" data-tab="tab-distribucion">Distribución Académica</button>
+                <button type="button" class="tab-btn" data-tab="tab-bloques">Bloques Docentes</button>
             </div>
 
             <!-- ==========================================
@@ -173,6 +177,7 @@
                                          data-seccion-nombre='{{ item.seccion.get_grado_display }} "{{ item.seccion.seccion }}"'
                                          data-materia-id="{{ slot.materia.id }}" 
                                          data-materia-nombre="{{ slot.materia.nombre }}"
+                                         data-turno="{{ item.seccion.turno }}"
                                          data-dui-actual="{{ slot.docente.dui }}"
                                          title="Clic para reasignar">
                                         <span class="iniciales">{{ slot.iniciales }}</span>
@@ -185,6 +190,7 @@
                                          data-seccion-nombre='{{ item.seccion.get_grado_display }} "{{ item.seccion.seccion }}"'
                                          data-materia-id="{{ slot.materia.id }}" 
                                          data-materia-nombre="{{ slot.materia.nombre }}"
+                                         data-turno="{{ item.seccion.turno }}"
                                          data-dui-actual=""
                                          title="Asignar profesor">
                                         <i class="ti ti-plus"></i>
@@ -201,6 +207,61 @@
                             </div>
                             {% endfor %}
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-bloques" class="tab-contenido">
+                <div class="titulo-materia">
+                    <div>
+                        <h1>Asignación de bloques docentes</h1>
+                        <p class="texto-ayuda-bloques">Define la carga disponible de cada maestro para el año {{ anio_actual }}.</p>
+                    </div>
+                </div>
+                <div class="panel-bloques">
+                    <div class="barra-configuracion-bloques">
+                        <div class="campo-bloques">
+                            <label for="selector-maestro-bloques">Maestro activo</label>
+                            <select id="selector-maestro-bloques">
+                                <option value="">Seleccione un maestro</option>
+                                {% for maestro in maestros %}
+                                <option value="{{ maestro.dui }}">{{ maestro.nombre }} {{ maestro.apellido }} — {{ maestro.especialidad|default:"General" }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="campo-bloques campo-anio">
+                            <label>Año lectivo</label>
+                            <span>{{ anio_actual }}</span>
+                        </div>
+                        <div class="campo-bloques campo-anio">
+                            <label for="selector-turno-bloques">Turno</label>
+                            <select id="selector-turno-bloques"><option value="Mañana">Mañana</option><option value="Tarde">Tarde</option></select>
+                        </div>
+                        <div class="resumen-bloques"><span id="contador-bloques">0</span><small>bloques asignados</small></div>
+                    </div>
+                    <div class="leyenda-bloques">
+                        <span><i class="muestra-bloque disponible"></i> Disponible</span>
+                        <span><i class="muestra-bloque seleccionado"></i> Asignado</span>
+                    </div>
+                    <div class="container-tabla tabla-bloques-contenedor">
+                        <table class="tabla-bloques" aria-label="Asignación semanal de bloques docentes">
+                            <thead><tr><th>Bloque</th>{% for dia_id, dia_nombre in dias_semana %}<th>{{ dia_nombre }}</th>{% endfor %}</tr></thead>
+                            <tbody>
+                                {% for bloque_id, bloque_hora in bloques_horario %}
+                                    {% if bloque_id == 3 %}<tr class="fila-receso"><td colspan="6"><i class="ti ti-coffee"></i> Receso — <span id="hora-receso-bloques">08:30 a 09:00</span></td></tr>{% endif %}
+                                <tr>
+                                    <th scope="row"><strong>Bloque {{ bloque_id }}</strong><span data-hora-bloque="{{ bloque_id }}">{{ bloque_hora }}</span></th>
+                                    {% for dia_id, dia_nombre in dias_semana %}
+                                    <td><button type="button" class="celda-bloque" data-dia="{{ dia_id }}" data-bloque="{{ bloque_id }}" disabled aria-pressed="false" title="Asignar {{ dia_nombre }}, bloque {{ bloque_id }}"><i class="ti ti-plus"></i><span>Disponible</span></button></td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="acciones-bloques">
+                        <p id="estado-bloques">Selecciona un maestro para consultar su asignación.</p>
+                        <button type="button" id="guardar-bloques" class="btnRegistrarMateria" disabled><i class="ti ti-device-floppy"></i> Guardar asignación</button>
                     </div>
                 </div>
             </div>
@@ -321,7 +382,11 @@
         // Objeto con opciones de maestros generadas desde el servidor
         const catalogoMaestros = {
             {% for m in maestros %}
-            "{{ m.dui }}": "{{ m.nombre }} {{ m.apellido }} ({{ m.especialidad|default:'General' }})",
+            "{{ m.dui }}": {
+                etiqueta: "{{ m.nombre|escapejs }} {{ m.apellido|escapejs }} ({{ m.especialidad|default:'General'|escapejs }})",
+                especialidad: "{{ m.especialidad|escapejs }}",
+                turnosBasica: "{{ m.turnos_basica|escapejs }}".split(',').filter(Boolean)
+            },
             {% endfor %}
         };
 
@@ -332,12 +397,18 @@
                 const materiaId = celda.getAttribute('data-materia-id');
                 const materiaNombre = celda.getAttribute('data-materia-nombre');
                 const duiActual = celda.getAttribute('data-dui-actual');
+                const turnoSeccion = celda.getAttribute('data-turno');
 
                 let optionsHtml = '<option value="">-- Seleccione un docente --</option>';
-                for (const [dui, etiqueta] of Object.entries(catalogoMaestros)) {
+                let totalCompatibles = 0;
+                for (const [dui, datos] of Object.entries(catalogoMaestros)) {
+                    if (datos.especialidad !== materiaNombre) continue;
+                    if (datos.turnosBasica.includes(turnoSeccion)) continue;
                     const selected = (dui === duiActual) ? 'selected' : '';
-                    optionsHtml += `<option value="${dui}" ${selected}>${etiqueta}</option>`;
+                    optionsHtml += `<option value="${dui}" ${selected}>${datos.etiqueta}</option>`;
+                    totalCompatibles += 1;
                 }
+                if (totalCompatibles === 0) optionsHtml += '<option value="" disabled>No hay especialistas disponibles</option>';
 
                 Swal.fire({
                     title: `Asignar Materia`,
@@ -415,6 +486,115 @@
                 });
             });
         });
+
+        const selectorMaestroBloques = document.getElementById('selector-maestro-bloques');
+        const selectorTurnoBloques = document.getElementById('selector-turno-bloques');
+        const horasPorTurno = {
+            'Mañana': {1:'07:00 - 07:45',2:'07:45 - 08:30',3:'09:00 - 09:45',4:'09:45 - 10:30',5:'10:30 - 11:15',receso:'08:30 a 09:00'},
+            'Tarde': {1:'13:00 - 13:45',2:'13:45 - 14:30',3:'15:00 - 15:45',4:'15:45 - 16:30',5:'16:30 - 17:15',receso:'14:30 a 15:00'}
+        };
+        const actualizarHorasBloques = () => {
+            const horas = horasPorTurno[selectorTurnoBloques.value];
+            document.querySelectorAll('[data-hora-bloque]').forEach(elemento => elemento.textContent = horas[elemento.dataset.horaBloque]);
+            document.getElementById('hora-receso-bloques').textContent = horas.receso;
+        };
+        const celdasBloques = Array.from(document.querySelectorAll('.celda-bloque'));
+        const botonGuardarBloques = document.getElementById('guardar-bloques');
+        const contadorBloques = document.getElementById('contador-bloques');
+        const estadoBloques = document.getElementById('estado-bloques');
+
+        const actualizarResumenBloques = () => {
+            contadorBloques.textContent = celdasBloques.filter(celda => celda.classList.contains('seleccionado')).length;
+        };
+
+        const actualizarCeldaBloque = (celda, seleccionada) => {
+            celda.classList.toggle('seleccionado', seleccionada);
+            celda.setAttribute('aria-pressed', seleccionada ? 'true' : 'false');
+            celda.innerHTML = seleccionada
+                ? '<i class="ti ti-check"></i><span>Asignado</span>'
+                : '<i class="ti ti-plus"></i><span>Disponible</span>';
+        };
+
+        const limpiarBloques = () => {
+            celdasBloques.forEach(celda => actualizarCeldaBloque(celda, false));
+            actualizarResumenBloques();
+        };
+
+        celdasBloques.forEach(celda => {
+            celda.addEventListener('click', () => {
+                actualizarCeldaBloque(celda, !celda.classList.contains('seleccionado'));
+                actualizarResumenBloques();
+            });
+        });
+
+        selectorMaestroBloques.addEventListener('change', () => {
+            const dui = selectorMaestroBloques.value;
+            limpiarBloques();
+            if (!dui) {
+                celdasBloques.forEach(celda => celda.disabled = true);
+                botonGuardarBloques.disabled = true;
+                estadoBloques.textContent = 'Selecciona un maestro para consultar su asignación.';
+                return;
+            }
+
+            celdasBloques.forEach(celda => celda.disabled = true);
+            botonGuardarBloques.disabled = true;
+            estadoBloques.textContent = 'Consultando bloques asignados...';
+            const url = `{% url 'obtener_bloques_maestro' 'DUI_MAESTRO' %}`.replace('DUI_MAESTRO', encodeURIComponent(dui));
+
+            fetch(`${url}?anio={{ anio_actual }}&turno=${encodeURIComponent(selectorTurnoBloques.value)}`)
+                .then(respuesta => respuesta.json().then(datos => ({ ok: respuesta.ok, datos })))
+                .then(({ ok, datos }) => {
+                    if (!ok || !datos.success) throw new Error(datos.error || 'No se pudieron consultar los bloques.');
+                    datos.bloques.forEach(item => {
+                        const celda = celdasBloques.find(elemento => Number(elemento.dataset.dia) === item.dia && Number(elemento.dataset.bloque) === item.bloque);
+                        if (celda) actualizarCeldaBloque(celda, true);
+                    });
+                    celdasBloques.forEach(celda => celda.disabled = false);
+                    botonGuardarBloques.disabled = false;
+                    estadoBloques.textContent = `Editando la asignación de ${datos.maestro}.`;
+                    actualizarResumenBloques();
+                })
+                .catch(error => {
+                    estadoBloques.textContent = error.message;
+                    Swal.fire('Error', error.message, 'error');
+                });
+        });
+
+        botonGuardarBloques.addEventListener('click', () => {
+            const seleccion = celdasBloques.filter(celda => celda.classList.contains('seleccionado')).map(celda => ({ dia: Number(celda.dataset.dia), bloque: Number(celda.dataset.bloque) }));
+            Swal.fire({
+                title: '¿Guardar asignación?',
+                text: `Se registrarán ${seleccion.length} bloques para el maestro seleccionado.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, guardar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2E5299',
+                cancelButtonColor: '#94a3b8'
+            }).then(resultado => {
+                if (!resultado.isConfirmed) return;
+                botonGuardarBloques.disabled = true;
+                fetch("{% url 'guardar_bloques_maestro' %}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                    body: JSON.stringify({ dui_maestro: selectorMaestroBloques.value, turno: selectorTurnoBloques.value, anio_lectivo: {{ anio_actual }}, bloques: seleccion })
+                })
+                .then(respuesta => respuesta.json().then(datos => ({ ok: respuesta.ok, datos })))
+                .then(({ ok, datos }) => {
+                    if (!ok || !datos.success) throw new Error(datos.error || 'No se pudo guardar la asignación.');
+                    estadoBloques.textContent = `${datos.total} bloques guardados correctamente.`;
+                    Swal.fire({ icon: 'success', title: 'Asignación guardada', text: datos.mensaje, timer: 1500, showConfirmButton: false });
+                })
+                .catch(error => Swal.fire('Error', error.message, 'error'))
+                .finally(() => botonGuardarBloques.disabled = false);
+            });
+        });
+        selectorTurnoBloques.addEventListener('change', () => {
+            actualizarHorasBloques();
+            selectorMaestroBloques.dispatchEvent(new Event('change'));
+        });
+        actualizarHorasBloques();
     </script>
 </body>
 </html>

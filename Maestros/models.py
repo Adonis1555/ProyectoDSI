@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from django.db import models
 from django.conf import settings
-from Directora.models import Maestro, GradoSeccion, Materia
+from Directora.models import Maestro, GradoSeccion, Materia, normalizar_turno
 
 
 class Alumno(models.Model):
@@ -73,6 +73,7 @@ class RegistroTarjeta(models.Model):
 
 
 class HorarioClase(models.Model):
+    TURNOS = [('Mañana', 'Mañana'), ('Tarde', 'Tarde')]
     DIAS_SEMANA = [
         (1, 'Lunes'),
         (2, 'Martes'),
@@ -86,6 +87,7 @@ class HorarioClase(models.Model):
         ('ENVIADO', 'Enviado para Aprobación'),
         ('APROBADO', 'Aprobado'),
         ('RECHAZADO', 'Rechazado'),
+        ('PUBLICADO', 'Publicado'),
     ]
 
     docente = models.ForeignKey(
@@ -106,6 +108,7 @@ class HorarioClase(models.Model):
     bloque = models.PositiveSmallIntegerField(
         help_text="Número de bloque de clase (1 a 7)"
     )
+    turno = models.CharField(max_length=10, choices=TURNOS, default='Mañana')
     anio_lectivo = models.PositiveIntegerField(default=2026)
 
     estado = models.CharField(
@@ -119,18 +122,27 @@ class HorarioClase(models.Model):
         null=True, 
         help_text="Retroalimentación o motivo de rechazo de Dirección"
     )
+    fecha_publicacion = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name='Fecha de Publicación'
+    )
 
     class Meta:
         verbose_name = "Horario de Clase"
         verbose_name_plural = "Horarios de Clases"
         unique_together = [
-            ('docente', 'dia', 'bloque', 'anio_lectivo'),
-            ('grado_seccion', 'dia', 'bloque', 'anio_lectivo'),
+            ('docente', 'dia', 'bloque', 'turno', 'anio_lectivo'),
+            ('grado_seccion', 'dia', 'bloque', 'turno', 'anio_lectivo'),
         ]
 
 
     def __str__(self):
         return f"{self.get_dia_display()} Bloque {self.bloque}: {self.materia} ({self.grado_seccion})"
+
+    def save(self, *args, **kwargs):
+        self.turno = normalizar_turno(self.grado_seccion.turno)
+        super().save(*args, **kwargs)
 
 
 # Función auxiliar que recibe la instancia del maestro
@@ -155,12 +167,19 @@ def obtener_materias_docente(maestro, anio=None):
                 })
 
     # 2. Caso Tercer Ciclo: Asignaciones específicas
+    turnos_basica = {
+        normalizar_turno(seccion.turno)
+        for seccion in secciones_titular
+        if not seccion.es_tercer_ciclo
+    }
     asignaciones = AsignacionMateria.objects.filter(
         docente=maestro,
         anio_lectivo=anio
     ).select_related('grado_seccion', 'materia')
 
     for asig in asignaciones:
+        if normalizar_turno(asig.grado_seccion.turno) in turnos_basica:
+            continue
         materias_permitidas.append({
             'grado_seccion': asig.grado_seccion,
             'materia': asig.materia,

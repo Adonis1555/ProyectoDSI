@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import Count, Q
 from Login.decorators import maestro_required, roles_permitidos
-from Directora.models import GradoSeccion, Maestro,Materia
+from Directora.models import AsignacionBloqueMaestro,GradoSeccion,Maestro,Materia,normalizar_turno
 from Maestros.models import Alumno, RegistroTarjeta
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
@@ -483,6 +483,15 @@ BLOQUES_HORARIO = [
     {'id': 5, 'hora': '10:30 - 11:15', 'es_receso': False},
 ]
 
+BLOQUES_HORARIO_TARDE = [
+    {'id': 1, 'hora': '13:00 - 13:45', 'es_receso': False},
+    {'id': 2, 'hora': '13:45 - 14:30', 'es_receso': False},
+    {'id': 0, 'hora': '14:30 - 15:00', 'es_receso': True, 'nombre': 'Receso'},
+    {'id': 3, 'hora': '15:00 - 15:45', 'es_receso': False},
+    {'id': 4, 'hora': '15:45 - 16:30', 'es_receso': False},
+    {'id': 5, 'hora': '16:30 - 17:15', 'es_receso': False},
+]
+
 DIAS_SEMANA = [
     {'id': 1, 'nombre': 'Lunes'},
     {'id': 2, 'nombre': 'Martes'},
@@ -497,22 +506,34 @@ DIAS_SEMANA = [
 def horario_maestro(request):
     maestro = get_object_or_404(Maestro, id_usuario=request.user)
     anio_actual = datetime.now().year
+    turno_actual = 'Tarde' if request.GET.get('turno', '').lower() == 'tarde' else 'Mañana'
 
     # Materias disponibles para este maestro mediante el método del modelo
-    materias_disponibles = obtener_materias_docente(maestro, anio=anio_actual)
+    materias_disponibles = [
+        opcion for opcion in obtener_materias_docente(maestro, anio=anio_actual)
+        if normalizar_turno(opcion['grado_seccion'].turno) == turno_actual
+    ]
 
     # Clases agendadas por este maestro
     clases = HorarioClase.objects.filter(
         docente=maestro,
-        anio_lectivo=anio_actual
+        anio_lectivo=anio_actual,
+        turno=turno_actual,
     ).select_related('materia', 'grado_seccion')
+    bloques_asignados = set(AsignacionBloqueMaestro.objects.filter(
+        maestro=maestro,
+        anio_lectivo=anio_actual,
+        turno=turno_actual,
+        activo=True,
+    ).values_list('dia', 'bloque'))
 
     # Mapa rápido: (dia, bloque) -> objeto HorarioClase
     mapa_horario = {(c.dia, c.bloque): c for c in clases}
 
     # Armar grilla semanal
     grilla = []
-    for b in BLOQUES_HORARIO:
+    bloques_horario = BLOQUES_HORARIO_TARDE if turno_actual == 'Tarde' else BLOQUES_HORARIO
+    for b in bloques_horario:
         fila = {'info': b, 'celdas': []}
         if not b['es_receso']:
             for d in DIAS_SEMANA:
@@ -520,7 +541,8 @@ def horario_maestro(request):
                 fila['celdas'].append({
                     'dia_id': d['id'],
                     'bloque_id': b['id'],
-                    'clase': clase_slot
+                    'clase': clase_slot,
+                    'permitido': (d['id'], b['id']) in bloques_asignados,
                 })
         grilla.append(fila)
 
@@ -556,6 +578,7 @@ def horario_maestro(request):
         'progreso': progreso,
         'anio_actual': anio_actual,
         'estado_actual': estado_actual,
+        'turno_actual': turno_actual,
     }
 
     return render(request, 'horarios.html', contexto)
@@ -575,6 +598,39 @@ def guardar_bloque_horario(request):
 
         grado_seccion = GradoSeccion.objects.get(id=grado_seccion_id)
         materia = Materia.objects.get(id=materia_id)
+        turno_clase = normalizar_turno(grado_seccion.turno)
+
+        if not AsignacionBloqueMaestro.objects.filter(
+            maestro=maestro, dia=dia, bloque=bloque, turno=turno_clase,
+            anio_lectivo=anio, activo=True
+        ).exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'Este bloque no está asignado por Dirección para el turno seleccionado.'
+            }, status=400)
+
+        combinacion_permitida = any(
+            opcion['grado_seccion'].id == grado_seccion.id and opcion['materia'].id == materia.id
+            for opcion in obtener_materias_docente(maestro, anio=anio)
+        )
+        if not combinacion_permitida:
+            return JsonResponse({
+                'success': False,
+                'error': 'La materia y el grado seleccionados no forman parte de tu carga académica.'
+            }, status=400)
+
+        grados_nivel = ['7G', '8G', '9G'] if grado_seccion.es_tercer_ciclo else ['PK', '1G', '2G', '3G', '4G', '5G', '6G']
+        if HorarioClase.objects.filter(
+            docente=maestro,
+            anio_lectivo=anio,
+            grado_seccion__grado__in=grados_nivel,
+            estado='PUBLICADO',
+            turno=turno_clase,
+        ).exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'El horario oficial de este nivel ya fue publicado y no puede modificarse.'
+            }, status=400)
 
         # Validación 1: Verificar si el aula ya está ocupada por otro docente
         choque_aula = HorarioClase.objects.filter(
@@ -596,9 +652,10 @@ def guardar_bloque_horario(request):
             dia=dia,
             bloque=bloque,
             anio_lectivo=anio,
+            turno=turno_clase,
             defaults={
                 'grado_seccion': grado_seccion,
-                'materia': materia
+                'materia': materia,
             }
         )
 
@@ -623,12 +680,20 @@ def eliminar_bloque_horario(request):
         bloque = int(data.get('bloque'))
         anio = int(data.get('anio_lectivo', datetime.now().year))
 
-        HorarioClase.objects.filter(
+        clase = HorarioClase.objects.filter(
             docente=maestro,
             dia=dia,
             bloque=bloque,
-            anio_lectivo=anio
-        ).delete()
+            anio_lectivo=anio,
+            turno='Tarde' if str(data.get('turno', '')).lower() == 'tarde' else 'Mañana',
+        ).first()
+        if clase and clase.estado == 'PUBLICADO':
+            return JsonResponse({
+                'success': False,
+                'error': 'Una clase del horario oficial publicado no puede eliminarse.'
+            }, status=400)
+        if clase:
+            clase.delete()
 
         return JsonResponse({'success': True})
     except Exception as e:
@@ -640,8 +705,10 @@ def enviar_horario_revision(request):
     try:
         maestro = get_object_or_404(Maestro, id_usuario=request.user)
         anio = datetime.now().year
+        data = json.loads(request.body.decode('utf-8') or '{}')
+        turno = 'Tarde' if str(data.get('turno', '')).lower() == 'tarde' else 'Mañana'
 
-        clases = HorarioClase.objects.filter(docente=maestro, anio_lectivo=anio)
+        clases = HorarioClase.objects.filter(docente=maestro, anio_lectivo=anio, turno=turno)
 
         if not clases.exists():
             return JsonResponse({
@@ -649,8 +716,15 @@ def enviar_horario_revision(request):
                 'error': 'No tienes ninguna clase programada en tu horario para enviar.'
             }, status=400)
 
-        # Transición de estado masiva
-        clases.update(estado='ENVIADO')
+        clases_editables = clases.filter(estado__in=['BORRADOR', 'RECHAZADO'])
+        if not clases_editables.exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'No hay cambios en borrador o rechazados para enviar.'
+            }, status=400)
+
+        # Los horarios aprobados o publicados conservan su estado.
+        clases_editables.update(estado='ENVIADO', observaciones='')
 
         return JsonResponse({
             'success': True,

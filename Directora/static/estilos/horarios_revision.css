@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; background: #F0F4FA; font-family: 'Inter', sans-serif; }
+.maestro-alumno { display: grid; grid-template-columns: 240px 1fr; width: 100%; max-width: 1380px; min-height: 78vh; overflow: hidden; border-radius: 1.5rem; background: #fff; box-shadow: 0 10px 25px rgba(0,0,0,.08); }
+.menu-opciones { display: flex; flex-direction: column; align-items: center; padding: 30px 20px; border-right: 1px solid #f0f0f0; background: #fff; }
+.imgContainer { width: 110px; margin-bottom: 35px; }
+.Logo { width: 100%; object-fit: contain; }
+.opciones { display: flex; flex: 1; flex-direction: column; justify-content: space-between; width: 100%; min-height: 0; }
+.menu-opciones ul { width: 100%; list-style: none; }
+.menu-opciones a { text-decoration: none; }
+.item-menu { display: flex; align-items: center; justify-content: center; width: 100%; margin-bottom: 8px; padding: 12px 16px; border-radius: 8px; color: #4b5563; cursor: pointer; font-size: 14px; font-weight: 500; transition: .2s; }
+.item-menu:hover, .item-menu.activo { background: #2E5299; color: #fff; }
+.item-menu.activo { font-weight: 600; }
+.cerrar-sesion-container { display: flex; justify-content: center; width: 100%; margin-top: auto; padding-top: 20px; }
+.btnCerrarSesion { padding: 12px 24px; border: 0; border-radius: 10px; background: #C0392B; color: #fff; cursor: pointer; font-size: 14px; font-weight: 600; transition: .3s; }
+.btnCerrarSesion:hover { background: #A93226; transform: translateY(-1px); }
+.revision-container { display: flex; flex-direction: column; gap: 22px; min-width: 0; padding: 35px 40px; border-radius: 0 1.5rem 1.5rem 0; background: #fcfcfc; }
+.encabezado-revision { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.encabezado-revision h1 { color: #111827; font-size: 22px; font-weight: 700; }
+.encabezado-revision p { margin-top: 5px; color: #6b7280; font-size: 13px; }
+.etiqueta-nivel { padding: 8px 13px; border-radius: 20px; background: rgba(46,82,153,.1); color: #2E5299; font-size: 12px; font-weight: 700; }
+.selector-nivel { display: flex; width: fit-content; gap: 4px; padding: 5px; border-radius: 12px; background: #e2e8f0; }
+.selector-nivel a { padding: 9px 20px; border-radius: 8px; color: #64748b; font-size: 13px; font-weight: 600; text-decoration: none; transition: .2s; }
+.selector-nivel a:hover { color: #1e293b; }
+.selector-nivel a.activo { background: #2E5299; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,.08); }
+.contenido-revision { display: grid; grid-template-columns: 285px minmax(0, 1fr); gap: 20px; min-height: 560px; }
+.lista-horarios, .detalle-horario { border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.lista-horarios { display: flex; flex-direction: column; gap: 8px; padding: 16px; overflow-y: auto; }
+.titulo-lista { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.titulo-lista h2 { color: #111827; font-size: 14px; }
+.titulo-lista span { display: flex; align-items: center; justify-content: center; width: 25px; height: 25px; border-radius: 50%; background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 700; }
+.tarjeta-docente { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 9px; padding: 11px; border: 1px solid #edf2f7; border-radius: 9px; color: inherit; text-decoration: none; transition: .2s; }
+.tarjeta-docente:hover { border-color: #94a3b8; background: #f8fafc; }
+.tarjeta-docente.seleccionada { border-color: #2E5299; background: rgba(46,82,153,.06); }
+.avatar-docente { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #2E5299; color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.datos-docente { min-width: 0; }
+.datos-docente strong, .datos-docente small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.datos-docente strong { color: #1f2937; font-size: 12px; }
+.datos-docente small { margin-top: 3px; color: #6b7280; font-size: 9px; }
+.estado { padding: 5px 7px; border-radius: 12px; font-size: 8px; font-weight: 700; text-transform: uppercase; }
+.estado-enviado { background: #fff7ed; color: #c2410c; }
+.estado-aprobado { background: #ecfdf5; color: #15803d; }
+.estado-rechazado { background: #fef2f2; color: #b91c1c; }
+.estado-publicado { background: rgba(46,82,153,.1); color: #2E5299; }
+.estado-borrador, .estado-mixto { background: #f1f5f9; color: #64748b; }
+.detalle-horario { min-width: 0; padding: 20px; }
+.cabecera-detalle { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.cabecera-detalle h2 { color: #111827; font-size: 17px; }
+.cabecera-detalle p { margin-top: 4px; color: #6b7280; font-size: 11px; }
+.cabecera-detalle .fecha-publicacion { display: flex; align-items: center; gap: 5px; color: #2E5299; font-weight: 600; }
+.tabla-horario-contenedor { overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 10px; }
+.tabla-horario { width: 100%; min-width: 680px; border-collapse: collapse; table-layout: fixed; }
+.tabla-horario th, .tabla-horario td { height: 72px; padding: 8px; border: 1px solid #edf2f7; text-align: center; vertical-align: middle; }
+.tabla-horario thead th { height: auto; padding: 11px 8px; background: #f8fafc; color: #4b5563; font-size: 11px; font-weight: 600; }
+.tabla-horario tbody th { width: 110px; background: #fcfcfc; }
+.tabla-horario tbody th span, .tabla-horario tbody th small { display: block; }
+.tabla-horario tbody th span { color: #374151; font-size: 11px; }
+.tabla-horario tbody th small { margin-top: 3px; color: #94a3b8; font-size: 8px; }
+.clase-horario { display: flex; flex-direction: column; gap: 4px; min-height: 50px; justify-content: center; padding: 7px; border-top: 3px solid #2E5299; border-radius: 6px; background: #f8fafc; }
+.clase-horario strong { color: #1f2937; font-size: 10px; }
+.clase-horario span { color: #64748b; font-size: 8px; }
+.bloque-vacio { color: #cbd5e1; font-size: 9px; }
+.fila-receso td { height: auto; padding: 7px; background: #f1f5f9; color: #64748b; font-size: 10px; font-weight: 600; }
+.acciones-revision { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 18px; }
+.acciones-revision p { color: #6b7280; font-size: 10px; }
+.acciones-revision > div { display: flex; gap: 9px; }
+.btn-rechazar, .btn-aprobar { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border: 0; border-radius: 9px; color: #fff; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; transition: .2s; }
+.btn-publicar { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border: 0; border-radius: 9px; background: #2E5299; color: #fff; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; transition: .2s; }
+.btn-rechazar { background: #C0392B; }
+.btn-aprobar { background: #1E7E34; }
+.btn-rechazar:hover, .btn-aprobar:hover { transform: translateY(-1px); filter: brightness(.94); }
+.btn-publicar:hover { transform: translateY(-1px); background: #24447f; }
+.acciones-publicacion { padding: 12px; border-radius: 9px; background: rgba(46,82,153,.05); }
+.resolucion-completada { margin-top: 18px; padding: 12px; border-radius: 9px; background: #f8fafc; color: #64748b; font-size: 11px; text-align: center; }
+.estado-vacio { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; min-height: 170px; color: #94a3b8; text-align: center; }
+.estado-vacio i { font-size: 28px; }
+.estado-vacio p { max-width: 220px; font-size: 11px; line-height: 1.5; }
+.detalle-vacio { height: 100%; }
+
+@media (max-width: 1050px) { .contenido-revision { grid-template-columns: 1fr; } .lista-horarios { max-height: 260px; } }
+@media (max-width: 768px) { body { padding: 10px; } .maestro-alumno { grid-template-columns: 1fr; } .menu-opciones { padding: 20px; border-right: 0; border-bottom: 1px solid #f0f0f0; } .imgContainer { width: 90px; margin-bottom: 15px; } .menu-opciones ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; } .item-menu { width: auto; margin: 0; padding: 8px 12px; font-size: 12px; } .revision-container { padding: 20px; } .encabezado-revision, .acciones-revision { align-items: flex-start; flex-direction: column; } .selector-nivel { width: 100%; } .selector-nivel a { flex: 1; text-align: center; } }

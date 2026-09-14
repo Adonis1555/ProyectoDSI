@@ -72,8 +72,13 @@
                                 <input class="input-dato" type="text" name="apellido" required>
                             </div>
                             <div class="container-dato">
-                                <label for="">Especialidad:</label>
-                                <input class="input-dato" type="text" name="especialidad" required>
+                                <label for="especialidad">Especialidad:</label>
+                                <select class="input-dato" id="especialidad" name="especialidad" required>
+                                    <option value="" selected disabled>Seleccione una materia</option>
+                                    {% for materia in materias %}
+                                    <option value="{{ materia.nombre }}">{{ materia.nombre }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
                             <div class="container-dato">
                                 <label for="">Dui:</label>

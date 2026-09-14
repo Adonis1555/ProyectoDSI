@@ -114,7 +114,14 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 75%;
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+}
+
+.cerrar-sesion-container {
+    margin-top: auto;
+    padding-top: 20px;
 }
 
 .contenedor-tabla {

@@ -1,6 +1,21 @@
 from django.db import models
 from django.conf import settings
 from datetime import datetime
+import unicodedata
+
+
+def normalizar_nombre_academico(valor):
+    """Normaliza nombres para comparar materias y especialidades de forma segura."""
+    texto = unicodedata.normalize('NFKD', valor or '')
+    return ''.join(caracter for caracter in texto if not unicodedata.combining(caracter)).casefold().strip()
+
+
+def especialidad_coincide_con_materia(maestro, materia):
+    return normalizar_nombre_academico(maestro.especialidad) == normalizar_nombre_academico(materia.nombre)
+
+
+def normalizar_turno(valor):
+    return 'Tarde' if normalizar_nombre_academico(valor) == 'tarde' else 'Mañana'
 
 
 class Maestro(models.Model):
@@ -121,3 +136,50 @@ class AsignacionMateria(models.Model):
 
     def __str__(self):
         return f"{self.materia.nombre} - {self.grado_seccion} -> {self.docente.nombre} {self.docente.apellido}"
+
+
+class AsignacionBloqueMaestro(models.Model):
+    TURNOS = [('Mañana', 'Mañana'), ('Tarde', 'Tarde')]
+    DIAS_SEMANA = [
+        (1, 'Lunes'),
+        (2, 'Martes'),
+        (3, 'Miércoles'),
+        (4, 'Jueves'),
+        (5, 'Viernes'),
+    ]
+    BLOQUES = [
+        (1, '07:00 - 07:45'),
+        (2, '07:45 - 08:30'),
+        (3, '09:00 - 09:45'),
+        (4, '09:45 - 10:30'),
+        (5, '10:30 - 11:15'),
+    ]
+
+    maestro = models.ForeignKey(
+        Maestro,
+        on_delete=models.CASCADE,
+        related_name='bloques_asignados',
+        verbose_name='Maestro'
+    )
+    dia = models.PositiveSmallIntegerField(choices=DIAS_SEMANA)
+    bloque = models.PositiveSmallIntegerField(choices=BLOQUES)
+    turno = models.CharField(max_length=10, choices=TURNOS, default='Mañana')
+    anio_lectivo = models.PositiveIntegerField(
+        default=datetime.now().year,
+        verbose_name='Año Lectivo'
+    )
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = 'Asignación de bloque a maestro'
+        verbose_name_plural = 'Asignaciones de bloques a maestros'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['maestro', 'dia', 'bloque', 'turno', 'anio_lectivo'],
+                name='bloque_unico_maestro_turno_anio'
+            )
+        ]
+        ordering = ['maestro', 'turno', 'dia', 'bloque']
+
+    def __str__(self):
+        return f"{self.maestro} - {self.get_dia_display()} {self.get_bloque_display()}"
