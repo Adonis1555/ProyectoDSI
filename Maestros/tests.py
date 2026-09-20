@@ -4,7 +4,7 @@ from datetime import datetime
 from django.test import TestCase
 from django.urls import reverse
 
-from Directora.models import GradoSeccion, Maestro, Materia
+from Directora.models import AsignacionBloqueMaestro, AsignacionMateria, GradoSeccion, Maestro, Materia
 from Login.models import Usuario
 from .models import HorarioClase
 
@@ -87,3 +87,99 @@ class EstadosPropuestasHorarioTests(TestCase):
         self.assertEqual(self.clase_basica.estado, 'RECHAZADO')
 
 # Create your tests here.
+
+
+class NavegacionHorarioTests(TestCase):
+    def setUp(self):
+        self.usuario = Usuario.objects.create_user(
+            email='nuevo-horario@cenalop.edu.sv', password='sistema123',
+            nombre='Nuevo', apellido='Docente', rol='maestro'
+        )
+        self.maestro = Maestro.objects.create(
+            dui='12345678-9', nombre='Nuevo', apellido='Docente',
+            especialidad='Matemática', telefono='70001112', id_usuario=self.usuario
+        )
+        self.materia = Materia.objects.create(nombre='Matemática', codigo='MAT')
+        self.client.force_login(self.usuario)
+
+    def vista(self, nivel, turno):
+        return self.client.get(reverse('horarios'), {'nivel': nivel, 'turno': turno})
+
+    def test_docente_sin_carga_puede_ver_las_cuatro_combinaciones(self):
+        for nivel in ('basica', 'tercer'):
+            for turno in ('manana', 'tarde'):
+                with self.subTest(nivel=nivel, turno=turno):
+                    respuesta = self.vista(nivel, turno)
+                    self.assertEqual(respuesta.context['nivel_actual'], nivel)
+                    self.assertEqual(respuesta.context['turno_actual'], 'Tarde' if turno == 'tarde' else 'Mañana')
+                    self.assertContains(respuesta, 'No tienes carga académica asignada para este nivel y turno')
+                    self.assertNotContains(respuesta, 'id="btnEnviarDireccion"')
+                    self.assertNotContains(respuesta, '>Guardar borrador</button>')
+                    self.assertNotContains(respuesta, 'class="btn-asignar-bloque"')
+
+    def test_basica_se_habilita_al_asignar_seccion_y_bloques(self):
+        seccion = GradoSeccion.objects.create(
+            grado='6G', seccion='B', turno='tarde', maestro_encargado=self.maestro
+        )
+        respuesta = self.vista('basica', 'tarde')
+        self.assertTrue(respuesta.context['tiene_carga'])
+        self.assertContains(respuesta, 'Necesitas bloques asignados por Dirección')
+        self.assertNotContains(respuesta, 'class="btn-asignar-bloque"')
+        AsignacionBloqueMaestro.objects.create(
+            maestro=self.maestro, dia=1, bloque=1, turno='Tarde', anio_lectivo=datetime.now().year
+        )
+        respuesta = self.vista('basica', 'tarde')
+        self.assertTrue(respuesta.context['puede_programar'])
+        self.assertContains(respuesta, 'class="btn-asignar-bloque"')
+        self.assertNotContains(respuesta, 'id="btnEnviarDireccion"')
+        self.assertEqual(respuesta.context['materias_disponibles'][0]['grado_seccion'], seccion)
+
+    def test_tercer_ciclo_en_turno_opuesto_y_propuesta_previa(self):
+        GradoSeccion.objects.create(
+            grado='5G', seccion='B', turno='mañana', maestro_encargado=self.maestro
+        )
+        tercer = GradoSeccion.objects.create(grado='7G', seccion='B', turno='tarde')
+        AsignacionMateria.objects.create(
+            grado_seccion=tercer, materia=self.materia,
+            docente=self.maestro, anio_lectivo=datetime.now().year
+        )
+        AsignacionBloqueMaestro.objects.create(
+            maestro=self.maestro, dia=1, bloque=1, turno='Tarde', anio_lectivo=datetime.now().year
+        )
+        respuesta = self.vista('tercer', 'tarde')
+        self.assertEqual(respuesta.context['nivel_actual'], 'tercer')
+        self.assertTrue(respuesta.context['puede_programar'])
+        self.assertContains(respuesta, 'class="btn-asignar-bloque"')
+        clase = HorarioClase.objects.create(
+            docente=self.maestro, grado_seccion=tercer, materia=self.materia,
+            dia=1, bloque=1, anio_lectivo=datetime.now().year,
+            estado='RECHAZADO', observaciones='Cambiar distribución.'
+        )
+        AsignacionMateria.objects.filter(docente=self.maestro).delete()
+        respuesta = self.vista('tercer', 'tarde')
+        self.assertFalse(respuesta.context['tiene_carga'])
+        self.assertContains(respuesta, 'Cambiar distribución.')
+        self.assertContains(respuesta, 'RECHAZADO')
+        self.assertNotContains(respuesta, 'id="btnEnviarDireccion"')
+        clase.refresh_from_db()
+        self.assertEqual(clase.estado, 'RECHAZADO')
+
+    def test_tercer_ciclo_exige_turno_opuesto_y_especialidad(self):
+        GradoSeccion.objects.create(
+            grado='5G', seccion='C', turno='mañana', maestro_encargado=self.maestro
+        )
+        mismo_turno = GradoSeccion.objects.create(grado='7G', seccion='C', turno='mañana')
+        opuesto = GradoSeccion.objects.create(grado='8G', seccion='C', turno='tarde')
+        otra_materia = Materia.objects.create(nombre='Ciencias', codigo='CIE')
+        for seccion, materia in ((mismo_turno, self.materia), (opuesto, otra_materia)):
+            AsignacionMateria.objects.create(
+                grado_seccion=seccion, materia=materia,
+                docente=self.maestro, anio_lectivo=datetime.now().year
+            )
+        for turno in ('manana', 'tarde'):
+            respuesta = self.vista('tercer', turno)
+            self.assertFalse(respuesta.context['tiene_carga'])
+            self.assertContains(respuesta, 'No tienes carga académica asignada')
+        AsignacionMateria.objects.filter(grado_seccion=opuesto).update(materia=self.materia)
+        respuesta = self.vista('tercer', 'tarde')
+        self.assertTrue(respuesta.context['tiene_carga'])
