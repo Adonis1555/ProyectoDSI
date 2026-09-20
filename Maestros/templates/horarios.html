@@ -78,6 +78,12 @@
             </section>
             {% endif %}
 
+            {% if not tiene_carga %}
+            <div class="aviso-carga" role="status">No tienes carga académica asignada para este nivel y turno.</div>
+            {% elif not puede_programar %}
+            <div class="aviso-carga" role="status">Necesitas bloques asignados por Dirección para programar clases en este turno.</div>
+            {% endif %}
+
             <div class="core-seccion">
                 <div class="container-tabla">
                     <table class="tabla-horario">
@@ -107,7 +113,7 @@
                                             data-dia="{{ c.dia_id }}" 
                                             data-bloque="{{ c.bloque_id }}">
                                             <div class="tarjeta-horario" style="background-color: {{ c.clase.materia.color }};">
-                                                {% if estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' and estado_actual != 'PUBLICADO' %}
+                                                {% if c.clase.estado != 'PUBLICADO' and estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' and estado_actual != 'PUBLICADO' %}
                                                 <button type="button" class="btn-quitar-clase" title="Quitar clase">&times;</button>
                                                 {% endif %}
                                                 <span class="materia-tag">{{ c.clase.materia.nombre }}</span>
@@ -183,9 +189,11 @@
                                 </div>
                             {% elif estado_actual == 'MIXTO' %}
                                 <div class="aviso-estado-mixto"><i class="ti ti-alert-triangle"></i> Esta propuesta contiene estados anteriores mezclados. Actualiza las clases pendientes antes de enviarla.</div>
-                            {% else %}
+                            {% elif puede_programar and tiene_clases %}
                                 <button type="button" class="btn-borrador" onclick="window.location.reload();">Guardar borrador</button>
                                 <button type="button" id="btnEnviarDireccion" class="btn-enviar">Enviar a dirección</button>
+                            {% elif puede_programar %}
+                                <span class="ayuda-propuesta">Programa al menos una clase para enviar una propuesta.</span>
                             {% endif %}
                         </div>
                     </div>
