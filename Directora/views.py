@@ -1498,3 +1498,53 @@ def asignar_materia_docente(request):
         return JsonResponse({'success': False, 'error': 'Docente no encontrado.'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@directora_required
+@require_POST
+def eliminar_materia(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        materia_id = data.get('materia_id')
+
+        if not materia_id:
+            return JsonResponse({'success': False, 'error': 'ID de materia no proporcionado.'}, status=400)
+
+        materia = get_object_or_404(Materia, id=materia_id)
+
+        # 1. Validación manual previa de relaciones
+        # Verifica si existen asignaciones docentes en Tercer Ciclo
+        if hasattr(materia, 'asignaciones') and materia.asignaciones.exists():
+            total = materia.asignaciones.count()
+            return JsonResponse({
+                'success': False,
+                'error': f'No se puede eliminar "{materia.nombre}". Está asignada a docentes en {total} sección(es).'
+            }, status=400)
+
+        # Verifica si ya está agendada en horarios de clases
+        # (usamos el related_name o la consulta inversa)
+        from Maestros.models import HorarioClase
+        if HorarioClase.objects.filter(materia=materia).exists():
+            total_horarios = HorarioClase.objects.filter(materia=materia).count()
+            return JsonResponse({
+                'success': False,
+                'error': f'No se puede eliminar "{materia.nombre}". Ya está registrada en {total_horarios} bloque(s) de horario.'
+            }, status=400)
+
+        # 2. Intento de borrado con salvaguarda a nivel de base de datos
+        nombre = materia.nombre
+        materia.delete()
+
+        return JsonResponse({
+            'success': True,
+            'mensaje': f'La materia "{nombre}" se eliminó con éxito al no tener registros vinculados.'
+        })
+
+    except ProtectedError:
+        return JsonResponse({
+            'success': False,
+            'error': f'Imposible eliminar: la materia mantiene registros asociados en otras secciones del sistema.'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

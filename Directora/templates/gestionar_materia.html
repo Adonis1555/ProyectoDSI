@@ -85,7 +85,13 @@
                                     <td>{{ materia.nombre }}</td>
                                     <td>
                                         <div class="acciones-tabla">
-                                            <button class="btn-accion-eliminar" title="Eliminar"><i class="ti ti-trash"></i></button>
+                                            <button type="button" 
+                                                    class="btn-accion-eliminar" 
+                                                    data-id="{{ materia.id }}" 
+                                                    data-nombre="{{ materia.nombre }}" 
+                                                    title="Eliminar">
+                                                <i class="ti ti-trash"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -595,6 +601,62 @@
             selectorMaestroBloques.dispatchEvent(new Event('change'));
         });
         actualizarHorasBloques();
+
+        document.querySelectorAll('.btn-accion-eliminar').forEach(boton => {
+    boton.addEventListener('click', () => {
+        const materiaId = boton.getAttribute('data-id');
+        const materiaNombre = boton.getAttribute('data-nombre');
+
+        Swal.fire({
+            title: `¿Eliminar "${materiaNombre}"?`,
+            text: "Solo se completará si la materia no está asignada a ningún docente ni forma parte de algún horario escolar.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#C0392B',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Sí, intentar eliminar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch("{% url 'eliminar_materia' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({ materia_id: materiaId })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Eliminada',
+                            text: data.mensaje,
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            const fila = boton.closest('tr');
+                            if (fila) fila.remove();
+                        });
+                    } else {
+                        // Muestra el motivo exacto por el cual no se permitió el borrado
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Operación bloqueada',
+                            text: data.error,
+                            confirmButtonColor: '#2E5299'
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.fire('Error', 'Fallo de comunicación con el servidor.', 'error');
+                });
+            }
+        });
+    });
+});
     </script>
 </body>
 </html>
