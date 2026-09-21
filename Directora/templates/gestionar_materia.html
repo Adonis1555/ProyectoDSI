@@ -72,6 +72,7 @@
                                     <th>Código</th>
                                     <th>Nombre de la materia</th>
                                     <th>Bloques / Sem.</th>
+                                    <th>Nivel</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -83,8 +84,28 @@
                                     </td>
                                     <td>{{ materia.codigo|default:"---" }}</td>
                                     <td>{{ materia.nombre }}</td>
-                                    <td><strong>{{ materia.bloques_semanales|default:"5" }}</strong> bloques</td>
                                     
+                                    <td><strong>{{ materia.bloques_semanales|default:"5" }}</strong> bloques</td>
+                                    <td>
+                                        {% if materia.nivel_aplicable == 'PARVULARIA' %}
+                                            <span class="badge" style="background-color: #FEF3C7; color: #92400E; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                                                Parvularia
+                                            </span>
+                                        {% elif materia.nivel_aplicable == 'BASICA' %}
+                                            <span class="badge" style="background-color: #E0E7FF; color: #3730A3; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                                                Básica (1° - 6°)
+                                            </span>
+                                        {% elif materia.nivel_aplicable == 'TERCER' %}
+                                            <span class="badge" style="background-color: #FCE7F3; color: #9D174D; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                                                Tercer Ciclo (7° - 9°)
+                                            </span>
+                                        {% else %}
+                                            <span class="badge" style="background-color: #DCFCE7; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                                                Básica y Tercer Ciclo
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                
                                         <td class="acciones-tabla">
                                             <button type="button" 
                                                     class="btn-accion-editar" 
@@ -102,7 +123,7 @@
                                                 <i class="ti ti-trash"></i>
                                             </button>
                                         </td>
-                                    
+                                        
                                 </tr>
                                 {% empty %}
                                 <tr>
