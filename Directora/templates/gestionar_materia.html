@@ -84,8 +84,16 @@
                                     <td>{{ materia.codigo|default:"---" }}</td>
                                     <td>{{ materia.nombre }}</td>
                                     <td><strong>{{ materia.bloques_semanales|default:"5" }}</strong> bloques</td>
-                                    <td>
-                                        <div class="acciones-tabla">
+                                    
+                                        <td class="acciones-tabla">
+                                            <button type="button" 
+                                                    class="btn-accion-editar" 
+                                                    data-id="{{ materia.id }}" 
+                                                    data-nombre="{{ materia.nombre }}" 
+                                                    data-bloques="{{ materia.bloques_semanales|default:'5' }}" 
+                                                    title="Modificar bloques">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
                                             <button type="button" 
                                                     class="btn-accion-eliminar" 
                                                     data-id="{{ materia.id }}" 
@@ -93,8 +101,8 @@
                                                     title="Eliminar">
                                                 <i class="ti ti-trash"></i>
                                             </button>
-                                        </div>
-                                    </td>
+                                        </td>
+                                    
                                 </tr>
                                 {% empty %}
                                 <tr>
@@ -907,6 +915,92 @@
                 });
             });
         });
+        document.querySelectorAll('.btn-accion-editar').forEach(boton => {
+    boton.addEventListener('click', () => {
+        const id = boton.getAttribute('data-id');
+        const nombre = boton.getAttribute('data-nombre');
+        const bloquesActuales = parseInt(boton.getAttribute('data-bloques'), 10) || 5;
+
+        Swal.fire({
+            title: `Modificar Carga Horaria`,
+            html: `
+                <div style="text-align: left; margin-top: 10px;">
+                    <p style="font-size: 14px; margin-bottom: 12px; color: #374151;">
+                        Materia: <strong>${nombre}</strong>
+                    </p>
+                    <label style="font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 6px;">
+                        Bloques semanales requeridos *
+                    </label>
+                    <input id="swal-edit-bloques" 
+                           type="number" 
+                           min="1" 
+                           max="25" 
+                           value="${bloquesActuales}" 
+                           class="swal2-input" 
+                           style="width: 100%; margin: 0; padding: 10px; font-size: 14px; border-radius: 8px; border: 1px solid #d1d5db;">
+                    <small style="color: #6b7280; font-size: 12px; display: block; margin-top: 6px;">
+                        Debe ser un valor positivo (mínimo 1) y no superar el límite institucional de 25 bloques semanales.
+                    </small>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar cambios',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#2E5299',
+            cancelButtonColor: '#94a3b8',
+            focusConfirm: false,
+            preConfirm: () => {
+                const input = document.getElementById('swal-edit-bloques');
+                const bloques = parseInt(input.value, 10);
+
+                if (isNaN(bloques)) {
+                    Swal.showValidationMessage('Debes ingresar un número válido.');
+                    return false;
+                }
+                if (bloques <= 0) {
+                    Swal.showValidationMessage('No se permiten ceros ni números negativos (mínimo 1).');
+                    return false;
+                }
+                if (bloques > 25) {
+                    Swal.showValidationMessage('No puede superar los 25 bloques de la jornada semanal.');
+                    return false;
+                }
+                return { id: id, bloques_semanales: bloques };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch("{% url 'actualizar_materia' %}", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json", 
+                        "X-CSRFToken": getCsrfToken() 
+                    },
+                    body: JSON.stringify(result.value)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Actualizado!',
+                            text: data.mensaje,
+                            timer: 1200,
+                            showConfirmButton: false
+                        }).then(() => window.location.reload());
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Validación de Carga',
+                            text: data.error,
+                            confirmButtonColor: '#2E5299'
+                        });
+                    }
+                })
+                .catch(() => Swal.fire('Error', 'Fallo de conexión con el servidor.', 'error'));
+            }
+        });
+    });
+});
     </script>
 </body>
 </html>

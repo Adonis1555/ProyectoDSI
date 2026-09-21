@@ -21,6 +21,7 @@ from django.db.models import ProtectedError
 from django.shortcuts import render, get_object_or_404
 import json
 import unicodedata
+from django.db.models import Sum
 
 @login_required
 @directora_required
@@ -1497,7 +1498,7 @@ def guardar_materia(request):
         if not nombre:
             return JsonResponse({'success': False, 'error': 'El nombre es obligatorio.'}, status=400)
 
-        # Validación estricta de bloques semanales
+        # Validación básica de número entero
         try:
             bloques_semanales = int(data.get('bloques_semanales'))
         except (ValueError, TypeError):
@@ -1506,13 +1507,37 @@ def guardar_materia(request):
                 'error': 'La cantidad de bloques semanales debe ser un número entero válido.'
             }, status=400)
 
-        # En una jornada semanal escolar (5 bloques x 5 días = 25 bloques máx)
-        if bloques_semanales < 1 or bloques_semanales > 25:
+        if bloques_semanales < 1:
             return JsonResponse({
                 'success': False, 
-                'error': f'La cantidad de bloques ({bloques_semanales}). Debe ser entre 1 y 25 bloques semanales.'
+                'error': 'La materia debe tener al menos 1 bloque semanal.'
             }, status=400)
 
+        # =========================================================================
+        # VALIDACIÓN ACUMULADA: Máximo 25 bloques semanales en el catálogo
+        # =========================================================================
+        LIMITE_SEMANAL = 25
+        total_acumulado = Materia.objects.aggregate(
+            total=Sum('bloques_semanales')
+        )['total'] or 0
+
+        disponibles = LIMITE_SEMANAL - total_acumulado
+
+        if total_acumulado + bloques_semanales > LIMITE_SEMANAL:
+            if disponibles <= 0:
+                mensaje_error = (
+                    f'No se pueden registrar más materias: Ya se ha alcanzado el límite máximo '
+                    f'de {LIMITE_SEMANAL} bloques semanales en la jornada escolar.'
+                )
+            else:
+                mensaje_error = (
+                    f'No se puede registrar la materia con {bloques_semanales} bloques. '
+                    f'Actualmente hay {total_acumulado} bloques asignados y solo quedan '
+                    f'{disponibles} bloque(s) disponibles para alcanzar los {LIMITE_SEMANAL} semanales.'
+                )
+            return JsonResponse({'success': False, 'error': mensaje_error}, status=400)
+
+        # Crear materia si cumple con el cupo semanal disponible
         materia = Materia.objects.create(
             nombre=nombre,
             codigo=codigo if codigo else None,
@@ -1526,7 +1551,8 @@ def guardar_materia(request):
             'nombre': materia.nombre,
             'codigo': materia.codigo or '',
             'color': materia.color,
-            'bloques_semanales': materia.bloques_semanales
+            'bloques_semanales': materia.bloques_semanales,
+            'bloques_restantes': LIMITE_SEMANAL - (total_acumulado + bloques_semanales)
         })
     except Exception as e:
         print("Error en guardar_materia:", e)
@@ -1639,5 +1665,69 @@ def eliminar_materia(request):
             'success': False,
             'error': f'Imposible eliminar: la materia mantiene registros asociados en otras secciones del sistema.'
         }, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+@directora_required
+@require_POST
+def actualizar_materia(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        materia_id = data.get('id')
+
+        if not materia_id:
+            return JsonResponse({'success': False, 'error': 'ID de materia no proporcionado.'}, status=400)
+
+        materia = get_object_or_404(Materia, id=materia_id)
+
+        # 1. Validación de número entero
+        try:
+            nuevos_bloques = int(data.get('bloques_semanales'))
+        except (ValueError, TypeError):
+            return JsonResponse({
+                'success': False, 
+                'error': 'La cantidad de bloques semanales debe ser un número entero válido.'
+            }, status=400)
+
+        # 2. Bloqueo estricto de números negativos y ceros
+        if nuevos_bloques <= 0:
+            return JsonResponse({
+                'success': False, 
+                'error': 'La cantidad de bloques debe ser mayor que cero (mínimo 1 bloque).'
+            }, status=400)
+
+        # 3. Validación acumulada institucional: Máximo 25 bloques semanales en total
+        LIMITE_SEMANAL = 25
+        total_otras = Materia.objects.exclude(id=materia.id).aggregate(
+            total=Sum('bloques_semanales')
+        )['total'] or 0
+
+        cupo_disponible = LIMITE_SEMANAL - total_otras
+
+        if total_otras + nuevos_bloques > LIMITE_SEMANAL:
+            if cupo_disponible <= 0:
+                mensaje = (
+                    f'No es posible asignar bloques: las demás materias ya ocupan los {LIMITE_SEMANAL} '
+                    f'bloques semanales disponibles en la jornada.'
+                )
+            else:
+                mensaje = (
+                    f'No se pueden asignar {nuevos_bloques} bloques a "{materia.nombre}". '
+                    f'Las demás materias ya suman {total_otras} bloques. '
+                    f'El cupo máximo disponible para esta materia es de {cupo_disponible} bloque(s).'
+                )
+            return JsonResponse({'success': False, 'error': mensaje}, status=400)
+
+        # Guardar únicamente el cambio de bloques
+        materia.bloques_semanales = nuevos_bloques
+        materia.save()
+
+        return JsonResponse({
+            'success': True,
+            'mensaje': f'Bloques de "{materia.nombre}" actualizados a {nuevos_bloques}.',
+            'bloques_semanales': nuevos_bloques
+        })
+
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
