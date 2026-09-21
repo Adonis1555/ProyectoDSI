@@ -11,6 +11,7 @@
 </head>
 <body>
     <main class="maestro-alumno">
+        <!-- Barra Lateral de Navegación Sin Íconos -->
         <section class="menu-opciones">
             <div class="imgContainer"><img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo C.E. Natalia López"></div>
             <div class="opciones">
@@ -28,11 +29,11 @@
             </div>
         </section>
 
+        <!-- Contenedor Principal de Revisión -->
         <section class="revision-container">
             <div class="encabezado-revision">
                 <div>
-                    <h1>Revisión de horarios escolares</h1>
-                    <p>Consulta y resuelve las propuestas enviadas por los docentes para el año {{ anio_actual }}.</p>
+                    <h1>Revisión de horarios</h1>
                 </div>
                 <span class="etiqueta-nivel">{{ descripcion_nivel }}</span>
             </div>
@@ -43,6 +44,7 @@
             </div>
 
             <div class="contenido-revision">
+                <!-- Lista Lateral de Propuestas -->
                 <aside class="lista-horarios">
                     <div class="titulo-lista">
                         <h2>Horarios docentes</h2>
@@ -66,6 +68,7 @@
                     {% endfor %}
                 </aside>
 
+                <!-- Detalle y Cuadrícula del Horario Seleccionado -->
                 <section class="detalle-horario">
                     {% if horario_seleccionado %}
                     <div class="cabecera-detalle">
@@ -79,24 +82,44 @@
                         <span class="estado estado-{{ horario_seleccionado.estado|lower }}">{{ horario_seleccionado.estado }}</span>
                     </div>
 
+                    <!-- Tabla de Horario Unificada con los 2 Recesos -->
                     <div class="tabla-horario-contenedor">
-                        <table class="tabla-horario">
-                            <thead><tr><th>Hora</th>{% for dia in dias %}<th>{{ dia.nombre }}</th>{% endfor %}</tr></thead>
+                        <table class="tabla-horario" aria-label="Distribución semanal del horario docente">
+                            <thead>
+                                <tr>
+                                    <th style="width: 140px;">Bloque / Hora</th>
+                                    {% for dia in dias %}
+                                    <th>{{ dia.nombre }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
                             <tbody>
                                 {% for fila in grilla %}
                                     {% if fila.info.es_receso %}
-                                    <tr class="fila-receso"><td>{{ fila.info.hora }}</td><td colspan="5"><i class="ti ti-coffee"></i> Receso</td></tr>
+                                    <tr class="fila-receso">
+                                        <td class="hora-col">
+                                            <i class="ti ti-coffee"></i> {{ fila.info.hora }}
+                                        </td>
+                                        <td colspan="5" class="celda-receso-banner">
+                                            {{ fila.info.nombre|default:"Receso Escolar" }}
+                                        </td>
+                                    </tr>
                                     {% else %}
                                     <tr>
-                                        <th><span>Bloque {{ fila.info.id }}</span><small>{{ fila.info.hora }}</small></th>
+                                        <th scope="row" class="hora-col">
+                                            <strong>Bloque {{ fila.info.id }}</strong>
+                                            <small style="display: block; font-size: 11px; color: #64748b;">{{ fila.info.hora }}</small>
+                                        </th>
                                         {% for celda in fila.celdas %}
                                         <td>
                                             {% if celda.clase %}
-                                            <div class="clase-horario" style="border-top-color: {{ celda.clase.materia.color }};">
+                                            <div class="clase-horario" style="border-top-color: {{ celda.clase.materia.color|default:'#2E5299' }};">
                                                 <strong>{{ celda.clase.materia.nombre }}</strong>
-                                                <span>{{ celda.clase.grado_seccion }}</span>
+                                                <span>{{ celda.clase.grado_seccion.get_grado_display }} "{{ celda.clase.grado_seccion.seccion }}"</span>
                                             </div>
-                                            {% else %}<span class="bloque-vacio">Libre</span>{% endif %}
+                                            {% else %}
+                                            <span class="bloque-vacio">Libre</span>
+                                            {% endif %}
                                         </td>
                                         {% endfor %}
                                     </tr>
@@ -106,6 +129,7 @@
                         </table>
                     </div>
 
+                    <!-- Panel de Acciones de Dirección -->
                     {% if horario_seleccionado.puede_resolverse %}
                     <div class="acciones-revision">
                         <p><i class="ti ti-info-circle"></i> Revisa todas las clases antes de emitir una resolución.</p>
@@ -131,6 +155,7 @@
     </main>
 
     <form style="display:none;">{% csrf_token %}</form>
+
     {% if horario_seleccionado and horario_seleccionado.puede_resolverse %}
     <script>
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -160,7 +185,7 @@
                 if (!resultado.isConfirmed) return;
                 resolverHorario('aprobar').then(({ok, datos}) => {
                     if (!ok || !datos.success) throw new Error(datos.error);
-                    Swal.fire({icon: 'success', title: 'Horario aprobado', text: datos.mensaje}).then(() => window.location.reload());
+                    Swal.fire({icon: 'success', title: 'Horario aprobado', text: datos.mensaje, timer: 1400, showConfirmButton: false}).then(() => window.location.reload());
                 }).catch(error => Swal.fire('Error', error.message || 'No se pudo aprobar el horario.', 'error'));
             });
         });
@@ -182,12 +207,13 @@
                 if (!resultado.isConfirmed) return;
                 resolverHorario('rechazar', resultado.value.trim()).then(({ok, datos}) => {
                     if (!ok || !datos.success) throw new Error(datos.error);
-                    Swal.fire({icon: 'success', title: 'Horario rechazado', text: datos.mensaje}).then(() => window.location.reload());
+                    Swal.fire({icon: 'success', title: 'Horario rechazado', text: datos.mensaje, timer: 1400, showConfirmButton: false}).then(() => window.location.reload());
                 }).catch(error => Swal.fire('Error', error.message || 'No se pudo rechazar el horario.', 'error'));
             });
         });
     </script>
     {% endif %}
+
     {% if horario_seleccionado and horario_seleccionado.puede_publicarse %}
     <script>
         document.getElementById('btn-publicar').addEventListener('click', () => {
@@ -218,7 +244,7 @@
                 .then(respuesta => respuesta.json().then(datos => ({ok: respuesta.ok, datos})))
                 .then(({ok, datos}) => {
                     if (!ok || !datos.success) throw new Error(datos.error);
-                    Swal.fire({icon: 'success', title: 'Horario publicado', text: datos.mensaje}).then(() => window.location.reload());
+                    Swal.fire({icon: 'success', title: 'Horario publicado', text: datos.mensaje, timer: 1400, showConfirmButton: false}).then(() => window.location.reload());
                 })
                 .catch(error => Swal.fire('Error', error.message || 'No se pudo publicar el horario.', 'error'));
             });

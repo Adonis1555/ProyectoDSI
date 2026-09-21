@@ -11,7 +11,7 @@
 </head>
 <body>
     <main class="maestro-alumno">
-        <!-- Barra Lateral -->
+        <!-- Menú Lateral Sin Íconos -->
         <section class="menu-opciones">
             <div class="imgContainer">
                 <img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo C.E. Natalia López">
@@ -19,16 +19,16 @@
             <div class="opciones">
                 <ul>
                     <a href="{% url 'control_demeritos' %}" style="text-decoration:none;">
-                        <li class="item-menu"><i class="ti"></i> Demeritos</li>
+                        <li class="item-menu">Demeritos</li>
                     </a>
                     <a href="{% url 'control_alumnos' %}" style="text-decoration:none;">
-                        <li class="item-menu"><i class="ti"></i> Alumnos</li>
+                        <li class="item-menu">Alumnos</li>
                     </a>
                     <a href="{% url 'dashboard_maestro' %}" style="text-decoration: none;">
-                        <li class="item-menu"><i class="ti"></i> Control de demeritos</li>
+                        <li class="item-menu">Control de demeritos</li>
                     </a>
                     <li class="item-menu activo">
-                        <i class="ti"></i> Horarios
+                        Horarios
                     </li>
                 </ul>
                 <div class="cerrar-sesion-container">
@@ -46,7 +46,7 @@
                 <div>
                     <h1>Horario semanal propuesto</h1>
                     <p style="font-size: 13px; color: #6b7280; margin-top: 3px;">
-                        Docente: {{ maestro.nombre }} {{ maestro.apellido }} — {{ titulo_nivel_actual }} — Año {{ anio_actual }}
+                        Docente: {{ maestro.nombre }} {{ maestro.apellido }} — {{ titulo_nivel_actual }} — Turno {{ turno_actual }} — Año {{ anio_actual }}
                     </p>
                 </div>
             </div>
@@ -86,10 +86,10 @@
 
             <div class="core-seccion">
                 <div class="container-tabla">
-                    <table class="tabla-horario">
+                    <table class="tabla-horario" aria-label="Horario escolar oficial">
                         <thead>
                             <tr>
-                                <th style="width: 130px;">Hora</th>
+                                <th style="width: 140px;">Bloque / Hora</th>
                                 {% for d in dias %}
                                 <th>{{ d.nombre }}</th>
                                 {% endfor %}
@@ -99,19 +99,26 @@
                             {% for fila in grilla %}
                                 {% if fila.info.es_receso %}
                                 <tr class="fila-receso">
-                                    <td class="hora-col">{{ fila.info.hora }}</td>
+                                    <td class="hora-col">
+                                        <i class="ti ti-coffee"></i> {{ fila.info.hora }}
+                                    </td>
                                     <td colspan="5" class="celda-receso-banner">
-                                        <i class="ti ti-coffee"></i> RECESO ESCOLAR
+                                        {{ fila.info.nombre|default:"Receso Escolar" }}
                                     </td>
                                 </tr>
                                 {% else %}
                                 <tr>
-                                    <td class="hora-col">{{ fila.info.hora }}</td>
+                                    <td class="hora-col">
+                                        <strong>Bloque {{ fila.info.id }}</strong>
+                                        <span style="display: block; font-size: 11px; color: #64748b;">{{ fila.info.hora }}</span>
+                                    </td>
                                     {% for c in fila.celdas %}
                                         {% if c.clase %}
                                         <td class="celda-clase ocupada" 
                                             data-dia="{{ c.dia_id }}" 
                                             data-bloque="{{ c.bloque_id }}">
+                                            <div class="tarjeta-horario" style="background-color: {{ c.clase.materia.color|default:'#D6E4FF' }};">
+                                                {% if estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' and estado_actual != 'PUBLICADO' %}
                                             <div class="tarjeta-horario" style="background-color: {{ c.clase.materia.color }};">
                                                 {% if c.clase.estado != 'PUBLICADO' and estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' and estado_actual != 'PUBLICADO' %}
                                                 <button type="button" class="btn-quitar-clase" title="Quitar clase">&times;</button>
@@ -162,7 +169,7 @@
                                 </div>
                             </div>
                             {% empty %}
-                            <p style="font-size: 12px; color: #9ca3af; text-align: center;">Sin materias asignadas aún.</p>
+                            <p style="font-size: 12px; color: #9ca3af; text-align: center;">Sin materias asignadas aún para este turno.</p>
                             {% endfor %}
                         </div>
 
@@ -211,7 +218,6 @@
             return input ? input.value : '';
         };
 
-        // Materias que este docente puede elegir
         const materias_disponibles = [
             {% for m in materias_disponibles %}
             {
@@ -219,7 +225,7 @@
                 grado_seccion_nombre: "{{ m.grado_seccion.get_grado_display }} \"{{ m.grado_seccion.seccion }}\"",
                 materia_id: {{ m.materia.id }},
                 materia_nombre: "{{ m.materia.nombre }}",
-                materia_color: "{{ m.materia.color }}"
+                materia_color: "{{ m.materia.color|default:'#D6E4FF' }}"
             },
             {% endfor %}
         ];
@@ -232,11 +238,11 @@
                 const bloque = td.getAttribute('data-bloque');
 
                 if (materias_disponibles.length === 0) {
-                    Swal.fire('Aviso', 'No tienes materias asignadas para programar.', 'warning');
+                    Swal.fire('Aviso', 'No tienes materias disponibles para programar en este nivel y turno.', 'warning');
                     return;
                 }
 
-                let selectOptions = '<option value="">-- Elige una materia y grado --</option>';
+                let selectOptions = '<option value="">-- Elige una materia y sección --</option>';
                 materias_disponibles.forEach((item, index) => {
                     selectOptions += `<option value="${index}">${item.materia_nombre} - ${item.grado_seccion_nombre}</option>`;
                 });
@@ -258,6 +264,7 @@
                     cancelButtonText: 'Cancelar',
                     confirmButtonColor: '#2E5299',
                     cancelButtonColor: '#94a3b8',
+                    focusConfirm: false,
                     preConfirm: () => {
                         const index = document.getElementById('swal-select-clase').value;
                         if (index === "") {
