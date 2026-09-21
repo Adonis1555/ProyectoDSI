@@ -1,7 +1,9 @@
 import json
+from io import StringIO
 from datetime import datetime
 
-from django.test import TestCase
+from django.core.management import call_command, CommandError
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from Directora.models import AsignacionBloqueMaestro, AsignacionMateria, GradoSeccion, Maestro, Materia
@@ -183,3 +185,38 @@ class NavegacionHorarioTests(TestCase):
         AsignacionMateria.objects.filter(grado_seccion=opuesto).update(materia=self.materia)
         respuesta = self.vista('tercer', 'tarde')
         self.assertTrue(respuesta.context['tiene_carga'])
+
+
+@override_settings(DEBUG=True)
+class DatosDemoTests(TestCase):
+    def test_carga_escenarios_y_credenciales_en_base_vacia(self):
+        from Directora.models import AsignacionBloqueMaestro, AsignacionMateria
+        from .models import Alumno, RegistroTarjeta
+
+        call_command('cargar_datos_demo', '--confirmar-demo', stdout=StringIO())
+        self.assertEqual(Usuario.objects.count(), 13)
+        self.assertEqual(GradoSeccion.objects.count(), 14)
+        self.assertEqual(AsignacionMateria.objects.count(), 15)
+        self.assertEqual(AsignacionBloqueMaestro.objects.count(), 180)
+        self.assertEqual(HorarioClase.objects.count(), 90)
+        self.assertEqual(Alumno.objects.count(), 52)
+        self.assertEqual(RegistroTarjeta.objects.count(), 67)
+        self.assertEqual(
+            set(HorarioClase.objects.values_list('estado', flat=True)),
+            {'ENVIADO', 'RECHAZADO', 'APROBADO', 'PUBLICADO'},
+        )
+        directora = Usuario.objects.get(email='directora@cenalop.edu.sv')
+        self.assertTrue(directora.check_password('sistema123'))
+        self.assertFalse(directora.is_superuser)
+        self.assertTrue(self.client.login(email=directora.email, password='sistema123'))
+        self.assertTrue(Usuario.objects.get(email='maestro20@cenalop.edu.sv').check_password('sistema123'))
+        self.assertFalse(Usuario.objects.get(email='maestro1@cenalop.edu.sv').is_active)
+
+    def test_rechaza_base_con_datos_sin_borrar_registros(self):
+        Usuario.objects.create_user(
+            email='existente@example.test', password='clave-larga',
+            nombre='Existente', apellido='Local', rol='maestro',
+        )
+        with self.assertRaises(CommandError):
+            call_command('cargar_datos_demo', '--confirmar-demo', stdout=StringIO())
+        self.assertEqual(Usuario.objects.count(), 1)
