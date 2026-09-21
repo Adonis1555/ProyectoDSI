@@ -20,6 +20,7 @@ from django.utils import timezone
 from django.db.models import ProtectedError
 from django.shortcuts import render, get_object_or_404
 import json
+import unicodedata
 
 @login_required
 @directora_required
@@ -371,10 +372,6 @@ def registrar_grado_seccion(request):
                 instancia_maestro = Maestro.objects.get(dui=maestro_dui, activo=True)
                 es_tercer_ciclo = grado_codigo in ['7G', '8G', '9G']
                 grados_actuales = instancia_maestro.grados_a_cargo.filter(activo=True)
-                if es_tercer_ciclo and grados_actuales.exists():
-                    return JsonResponse({'ok': False, 'error': 'Para orientar tercer ciclo, el docente no debe tener otro grado asignado.'})
-                if not es_tercer_ciclo and grados_actuales.filter(grado__in=['7G', '8G', '9G']).exists():
-                    return JsonResponse({'ok': False, 'error': 'Un orientador de tercer ciclo no puede tener otro grado a cargo.'})
                 if not es_tercer_ciclo and any(
                     normalizar_turno(asignacion.grado_seccion.turno) == turno
                     for asignacion in instancia_maestro.materias_impartidas.select_related('grado_seccion')
@@ -930,6 +927,17 @@ def directora_dashboard(request):
     }
     return render(request, "dashboard_directora.html", context)
 
+def normalizar_turno(turno):
+    if not turno:
+        return ''
+    # Remueve tildes y deja en minúsculas: "mañana" -> "manana", "Tarde" -> "tarde"
+    txt = unicodedata.normalize('NFKD', str(turno)).encode('ASCII', 'ignore').decode('utf-8').strip().lower()
+    if 'man' in txt:
+        return 'Mañana'
+    if 'tar' in txt:
+        return 'Tarde'
+    return turno.strip().capitalize()
+
 @login_required
 @directora_required
 def directora_materia(request):
@@ -938,12 +946,17 @@ def directora_materia(request):
     # 1. Catálogo completo de materias
     materias = Materia.objects.all().order_by('nombre')
 
+    bloques_catalogo = sum(getattr(m, 'bloques_semanales', 5) or 5 for m in materias)
+    total_bloques_basica = bloques_catalogo if bloques_catalogo > 0 else 25
+
     # 2. Secciones activas con su orientador
     secciones_activas = GradoSeccion.objects.filter(activo=True).select_related('maestro_encargado')
 
-    # 3. Separar secciones por nivel
+    # 3. Separar secciones por nivel usando los códigos
     codigos_tercer_ciclo = ['7G', '8G', '9G']
-    secciones_basica = [s for s in secciones_activas if s.grado not in codigos_tercer_ciclo]
+    codigos_basica = ['PK', '1G', '2G', '3G', '4G', '5G', '6G']
+
+    secciones_basica = [s for s in secciones_activas if s.grado in codigos_basica]
     secciones_tercer_ciclo = [s for s in secciones_activas if s.grado in codigos_tercer_ciclo]
 
     # 4. Asignaciones existentes para el año actual en Tercer Ciclo
@@ -957,7 +970,7 @@ def directora_materia(request):
         for asig in asignaciones
     }
 
-    # 5. Estructurar la matriz para el renderizado
+    # 5. Estructurar la matriz de Tercer Ciclo
     matriz_tercer_ciclo = []
     for seccion in secciones_tercer_ciclo:
         fila_materias = []
@@ -982,14 +995,58 @@ def directora_materia(request):
             'materias': fila_materias
         })
 
-    # 6. Lista de maestros activos para el modal de asignación
+  # 6. Lista de maestros activos y cálculo desglosado por turno
     maestros = Maestro.objects.filter(activo=True).order_by('nombre', 'apellido')
+    
     for maestro in maestros:
-        maestro.turnos_basica = ','.join(sorted({
-            normalizar_turno(grado.turno)
-            for grado in maestro.grados_a_cargo.filter(activo=True)
-            if not grado.es_tercer_ciclo
-        }))
+        # Secciones de Básica donde este maestro es orientador titular activo
+        grados_titular_basica = list(maestro.grados_a_cargo.filter(
+            activo=True,
+            grado__in=codigos_basica
+        ))
+
+        # Detectar en qué turnos tiene sección de básica asignada (limpiando tildes y espacios)
+        turnos_basica_limpios = [
+            normalizar_turno(g.turno) for g in grados_titular_basica
+        ]
+        maestro.turnos_basica = ','.join(sorted(set(turnos_basica_limpios)))
+
+        # CONSULTA DIRECTA AL ORM:
+        # Django resuelve internamente la clave primaria exacta del maestro
+        asigs_docente = list(AsignacionMateria.objects.filter(
+            docente=maestro,
+            anio_lectivo=anio_actual
+        ).select_related('materia', 'grado_seccion'))
+
+        # --- TURNO MAÑANA ---
+        if 'Mañana' in turnos_basica_limpios:
+            # Es titular de básica en la mañana: carga completa (25 bloques)
+            maestro.bloques_manana = total_bloques_basica
+        else:
+            # Sumar materias de Tercer Ciclo asignadas en la Mañana
+            asigs_manana = [
+                a for a in asigs_docente 
+                if normalizar_turno(a.grado_seccion.turno) == 'Mañana'
+            ]
+            maestro.bloques_manana = sum(
+                int(getattr(a.materia, 'bloques_semanales', 5) or 5)
+                for a in asigs_manana
+            )
+
+        # --- TURNO TARDE ---
+        if 'Tarde' in turnos_basica_limpios:
+            # Es titular de básica en la tarde: carga completa (25 bloques)
+            maestro.bloques_tarde = total_bloques_basica
+        else:
+            # Sumar materias de Tercer Ciclo asignadas en la Tarde
+            asigs_tarde = [
+                a for a in asigs_docente 
+                if normalizar_turno(a.grado_seccion.turno) == 'Tarde'
+            ]
+            maestro.bloques_tarde = sum(
+                int(getattr(a.materia, 'bloques_semanales', 5) or 5)
+                for a in asigs_tarde
+            )
 
     contexto = {
         'materias': materias,
@@ -1133,19 +1190,25 @@ def horarios_revision(request):
         titulo_nivel = 'Tercer ciclo'
         descripcion_nivel = '7° a 9° grado'
 
+    # EXCLUIR BORRADORES: Solo consultar clases enviadas, aprobadas, publicadas o rechazadas
     clases_nivel = list(HorarioClase.objects.filter(
         anio_lectivo=anio_actual,
         grado_seccion__grado__in=grados_nivel,
+    ).exclude(
+        estado__iexact='BORRADOR'  # <--- Filtro clave
     ).select_related('docente', 'grado_seccion', 'materia').order_by(
         'docente__apellido', 'docente__nombre', 'bloque', 'dia'
     ))
 
     horarios_por_docente = {}
     for clase in clases_nivel:
-        clave_horario = (clase.docente_id, normalizar_turno(clase.turno))
+        doc_dui = getattr(clase.docente, 'dui', str(clase.docente_id))
+        turno_clase = normalizar_turno(clase.turno)
+        clave_horario = (doc_dui, turno_clase)
+
         item = horarios_por_docente.setdefault(clave_horario, {
             'docente': clase.docente,
-            'turno': normalizar_turno(clase.turno),
+            'turno': turno_clase,
             'clases': [],
             'estados': set(),
             'grados': set(),
@@ -1153,13 +1216,18 @@ def horarios_revision(request):
         })
         item['clases'].append(clase)
         item['estados'].add(clase.estado)
-        item['grados'].add(str(clase.grado_seccion))
+        item['grados'].add(f"{clase.grado_seccion.get_grado_display()} \"{clase.grado_seccion.seccion}\"")
         if clase.fecha_publicacion:
             item['fechas_publicacion'].append(clase.fecha_publicacion)
 
     horarios = []
     for item in horarios_por_docente.values():
         estado = next(iter(item['estados'])) if len(item['estados']) == 1 else 'MIXTO'
+        
+        # Validación de seguridad: no mostrar en lista si por algún motivo está en BORRADOR
+        if estado.upper() == 'BORRADOR':
+            continue
+
         horarios.append({
             'docente': item['docente'],
             'turno': item['turno'],
@@ -1170,71 +1238,7 @@ def horarios_revision(request):
             'puede_publicarse': estado == 'APROBADO',
             'fecha_publicacion': max(item['fechas_publicacion']) if item['fechas_publicacion'] else None,
         })
-
-    dui_seleccionado = request.GET.get('maestro')
-    turno_seleccionado = normalizar_turno(request.GET.get('turno', 'Mañana'))
-    if not dui_seleccionado and horarios:
-        pendiente = next((item for item in horarios if item['estado'] == 'ENVIADO'), None)
-        dui_seleccionado = (pendiente or horarios[0])['docente'].dui
-        turno_seleccionado = (pendiente or horarios[0])['turno']
-
-    horario_seleccionado = next(
-        (item for item in horarios if item['docente'].dui == dui_seleccionado and item['turno'] == turno_seleccionado),
-        None
-    )
-    mapa_clases = {}
-    if horario_seleccionado:
-        clave_seleccionada = (horario_seleccionado['docente'].dui, horario_seleccionado['turno'])
-        for clase in horarios_por_docente[clave_seleccionada]['clases']:
-            mapa_clases[(clase.bloque, clase.dia)] = clase
-
-    bloques = ([
-        {'id': 1, 'hora': '13:00 - 13:45', 'es_receso': False},
-        {'id': 2, 'hora': '13:45 - 14:30', 'es_receso': False},
-        {'id': 0, 'hora': '14:30 - 15:00', 'es_receso': True},
-        {'id': 3, 'hora': '15:00 - 15:45', 'es_receso': False},
-        {'id': 4, 'hora': '15:45 - 16:30', 'es_receso': False},
-        {'id': 5, 'hora': '16:30 - 17:15', 'es_receso': False},
-    ] if turno_seleccionado == 'Tarde' else [
-        {'id': 1, 'hora': '07:00 - 07:45', 'es_receso': False},
-        {'id': 2, 'hora': '07:45 - 08:30', 'es_receso': False},
-        {'id': 0, 'hora': '08:30 - 09:00', 'es_receso': True},
-        {'id': 3, 'hora': '09:00 - 09:45', 'es_receso': False},
-        {'id': 4, 'hora': '09:45 - 10:30', 'es_receso': False},
-        {'id': 5, 'hora': '10:30 - 11:15', 'es_receso': False},
-    ])
-    dias = [
-        {'id': 1, 'nombre': 'Lunes'},
-        {'id': 2, 'nombre': 'Martes'},
-        {'id': 3, 'nombre': 'Miércoles'},
-        {'id': 4, 'nombre': 'Jueves'},
-        {'id': 5, 'nombre': 'Viernes'},
-    ]
-    grilla = []
-    for bloque in bloques:
-        fila = {'info': bloque, 'celdas': []}
-        if not bloque['es_receso']:
-            for dia in dias:
-                fila['celdas'].append({
-                    'dia': dia,
-                    'clase': mapa_clases.get((bloque['id'], dia['id'])),
-                })
-        grilla.append(fila)
-
-    return render(request, 'horarios_revision.html', {
-        'horarios': horarios,
-        'horario_seleccionado': horario_seleccionado,
-        'dui_seleccionado': dui_seleccionado,
-        'turno_seleccionado': turno_seleccionado,
-        'dias': dias,
-        'grilla': grilla,
-        'anio_actual': anio_actual,
-        'nivel': nivel,
-        'titulo_nivel': titulo_nivel,
-        'descripcion_nivel': descripcion_nivel,
-    })
-
-
+        
 @login_required
 @directora_required
 @require_POST
@@ -1411,12 +1415,29 @@ def guardar_materia(request):
         color = data.get('color', '').strip()
 
         if not nombre:
-            return JsonResponse({'success': False, 'error': 'El nombre es obligatorio'}, status=400)
+            return JsonResponse({'success': False, 'error': 'El nombre es obligatorio.'}, status=400)
+
+        # Validación estricta de bloques semanales
+        try:
+            bloques_semanales = int(data.get('bloques_semanales'))
+        except (ValueError, TypeError):
+            return JsonResponse({
+                'success': False, 
+                'error': 'La cantidad de bloques semanales debe ser un número entero válido.'
+            }, status=400)
+
+        # En una jornada semanal escolar (5 bloques x 5 días = 25 bloques máx)
+        if bloques_semanales < 1 or bloques_semanales > 25:
+            return JsonResponse({
+                'success': False, 
+                'error': f'La cantidad de bloques ({bloques_semanales}). Debe ser entre 1 y 25 bloques semanales.'
+            }, status=400)
 
         materia = Materia.objects.create(
             nombre=nombre,
             codigo=codigo if codigo else None,
-            color=color or '#D6E4FF'
+            color=color or '#D6E4FF',
+            bloques_semanales=bloques_semanales
         )   
 
         return JsonResponse({
@@ -1424,55 +1445,52 @@ def guardar_materia(request):
             'id': materia.id,
             'nombre': materia.nombre,
             'codigo': materia.codigo or '',
-            'color': materia.color
+            'color': materia.color,
+            'bloques_semanales': materia.bloques_semanales
         })
     except Exception as e:
         print("Error en guardar_materia:", e)
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
+@require_POST
 @login_required
 @directora_required
-@require_POST
 def asignar_materia_docente(request):
     try:
-        data = json.loads(request.body.decode('utf-8'))
-        grado_seccion_id = data.get('grado_seccion_id')
+        data = json.loads(request.body)
+        seccion_id = data.get('grado_seccion_id')
         materia_id = data.get('materia_id')
         dui_maestro = data.get('dui_maestro')
         anio_lectivo = data.get('anio_lectivo', datetime.now().year)
 
-        if not grado_seccion_id or not materia_id or not dui_maestro:
-            return JsonResponse({'success': False, 'error': 'Faltan datos obligatorios.'}, status=400)
-
-        seccion = GradoSeccion.objects.get(id=grado_seccion_id)
-        if not seccion.es_tercer_ciclo:
-            return JsonResponse({
-                'success': False,
-                'error': 'Solo se pueden distribuir materias por especialista en Tercer Ciclo (7° a 9°).'
-            }, status=400)
-
+        seccion = GradoSeccion.objects.get(id=seccion_id, activo=True)
         materia = Materia.objects.get(id=materia_id)
         docente = Maestro.objects.get(dui=dui_maestro, activo=True)
+        
+        turno_seccion = normalizar_turno(seccion.turno)
+        codigos_basica = ['PK', '1G', '2G', '3G', '4G', '5G', '6G']
 
-        if not especialidad_coincide_con_materia(docente, materia):
+        # VALIDACIÓN CLAVE:
+        # ¿El maestro ya tiene a cargo una sección de Básica en ese mismo turno?
+        conflicto_basica = docente.grados_a_cargo.filter(
+            activo=True,
+            grado__in=codigos_basica,
+            turno__iexact=turno_seccion
+        ).first()
+
+        if conflicto_basica:
             return JsonResponse({
                 'success': False,
-                'error': f'{docente.nombre} {docente.apellido} no tiene la especialidad requerida para {materia.nombre}.'
+                'error': (
+                    f"No se puede asignar a {docente.nombre} {docente.apellido}: "
+                    f"ya es orientador titular de {conflicto_basica.get_grado_display()} "
+                    f'"{conflicto_basica.seccion}" en el turno de la {turno_seccion.lower()} (carga completa).'
+                )
             }, status=400)
 
-        turnos_basica = {
-            normalizar_turno(grado.turno)
-            for grado in docente.grados_a_cargo.filter(activo=True)
-            if not grado.es_tercer_ciclo
-        }
-        if normalizar_turno(seccion.turno) in turnos_basica:
-            return JsonResponse({
-                'success': False,
-                'error': f'El docente es titular de educación básica en el turno de la {normalizar_turno(seccion.turno).lower()}.'
-            }, status=400)
-
-        asignacion, created = AsignacionMateria.objects.update_or_create(
+        # Si supera la validación, guardar o actualizar la asignación
+        asignacion, creada = AsignacionMateria.objects.update_or_create(
             grado_seccion=seccion,
             materia=materia,
             anio_lectivo=anio_lectivo,
@@ -1481,24 +1499,19 @@ def asignar_materia_docente(request):
 
         ini_nom = docente.nombre[0] if docente.nombre else ""
         ini_ape = docente.apellido[0] if docente.apellido else ""
-        iniciales = f"{ini_nom}{ini_ape}".upper()
 
         return JsonResponse({
             'success': True,
+            'docente_dui': docente.dui,
             'docente_nombre': f"{docente.nombre} {docente.apellido}",
-            'docente_iniciales': iniciales,
-            'docente_dui': docente.dui
+            'docente_iniciales': f"{ini_nom}{ini_ape}".upper(),
+            'mensaje': 'Asignación realizada correctamente.'
         })
 
-    except GradoSeccion.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Grado o sección no encontrada.'}, status=404)
-    except Materia.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Materia no encontrada.'}, status=404)
-    except Maestro.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Docente no encontrado.'}, status=404)
+    except (GradoSeccion.DoesNotExist, Materia.DoesNotExist, Maestro.DoesNotExist):
+        return JsonResponse({'success': False, 'error': 'Registro no encontrado.'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
 
 @login_required
 @directora_required

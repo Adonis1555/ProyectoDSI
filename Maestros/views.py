@@ -477,21 +477,22 @@ def editar_alumno(request, nie):
 BLOQUES_HORARIO = [
     {'id': 1, 'hora': '07:00 - 07:45', 'es_receso': False},
     {'id': 2, 'hora': '07:45 - 08:30', 'es_receso': False},
-    {'id': 0, 'hora': '08:30 - 09:00', 'es_receso': True, 'nombre': 'Receso'},
+    {'id': 0, 'hora': '08:30 - 09:00', 'es_receso': True, 'nombre': 'Primer Receso'},
     {'id': 3, 'hora': '09:00 - 09:45', 'es_receso': False},
     {'id': 4, 'hora': '09:45 - 10:30', 'es_receso': False},
-    {'id': 5, 'hora': '10:30 - 11:15', 'es_receso': False},
+    {'id': 0, 'hora': '10:30 - 10:45', 'es_receso': True, 'nombre': 'Segundo Receso'},
+    {'id': 5, 'hora': '10:45 - 11:30', 'es_receso': False},
 ]
 
 BLOQUES_HORARIO_TARDE = [
     {'id': 1, 'hora': '13:00 - 13:45', 'es_receso': False},
     {'id': 2, 'hora': '13:45 - 14:30', 'es_receso': False},
-    {'id': 0, 'hora': '14:30 - 15:00', 'es_receso': True, 'nombre': 'Receso'},
+    {'id': 0, 'hora': '14:30 - 15:00', 'es_receso': True, 'nombre': 'Primer Receso'},
     {'id': 3, 'hora': '15:00 - 15:45', 'es_receso': False},
     {'id': 4, 'hora': '15:45 - 16:30', 'es_receso': False},
-    {'id': 5, 'hora': '16:30 - 17:15', 'es_receso': False},
+    {'id': 0, 'hora': '16:30 - 16:45', 'es_receso': True, 'nombre': 'Segundo Receso'},
+    {'id': 5, 'hora': '16:45 - 17:30', 'es_receso': False},
 ]
-
 DIAS_SEMANA = [
     {'id': 1, 'nombre': 'Lunes'},
     {'id': 2, 'nombre': 'Martes'},

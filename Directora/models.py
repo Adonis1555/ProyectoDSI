@@ -100,6 +100,7 @@ class Materia(models.Model):
     nombre = models.CharField(max_length=100)
     codigo = models.CharField(max_length=20, blank=True, null=True)
     color = models.CharField(max_length=7, default="#D6E4FF")
+    bloques_semanales = models.PositiveSmallIntegerField(default=5)
 
     def __str__(self):
         return self.nombre
