@@ -4,7 +4,7 @@ El proyecto utiliza PostgreSQL. `db.sqlite3` está vacío. Las migraciones crean
 
 ## Instalación en una base nueva
 
-1. Instala las dependencias con `pip install -r requirements.txt`, crea la base PostgreSQL `ProyectoDSI` y configura `DB_PASSWORD` en tu equipo.
+1. Instala las dependencias con `pip install -r requirements.txt` y crea la base PostgreSQL `ProyectoDSI`. Ajusta `DATABASES['default']['PASSWORD']` en tu copia local de `Cenalop_DSI/settings.py` según tu instalación; no subas ese cambio.
 2. Ejecuta `python manage.py migrate`.
 3. Ejecuta `python manage.py cargar_datos_demo --confirmar-demo`.
 4. Inicia el sistema con `python manage.py runserver`.
