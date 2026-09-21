@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import Count, Q
 from Login.decorators import maestro_required, roles_permitidos
-from Directora.models import AsignacionBloqueMaestro,GradoSeccion,Maestro,Materia,normalizar_turno
+from Directora.models import AsignacionBloqueMaestro,GradoSeccion,Maestro,Materia,normalizar_turno,AsignacionMateria
 from Maestros.models import Alumno, RegistroTarjeta
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
@@ -505,114 +505,151 @@ DIAS_SEMANA = [
 @login_required
 @maestro_required
 def horario_maestro(request):
+    from Directora.models import AsignacionMateria, Materia, GradoSeccion, AsignacionBloqueMaestro
+
     maestro = get_object_or_404(Maestro, id_usuario=request.user)
     anio_actual = datetime.now().year
-    turno_actual = 'Tarde' if request.GET.get('turno', '').lower() == 'tarde' else 'Mañana'
+    
+    # 1. Normalización de Turno y Nivel
+    turno_raw = request.GET.get('turno', '').lower()
+    turno_actual = 'Tarde' if 'tar' in turno_raw else 'Mañana'
+
+    nivel_solicitado = request.GET.get('nivel', 'basica').lower()
+    nivel_actual = 'tercer' if nivel_solicitado == 'tercer' else 'basica'
+
     grados_basica = ['PK', '1G', '2G', '3G', '4G', '5G', '6G']
     grados_tercer = ['7G', '8G', '9G']
-    nivel_solicitado = request.GET.get('nivel', 'basica').lower()
-
-    todas_las_materias = obtener_materias_docente(maestro, anio=anio_actual)
-    todas_las_clases = HorarioClase.objects.filter(
-        docente=maestro, anio_lectivo=anio_actual
-    ).select_related('materia', 'grado_seccion')
-
-    if nivel_solicitado not in {'basica', 'tercer'}:
-        nivel_solicitado = 'basica'
-    nivel_actual = nivel_solicitado
     grados_nivel = grados_tercer if nivel_actual == 'tercer' else grados_basica
 
-    materias_disponibles = [
-        opcion for opcion in todas_las_materias
-        if normalizar_turno(opcion['grado_seccion'].turno) == turno_actual
-        and opcion['grado_seccion'].grado in grados_nivel
-    ]
+    # 2. CONSULTA DIRECTA DE MATERIAS ASIGNADAS (Resuelve que sólo apareciera 1)
+    materias_disponibles = []
+    
+    if nivel_actual == 'tercer':
+        # Consulta todas las asignaciones del docente en tercer ciclo para este turno
+        asigs_tercer = AsignacionMateria.objects.filter(
+            docente=maestro,
+            anio_lectivo=anio_actual,
+            grado_seccion__activo=True,
+            grado_seccion__grado__in=grados_tercer,
+            grado_seccion__turno__iexact=turno_actual
+        ).select_related('grado_seccion', 'materia').order_by('grado_seccion__grado', 'materia__nombre')
 
-    # Clases agendadas por este maestro
-    clases = todas_las_clases.filter(
-        turno=turno_actual, grado_seccion__grado__in=grados_nivel
-    )
-    bloques_asignados = set(AsignacionBloqueMaestro.objects.filter(
-        maestro=maestro,
+        for a in asigs_tercer:
+            materias_disponibles.append({
+                'materia': a.materia,
+                'grado_seccion': a.grado_seccion
+            })
+    else:
+        # En básica: Si es orientador titular, tiene todas las materias del catálogo
+        seccion_titular = maestro.grados_a_cargo.filter(
+            activo=True,
+            grado__in=grados_basica,
+            turno__iexact=turno_actual
+        ).first()
+
+        if seccion_titular:
+            for mat in Materia.objects.all().order_by('nombre'):
+                materias_disponibles.append({
+                    'materia': mat,
+                    'grado_seccion': seccion_titular
+                })
+
+    # 3. Clases programadas por el maestro en este turno y nivel
+    clases = HorarioClase.objects.filter(
+        docente=maestro,
         anio_lectivo=anio_actual,
-        turno=turno_actual,
-        activo=True,
-    ).values_list('dia', 'bloque'))
-    bloques_utilizables = bloques_asignados.intersection({
-        (dia['id'], bloque['id'])
-        for dia in DIAS_SEMANA for bloque in BLOQUES_HORARIO
-        if not bloque['es_receso']
-    })
-    tiene_carga = bool(materias_disponibles)
-    tiene_clases = clases.exists()
-    puede_programar = tiene_carga and bool(bloques_utilizables)
+        turno__iexact=turno_actual,
+        grado_seccion__grado__in=grados_nivel
+    ).select_related('materia', 'grado_seccion')
 
-    # Mapa rápido: (dia, bloque) -> objeto HorarioClase
+    # 4. Bloques autorizados por Dirección
+    # Se consulta usando docente_id/maestro según tu ForeignKey
+    filtro_docente = {'docente': maestro} if hasattr(AsignacionBloqueMaestro, 'docente') else {'maestro': maestro}
+    bloques_autorizados = set(
+        AsignacionBloqueMaestro.objects.filter(
+            anio_lectivo=anio_actual,
+            turno__iexact=turno_actual,
+            **filtro_docente
+        ).values_list('dia', 'bloque')
+    )
+    # Si Dirección aún no configuró la matriz de bloques, se le permite editar toda la grilla
+    restriccion_activa = len(bloques_autorizados) > 0
+
     mapa_horario = {(c.dia, c.bloque): c for c in clases}
 
-    # Armar grilla semanal
-    grilla = []
+    # 5. Grilla con los 2 Recesos Separados
     bloques_horario = BLOQUES_HORARIO_TARDE if turno_actual == 'Tarde' else BLOQUES_HORARIO
+    grilla = []
     for b in bloques_horario:
         fila = {'info': b, 'celdas': []}
         if not b['es_receso']:
             for d in DIAS_SEMANA:
-                clase_slot = mapa_horario.get((d['id'], b['id']))
+                permitido = (d['id'], b['id']) in bloques_autorizados if restriccion_activa else True
                 fila['celdas'].append({
                     'dia_id': d['id'],
                     'bloque_id': b['id'],
-                    'clase': clase_slot,
-                    'permitido': puede_programar and (d['id'], b['id']) in bloques_utilizables,
+                    'clase': mapa_horario.get((d['id'], b['id'])),
+                    'permitido': permitido,
                 })
         grilla.append(fila)
 
-    # Calcular progreso semanal
-    conteo_materias = {}
-    for c in clases:
-        clave = f"{c.materia.nombre} ({c.grado_seccion})"
-        conteo_materias[clave] = conteo_materias.get(clave, 0) + 1
-
+    # 6. Cálculo del Progreso con Meta Real (materia.bloques_semanales)
     progreso = []
     for m in materias_disponibles:
-        nombre_clave = f"{m['materia'].nombre} ({m['grado_seccion']})"
-        asignadas = conteo_materias.get(nombre_clave, 0)
-        meta_sugerida = 4
-        porcentaje = min(int((asignadas / meta_sugerida) * 100), 100)
+        mat = m['materia']
+        sec = m['grado_seccion']
+        
+        # Meta dinámica configurada en la materia (evita el '4' fijo)
+        meta = getattr(mat, 'bloques_semanales', 5) or 5
+        
+        # Conteo exacto de bloques ya asignados para esta materia y sección
+        asignadas = clases.filter(materia=mat, grado_seccion=sec).count()
+        porcentaje = min(int((asignadas / meta) * 100), 100) if meta > 0 else 0
+
         progreso.append({
-            'nombre': nombre_clave,
+            'nombre': f"{mat.nombre} ({sec.get_grado_display()} \"{sec.seccion}\")",
             'asignadas': asignadas,
-            'meta': meta_sugerida,
+            'meta': meta,
             'porcentaje': porcentaje
         })
-    
+
+    # 7. Estados y motivo de rechazo
     estados_encontrados = set(clases.values_list('estado', flat=True))
     estado_actual = next(iter(estados_encontrados)) if len(estados_encontrados) == 1 else (
         'MIXTO' if estados_encontrados else 'BORRADOR'
     )
     motivo_rechazo = next((
-        clase.observaciones.strip() for clase in clases
-        if clase.estado == 'RECHAZADO' and clase.observaciones and clase.observaciones.strip()
+        c.observaciones.strip() for c in clases
+        if c.estado == 'RECHAZADO' and c.observaciones and c.observaciones.strip()
     ), '')
 
-    combinaciones = {}
-    for opcion in todas_las_materias:
-        nivel = 'tercer' if opcion['grado_seccion'].es_tercer_ciclo else 'basica'
-        turno = normalizar_turno(opcion['grado_seccion'].turno)
-        combinaciones.setdefault((nivel, turno), set())
-    for clase in todas_las_clases:
-        nivel = 'tercer' if clase.grado_seccion.es_tercer_ciclo else 'basica'
-        combinaciones.setdefault((nivel, normalizar_turno(clase.turno)), set()).add(clase.estado)
+    # 8. Píldoras de estado de propuestas
+    combinaciones = [
+        ('basica', 'Niveles básicos', 'Mañana', 'manana'),
+        ('basica', 'Niveles básicos', 'Tarde', 'tarde'),
+        ('tercer', 'Tercer ciclo', 'Mañana', 'manana'),
+        ('tercer', 'Tercer ciclo', 'Tarde', 'tarde'),
+    ]
     estados_propuestas = []
-    for (nivel, turno), estados in sorted(combinaciones.items()):
-        estado = next(iter(estados)) if len(estados) == 1 else ('MIXTO' if estados else 'BORRADOR')
-        estados_propuestas.append({
-            'nivel': nivel,
-            'nivel_nombre': 'Tercer ciclo' if nivel == 'tercer' else 'Niveles básicos',
-            'turno': turno,
-            'turno_query': turno.lower().replace('ñ', 'n'),
-            'estado': estado,
-            'seleccionado': nivel == nivel_actual and turno == turno_actual,
-        })
+    for n_slug, n_nom, t_nom, t_slug in combinaciones:
+        grados_eval = grados_basica if n_slug == 'basica' else grados_tercer
+        clases_combo = HorarioClase.objects.filter(
+            docente=maestro,
+            anio_lectivo=anio_actual,
+            turno__iexact=t_nom,
+            grado_seccion__grado__in=grados_eval
+        )
+        if clases_combo.exists():
+            st_set = set(clases_combo.values_list('estado', flat=True))
+            st = next(iter(st_set)) if len(st_set) == 1 else 'MIXTO'
+            estados_propuestas.append({
+                'nivel': n_slug,
+                'nivel_nombre': n_nom,
+                'turno': t_nom,
+                'turno_query': t_slug,
+                'estado': st,
+                'seleccionado': (n_slug == nivel_actual and t_nom == turno_actual)
+            })
 
     contexto = {
         'maestro': maestro,
@@ -623,9 +660,9 @@ def horario_maestro(request):
         'anio_actual': anio_actual,
         'estado_actual': estado_actual,
         'motivo_rechazo': motivo_rechazo,
-        'tiene_carga': tiene_carga,
-        'tiene_clases': tiene_clases,
-        'puede_programar': puede_programar,
+        'tiene_carga': bool(materias_disponibles),
+        'tiene_clases': clases.exists(),
+        'puede_programar': bool(materias_disponibles),
         'estados_propuestas': estados_propuestas,
         'nivel_actual': nivel_actual,
         'titulo_nivel_actual': 'Tercer ciclo' if nivel_actual == 'tercer' else 'Niveles básicos',
@@ -633,7 +670,6 @@ def horario_maestro(request):
     }
 
     return render(request, 'horarios.html', contexto)
-
 
 @login_required
 @require_POST
@@ -757,8 +793,9 @@ def enviar_horario_revision(request):
         maestro = get_object_or_404(Maestro, id_usuario=request.user)
         anio = datetime.now().year
         data = json.loads(request.body.decode('utf-8') or '{}')
-        turno = 'Tarde' if str(data.get('turno', '')).lower() == 'tarde' else 'Mañana'
+        turno = normalizar_turno(data.get('turno', 'Mañana'))
         nivel = str(data.get('nivel', '')).lower()
+
         if nivel == 'tercer':
             grados_nivel = ['7G', '8G', '9G']
             nombre_nivel = 'tercer ciclo'
@@ -768,30 +805,85 @@ def enviar_horario_revision(request):
         else:
             return JsonResponse({'success': False, 'error': 'El nivel educativo no es válido.'}, status=400)
 
+        # =========================================================================
+        # 1. CÁLCULO DE LA META DE BLOQUES REQUERIDOS SEGÚN EL NIVEL Y TURNO
+        # =========================================================================
+        bloques_requeridos = 0
+
+        if nivel == 'basica':
+            # Verificar si es orientador titular de básica en este turno
+            es_titular_basica = maestro.grados_a_cargo.filter(
+                activo=True,
+                grado__in=grados_nivel,
+                turno__iexact=turno
+            ).exists()
+
+            if es_titular_basica:
+                # Suma de bloques del catálogo (típicamente 25 bloques a la semana)
+                total_cat = sum(getattr(m, 'bloques_semanales', 5) or 5 for m in Materia.objects.all())
+                bloques_requeridos = total_cat if total_cat > 0 else 25
+            else:
+                bloques_requeridos = 0
+
+        elif nivel == 'tercer':
+            # Sumar los bloques semanales de las materias asignadas en 3er ciclo para este turno
+            asigs = AsignacionMateria.objects.filter(
+                docente=maestro,
+                anio_lectivo=anio,
+                grado_seccion__activo=True,
+                grado_seccion__grado__in=grados_nivel,
+                grado_seccion__turno__iexact=turno
+            ).select_related('materia')
+
+            bloques_requeridos = sum(
+                int(getattr(a.materia, 'bloques_semanales', 5) or 5) for a in asigs
+            )
+
+        if bloques_requeridos == 0:
+            return JsonResponse({
+                'success': False,
+                'error': f'No tienes carga académica requerida en {nombre_nivel} para el turno de la {turno.lower()}.'
+            }, status=400)
+
+        # =========================================================================
+        # 2. VALIDACIÓN DE BLOQUES PROGRAMADOS EN LA GRILLA
+        # =========================================================================
         clases = HorarioClase.objects.filter(
-            docente=maestro, anio_lectivo=anio, turno=turno,
+            docente=maestro,
+            anio_lectivo=anio,
+            turno=turno,
             grado_seccion__grado__in=grados_nivel,
         )
 
-        if not clases.exists():
+        total_asignados = clases.count()
+
+        # Validación estricta de cumplimiento de carga
+        if total_asignados < bloques_requeridos:
+            faltantes = bloques_requeridos - total_asignados
             return JsonResponse({
-                'success': False, 
-                'error': 'No tienes ninguna clase programada en tu horario para enviar.'
+                'success': False,
+                'error': (
+                    f'Carga horaria incompleta: tienes programados {total_asignados} de los '
+                    f'{bloques_requeridos} bloques requeridos para este turno. '
+                    f'Debes asignar los {faltantes} bloque(s) faltante(s) antes de enviar a Dirección.'
+                )
             }, status=400)
 
+        # Verificar que existan clases en estado pendiente de resolución
         clases_editables = clases.filter(estado__in=['BORRADOR', 'RECHAZADO'])
         if not clases_editables.exists():
             return JsonResponse({
                 'success': False,
-                'error': 'No hay cambios en borrador o rechazados para enviar.'
+                'error': 'No hay cambios en borrador o devueltos pendientes de enviar.'
             }, status=400)
 
-        # Los horarios aprobados o publicados conservan su estado.
+        # 3. Enviar a revisión cambiando el estado
         clases_editables.update(estado='ENVIADO', observaciones='')
 
         return JsonResponse({
             'success': True,
-            'mensaje': f'Tu horario de {nombre_nivel} para el turno {turno.lower()} fue enviado a Dirección.'
+            'mensaje': f'Tu horario completo de {nombre_nivel} ({total_asignados} bloques) fue enviado a Dirección.'
         })
+
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)

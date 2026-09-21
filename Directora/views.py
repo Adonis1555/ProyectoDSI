@@ -1190,16 +1190,17 @@ def horarios_revision(request):
         titulo_nivel = 'Tercer ciclo'
         descripcion_nivel = '7° a 9° grado'
 
-    # EXCLUIR BORRADORES: Solo consultar clases enviadas, aprobadas, publicadas o rechazadas
+    # 1. EXCLUIR BORRADORES: Solo consultar clases enviadas, aprobadas, publicadas o rechazadas
     clases_nivel = list(HorarioClase.objects.filter(
         anio_lectivo=anio_actual,
         grado_seccion__grado__in=grados_nivel,
     ).exclude(
-        estado__iexact='BORRADOR'  # <--- Filtro clave
+        estado__iexact='BORRADOR'  # <--- Excluye lo que no ha sido enviado
     ).select_related('docente', 'grado_seccion', 'materia').order_by(
         'docente__apellido', 'docente__nombre', 'bloque', 'dia'
     ))
 
+    # 2. Agrupar clases por docente y turno
     horarios_por_docente = {}
     for clase in clases_nivel:
         doc_dui = getattr(clase.docente, 'dui', str(clase.docente_id))
@@ -1220,11 +1221,12 @@ def horarios_revision(request):
         if clase.fecha_publicacion:
             item['fechas_publicacion'].append(clase.fecha_publicacion)
 
+    # 3. Construir lista de propuestas visibles en el panel lateral
     horarios = []
     for item in horarios_por_docente.values():
         estado = next(iter(item['estados'])) if len(item['estados']) == 1 else 'MIXTO'
         
-        # Validación de seguridad: no mostrar en lista si por algún motivo está en BORRADOR
+        # Filtro de respaldo
         if estado.upper() == 'BORRADOR':
             continue
 
@@ -1238,7 +1240,85 @@ def horarios_revision(request):
             'puede_publicarse': estado == 'APROBADO',
             'fecha_publicacion': max(item['fechas_publicacion']) if item['fechas_publicacion'] else None,
         })
-        
+
+    # 4. Determinar maestro y turno seleccionado
+    dui_seleccionado = request.GET.get('maestro')
+    turno_seleccionado = normalizar_turno(request.GET.get('turno', 'Mañana'))
+
+    if not dui_seleccionado and horarios:
+        pendiente = next((item for item in horarios if item['estado'] == 'ENVIADO'), None)
+        dui_seleccionado = (pendiente or horarios[0])['docente'].dui
+        turno_seleccionado = (pendiente or horarios[0])['turno']
+
+    horario_seleccionado = next(
+        (item for item in horarios if item['docente'].dui == dui_seleccionado and item['turno'] == turno_seleccionado),
+        None
+    )
+
+    # 5. Mapear celdas de la grilla horaria
+    mapa_clases = {}
+    if horario_seleccionado:
+        clave_seleccionada = (horario_seleccionado['docente'].dui, horario_seleccionado['turno'])
+        if clave_seleccionada in horarios_por_docente:
+            for clase in horarios_por_docente[clave_seleccionada]['clases']:
+                mapa_clases[(clase.bloque, clase.dia)] = clase
+
+    # 6. Definición oficial de los 2 recesos
+    if turno_seleccionado == 'Tarde':
+        bloques = [
+            {'id': 1, 'hora': '13:00 - 13:45', 'es_receso': False},
+            {'id': 2, 'hora': '13:45 - 14:30', 'es_receso': False},
+            {'id': 0, 'hora': '14:30 - 15:00', 'es_receso': True, 'nombre': 'Primer Receso'},
+            {'id': 3, 'hora': '15:00 - 15:45', 'es_receso': False},
+            {'id': 4, 'hora': '15:45 - 16:30', 'es_receso': False},
+            {'id': 0, 'hora': '16:30 - 16:45', 'es_receso': True, 'nombre': 'Segundo Receso'},
+            {'id': 5, 'hora': '16:45 - 17:30', 'es_receso': False},
+        ]
+    else:
+        bloques = [
+            {'id': 1, 'hora': '07:00 - 07:45', 'es_receso': False},
+            {'id': 2, 'hora': '07:45 - 08:30', 'es_receso': False},
+            {'id': 0, 'hora': '08:30 - 09:00', 'es_receso': True, 'nombre': 'Primer Receso'},
+            {'id': 3, 'hora': '09:00 - 09:45', 'es_receso': False},
+            {'id': 4, 'hora': '09:45 - 10:30', 'es_receso': False},
+            {'id': 0, 'hora': '10:30 - 10:45', 'es_receso': True, 'nombre': 'Segundo Receso'},
+            {'id': 5, 'hora': '10:45 - 11:30', 'es_receso': False},
+        ]
+
+    dias = [
+        {'id': 1, 'nombre': 'Lunes'},
+        {'id': 2, 'nombre': 'Martes'},
+        {'id': 3, 'nombre': 'Miércoles'},
+        {'id': 4, 'nombre': 'Jueves'},
+        {'id': 5, 'nombre': 'Viernes'},
+    ]
+
+    grilla = []
+    for bloque in bloques:
+        fila = {'info': bloque, 'celdas': []}
+        if not bloque['es_receso']:
+            for dia in dias:
+                fila['celdas'].append({
+                    'dia': dia,
+                    'clase': mapa_clases.get((bloque['id'], dia['id'])),
+                })
+        grilla.append(fila)
+
+    contexto = {
+        'horarios': horarios,
+        'horario_seleccionado': horario_seleccionado,
+        'dui_seleccionado': dui_seleccionado,
+        'turno_seleccionado': turno_seleccionado,
+        'dias': dias,
+        'grilla': grilla,
+        'anio_actual': anio_actual,
+        'nivel': nivel,
+        'titulo_nivel': titulo_nivel,
+        'descripcion_nivel': descripcion_nivel,
+    }
+
+    return render(request, 'horarios_revision.html', contexto)
+
 @login_required
 @directora_required
 @require_POST
