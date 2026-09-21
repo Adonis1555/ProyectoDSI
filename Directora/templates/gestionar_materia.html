@@ -72,6 +72,7 @@
                                     <th>Código</th>
                                     <th>Nombre de la materia</th>
                                     <th>Bloques / Sem.</th>
+                                    <th>Nivel</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -83,9 +84,37 @@
                                     </td>
                                     <td>{{ materia.codigo|default:"---" }}</td>
                                     <td>{{ materia.nombre }}</td>
+                                    
                                     <td><strong>{{ materia.bloques_semanales|default:"5" }}</strong> bloques</td>
                                     <td>
-                                        <div class="acciones-tabla">
+                                        {% if materia.nivel_aplicable == 'PARVULARIA' %}
+                                            <span class="badge" style="background-color: #FEF3C7; color: #92400E; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                                                Parvularia
+                                            </span>
+                                        {% elif materia.nivel_aplicable == 'BASICA' %}
+                                            <span class="badge" style="background-color: #E0E7FF; color: #3730A3; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                                                Básica (1° - 6°)
+                                            </span>
+                                        {% elif materia.nivel_aplicable == 'TERCER' %}
+                                            <span class="badge" style="background-color: #FCE7F3; color: #9D174D; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                                                Tercer Ciclo (7° - 9°)
+                                            </span>
+                                        {% else %}
+                                            <span class="badge" style="background-color: #DCFCE7; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                                                Básica y Tercer Ciclo
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                
+                                        <td class="acciones-tabla">
+                                            <button type="button" 
+                                                    class="btn-accion-editar" 
+                                                    data-id="{{ materia.id }}" 
+                                                    data-nombre="{{ materia.nombre }}" 
+                                                    data-bloques="{{ materia.bloques_semanales|default:'5' }}" 
+                                                    title="Modificar bloques">
+                                                <i class="ti ti-edit"></i>
+                                            </button>
                                             <button type="button" 
                                                     class="btn-accion-eliminar" 
                                                     data-id="{{ materia.id }}" 
@@ -93,8 +122,8 @@
                                                     title="Eliminar">
                                                 <i class="ti ti-trash"></i>
                                             </button>
-                                        </div>
-                                    </td>
+                                        </td>
+                                        
                                 </tr>
                                 {% empty %}
                                 <tr>
@@ -109,110 +138,113 @@
                 </div>
             </div>
 
-            <!-- ==========================================
-                 TAB 2: DISTRIBUCIÓN ACADÉMICA (MATRIZ)
-                 ========================================== -->
-            <div id="tab-distribucion" class="tab-contenido">
-                <div class="titulo-materia">
-                    <div>
-                        <h1>Asignacion de docentes</h1>
-                    </div>
+          <!-- ==========================================
+     TAB 2: DISTRIBUCIÓN ACADÉMICA (MATRIZ)
+     ========================================== -->
+<div id="tab-distribucion" class="tab-contenido">
+    <div class="titulo-materia">
+        <div>
+            <h1>Asignación de docentes</h1>
+        </div>
+    </div>
+
+    <div class="distribucion-container">
+        <div class="matrix-distribucion">
+            <!-- Cabecera de Materias: Exclusiva para materias de Tercer Ciclo -->
+            <div class="fila encabezado-matrix">
+                <div class="celda-grado fixed-col">Grado / Sección</div>
+                {% for m in materias_tercer_ciclo %}
+                <div class="celda-materia">
+                    <span>{{ m.nombre }}</span>
                 </div>
-
-                <div class="distribucion-container">
-                    <div class="matrix-distribucion">
-                        <!-- Cabecera de Materias -->
-                        <div class="fila encabezado-matrix">
-                            <div class="celda-grado fixed-col">Grado / Sección</div>
-                            {% for m in materias %}
-                            <div class="celda-materia">{{ m.nombre }}</div>
-                            {% empty %}
-                            <div class="celda-materia">Sin materias registradas</div>
-                            {% endfor %}
-                        </div>
-
-                        <!-- 1. BLOQUE BÁSICA (Carga Completa Automática) -->
-                        <div class="bloque-nivel">
-                            <div class="etiqueta-nivel">Educación Básica (Carga Completa Automática)</div>
-                            {% for sec in secciones_basica %}
-                            <div class="fila">
-                                <div class="celda-grado fixed-col">
-                                    <strong>{{ sec.get_grado_display }} "{{ sec.seccion }}"</strong>
-                                    <span class="nombre-orientador">
-                                        {% if sec.maestro_encargado %}
-                                            Titular: {{ sec.maestro_encargado.nombre }} {{ sec.maestro_encargado.apellido }} (Turno {{ sec.turno }})
-                                        {% else %}
-                                            <em style="color:#ef4444;">Sin orientador asignado</em>
-                                        {% endif %}
-                                    </span>
-                                </div>
-                                <div class="celda-carga-completa">
-                                    <i class="ti ti-school"></i> 
-                                    Carga Académica Completa 
-                                    {% if sec.maestro_encargado %}
-                                        ({{ sec.maestro_encargado.nombre }} {{ sec.maestro_encargado.apellido }})
-                                    {% endif %}
-                                </div>
-                            </div>
-                            {% empty %}
-                            <div class="fila">
-                                <div class="celda-grado fixed-col" style="width: 100%; border: none;">No hay secciones de básica activas.</div>
-                            </div>
-                            {% endfor %}
-                        </div>
-
-                        <!-- 2. BLOQUE TERCER CICLO (Distribución por Especialista) -->
-                        <div class="bloque-nivel tercer-ciclo">
-                            <div class="etiqueta-nivel">Tercer Ciclo (Distribución por Especialista)</div>
-                            {% for item in matriz_tercer_ciclo %}
-                            <div class="fila">
-                                <div class="celda-grado fixed-col">
-                                    <strong>{{ item.seccion.get_grado_display }} "{{ item.seccion.seccion }}"</strong>
-                                    <span class="nombre-orientador">
-                                        Orientador: {{ item.seccion.maestro_encargado|default:"Sin asignar" }} — Turno {{ item.seccion.turno }}
-                                    </span>
-                                </div>
-                                
-                                {% for slot in item.materias %}
-                                    {% if slot.asignado %}
-                                    <div class="celda-materia asignada celda-interactiva" 
-                                         data-seccion-id="{{ item.seccion.id }}" 
-                                         data-seccion-nombre='{{ item.seccion.get_grado_display }} "{{ item.seccion.seccion }}"'
-                                         data-materia-id="{{ slot.materia.id }}" 
-                                         data-materia-nombre="{{ slot.materia.nombre }}"
-                                         data-turno="{{ item.seccion.turno }}"
-                                         data-dui-actual="{{ slot.docente.dui }}"
-                                         title="Clic para reasignar">
-                                        <span class="iniciales">{{ slot.iniciales }}</span>
-                                        <span class="nombre-profe">{{ slot.docente.nombre }} {{ slot.docente.apellido }}</span>
-                                        <i class="ti ti-edit"></i>
-                                    </div>
-                                    {% else %}
-                                    <div class="celda-materia vacia celda-interactiva" 
-                                         data-seccion-id="{{ item.seccion.id }}" 
-                                         data-seccion-nombre='{{ item.seccion.get_grado_display }} "{{ item.seccion.seccion }}"'
-                                         data-materia-id="{{ slot.materia.id }}" 
-                                         data-materia-nombre="{{ slot.materia.nombre }}"
-                                         data-turno="{{ item.seccion.turno }}"
-                                         data-dui-actual=""
-                                         title="Asignar profesor">
-                                        <i class="ti ti-plus"></i>
-                                        <span class="accion">Asignar</span>
-                                    </div>
-                                    {% endif %}
-                                {% empty %}
-                                    <div class="celda-materia vacia" style="flex:1;">No hay materias disponibles.</div>
-                                {% endfor %}
-                            </div>
-                            {% empty %}
-                            <div class="fila">
-                                <div class="celda-grado fixed-col" style="width: 100%; border: none;">No hay secciones de tercer ciclo registradas.</div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
+                {% empty %}
+                <div class="celda-materia">Sin materias para Tercer Ciclo registradas</div>
+                {% endfor %}
             </div>
+
+            
+            <!-- 1. BLOQUE TERCER CICLO (Distribución por Especialista) -->
+            <div class="bloque-nivel tercer-ciclo">
+                <div class="etiqueta-nivel">Tercer Ciclo (Distribución por Especialista)</div>
+                {% for item in matriz_tercer_ciclo %}
+                <div class="fila">
+                    <div class="celda-grado fixed-col">
+                        <strong>{{ item.seccion.get_grado_display }} "{{ item.seccion.seccion }}"</strong>
+                        <span class="nombre-orientador">
+                            Orientador: {{ item.seccion.maestro_encargado|default:"Sin asignar" }} — Turno {{ item.seccion.turno }}
+                        </span>
+                    </div>
+                    
+                    {% for slot in item.materias %}
+                        {% if slot.asignado %}
+                        <div class="celda-materia asignada celda-interactiva" 
+                             data-seccion-id="{{ item.seccion.id }}" 
+                             data-seccion-nombre='{{ item.seccion.get_grado_display }} "{{ item.seccion.seccion }}"'
+                             data-materia-id="{{ slot.materia.id }}" 
+                             data-materia-nombre="{{ slot.materia.nombre }}"
+                             data-turno="{{ item.seccion.turno }}"
+                             data-dui-actual="{{ slot.docente.dui }}"
+                             title="Clic para reasignar">
+                            <span class="iniciales">{{ slot.iniciales }}</span>
+                            <span class="nombre-profe">{{ slot.docente.nombre }} {{ slot.docente.apellido }}</span>
+                            <i class="ti ti-edit"></i>
+                        </div>
+                        {% else %}
+                        <div class="celda-materia vacia celda-interactiva" 
+                             data-seccion-id="{{ item.seccion.id }}" 
+                             data-seccion-nombre='{{ item.seccion.get_grado_display }} "{{ item.seccion.seccion }}"'
+                             data-materia-id="{{ slot.materia.id }}" 
+                             data-materia-nombre="{{ slot.materia.nombre }}"
+                             data-turno="{{ item.seccion.turno }}"
+                             data-dui-actual=""
+                             title="Asignar profesor">
+                            <i class="ti ti-plus"></i>
+                            <span class="accion">Asignar</span>
+                        </div>
+                        {% endif %}
+                    {% empty %}
+                        <div class="celda-materia vacia" style="flex:1;">No hay materias disponibles para Tercer Ciclo.</div>
+                    {% endfor %}
+                </div>
+                {% empty %}
+                <div class="fila">
+                    <div class="celda-grado fixed-col" style="width: 100%; border: none;">No hay secciones de tercer ciclo registradas.</div>
+                </div>
+                {% endfor %}
+            </div>
+            <!-- 2. BLOQUE BÁSICA (Carga Completa Automática) -->
+            <div class="bloque-nivel">
+                <div class="etiqueta-nivel">Educación Básica y Parvularia (Carga Completa Automática)</div>
+                {% for sec in secciones_basica %}
+                <div class="fila">
+                    <div class="celda-grado fixed-col">
+                        <strong>{{ sec.get_grado_display }} "{{ sec.seccion }}"</strong>
+                        <span class="nombre-orientador">
+                            {% if sec.maestro_encargado %}
+                                Titular: {{ sec.maestro_encargado.nombre }} {{ sec.maestro_encargado.apellido }} (Turno {{ sec.turno }})
+                            {% else %}
+                                <em style="color:#ef4444;">Sin orientador asignado</em>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="celda-carga-completa">
+                        <i class="ti ti-school"></i> 
+                        Carga Académica Completa 
+                        {% if sec.maestro_encargado %}
+                            ({{ sec.maestro_encargado.nombre }} {{ sec.maestro_encargado.apellido }})
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="fila">
+                    <div class="celda-grado fixed-col" style="width: 100%; border: none;">No hay secciones de básica o parvularia activas.</div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+</div>
 
             <!-- ==========================================
                  TAB 3: ASIGNACIÓN DE BLOQUES DOCENTES
@@ -362,79 +394,82 @@
             });
         });
 
-        /* 2. REGISTRAR MATERIA */
-        const btnRegistrar = document.getElementById('btnAbrirModalMateria');
-        if (btnRegistrar) {
-            btnRegistrar.addEventListener('click', () => {
-                Swal.fire({
-                    title: 'Crear Nueva Materia',
-                    html: `
-                        <div style="display: flex; flex-direction: column; gap: 14px; text-align: left; margin-top: 10px;">
-                            <div>
-                                <label style="font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px;">Nombre de la Materia *</label>
-                                <input id="swal-nombre" class="swal2-input" placeholder="Ej: Ciencias Naturales" style="width: 100%; margin: 0; font-size: 14px; padding: 10px; border-radius: 8px; border: 1px solid #d1d5db;">
-                            </div>
-                            <div>
-                                <label style="font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px;">Código (Opcional)</label>
-                                <input id="swal-codigo" class="swal2-input" placeholder="Ej: CIE101" style="width: 100%; margin: 0; font-size: 14px; padding: 10px; border-radius: 8px; border: 1px solid #d1d5db;">
-                            </div>
-                            <div>
-                                <label style="font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px;">Bloques Semanales Requeridos *</label>
-                                <input id="swal-bloques" type="number" min="1" max="15" value="5" class="swal2-input" style="width: 100%; margin: 0; font-size: 14px; padding: 10px; border-radius: 8px; border: 1px solid #d1d5db;">
-                                <small style="color: #6b7280; font-size: 11px;">Ej: 5 para Básicas (Mate/Lenguaje), 2 para Educación Física.</small>
-                            </div>
-                            <div>
-                                <label style="font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 4px;">Color Representativo</label>
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <input type="color" id="swal-color" value="#D6E4FF" style="width: 44px; height: 38px; padding: 0; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; background: transparent;">
-                                    <span style="font-size: 12px; color: #6b7280;">Color de tarjeta para el horario</span>
-                                </div>
-                            </div>
+                /* 2. REGISTRAR MATERIA */
+                document.getElementById('btnAbrirModalMateria').addEventListener('click', () => {
+            Swal.fire({
+                title: 'Registrar Nueva Materia',
+                html: `
+                    <div style="display: flex; flex-direction: column; gap: 12px; text-align: left;">
+                        <div>
+                            <label style="font-size: 13px; font-weight: 600;">Nombre de la materia *</label>
+                            <input id="swal-nombre" class="swal2-input" placeholder="Ej: Ciencias Naturales" style="width: 100%; margin: 4px 0 0 0;">
                         </div>
-                    `,
-                    showCancelButton: true,
-                    confirmButtonText: 'Guardar Materia',
-                    cancelButtonText: 'Cancelar',
-                    confirmButtonColor: '#2E5299',
-                    cancelButtonColor: '#94a3b8',
-                    focusConfirm: false,
-                    preConfirm: () => {
-                        const nombre = document.getElementById('swal-nombre').value.trim();
-                        const codigo = document.getElementById('swal-codigo').value.trim();
-                        const bloques = parseInt(document.getElementById('swal-bloques').value, 10);
-                        const color = document.getElementById('swal-color').value;
-
-                        if (!nombre) {
-                            Swal.showValidationMessage('El nombre de la materia es obligatorio');
-                            return false;
-                        }
-                        if (isNaN(bloques) || bloques < 1) {
-                            Swal.showValidationMessage('Debe ingresar un número de bloques válido (mínimo 1)');
-                            return false;
-                        }
-                        return { nombre, codigo, bloques_semanales: bloques, color };
+                        <div>
+                            <label style="font-size: 13px; font-weight: 600;">Nivel educativo aplicable *</label>
+                            <select id="swal-nivel" class="swal2-select" style="width: 100%; margin: 4px 0 0 0; display: block; padding: 8px;">
+                                <option value="TERCER">Solo Tercer Ciclo (7° a 9°)</option>
+                                <option value="BASICA">Solo Básica (1° a 6°)</option>
+                                <option value="BASICA_Y_TERCER" selected>Básica y Tercer Ciclo (1° a 9°)</option>
+                                <option value="PARVULARIA">Solo Parvularia</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 13px; font-weight: 600;">Bloques semanales *</label>
+                            <input id="swal-bloques" type="number" min="1" max="25" value="5" class="swal2-input" style="width: 100%; margin: 4px 0 0 0;">
+                            <small style="color: #64748b; font-size: 11px;">Máximo 25 bloques por jornada semanal.</small>
+                        </div>
+                        <div>
+                            <label style="font-size: 13px; font-weight: 600;">Código (opcional)</label>
+                            <input id="swal-codigo" class="swal2-input" placeholder="Ej: CIEN-01" style="width: 100%; margin: 4px 0 0 0;">
+                        </div>
+                        <div>
+                            <label style="font-size: 13px; font-weight: 600;">Color de tarjeta</label>
+                            <input id="swal-color" type="color" value="#2E5299" style="width: 50px; height: 35px; border: none; cursor: pointer; display: block; margin-top: 4px;">
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Guardar Materia',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2E5299',
+                preConfirm: () => {
+                    const nombre = document.getElementById('swal-nombre').value.trim();
+                    const nivel_aplicable = document.getElementById('swal-nivel').value;
+                    const bloques_semanales = parseInt(document.getElementById('swal-bloques').value, 10);
+                    const codigo = document.getElementById('swal-codigo').value.trim();
+                    const color = document.getElementById('swal-color').value;
+                
+                    if (!nombre) {
+                        Swal.showValidationMessage('El nombre de la materia es obligatorio');
+                        return false;
                     }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        fetch("{% url 'guardar_materia' %}", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json", "X-CSRFToken": getCsrfToken() },
-                            body: JSON.stringify(result.value)
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({ icon: 'success', title: '¡Materia Guardada!', timer: 1200, showConfirmButton: false })
-                                    .then(() => window.location.reload());
-                            } else {
-                                Swal.fire('Error', data.error || 'No se pudo guardar la materia', 'error');
-                            }
-                        })
-                        .catch(() => Swal.fire('Error', 'Hubo un fallo de conexión', 'error'));
+                    if (isNaN(bloques_semanales) || bloques_semanales <= 0 || bloques_semanales > 25) {
+                        Swal.showValidationMessage('Los bloques deben ser un número entre 1 y 25');
+                        return false;
                     }
-                });
+                
+                    return { nombre, nivel_aplicable, bloques_semanales, codigo, color };
+                }
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    fetch("{% url 'guardar_materia' %}", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "X-CSRFToken": getCsrfToken() },
+                        body: JSON.stringify(res.value)
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({icon: 'success', title: 'Materia registrada', text: data.nombre, timer: 1300, showConfirmButton: false})
+                                .then(() => window.location.reload());
+                        } else {
+                            Swal.fire('Error', data.error, 'error');
+                        }
+                    })
+                    .catch(() => Swal.fire('Error', 'Fallo de comunicación con el servidor', 'error'));
+                }
             });
-        }
+        });
 
         /* 3. ASIGNACIÓN MATRIZ TERCER CICLO (CON FILTRADO DE TURNO BASICA) */
         const catalogoMaestros = {
@@ -907,6 +942,92 @@
                 });
             });
         });
+        document.querySelectorAll('.btn-accion-editar').forEach(boton => {
+    boton.addEventListener('click', () => {
+        const id = boton.getAttribute('data-id');
+        const nombre = boton.getAttribute('data-nombre');
+        const bloquesActuales = parseInt(boton.getAttribute('data-bloques'), 10) || 5;
+
+        Swal.fire({
+            title: `Modificar Carga Horaria`,
+            html: `
+                <div style="text-align: left; margin-top: 10px;">
+                    <p style="font-size: 14px; margin-bottom: 12px; color: #374151;">
+                        Materia: <strong>${nombre}</strong>
+                    </p>
+                    <label style="font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 6px;">
+                        Bloques semanales requeridos *
+                    </label>
+                    <input id="swal-edit-bloques" 
+                           type="number" 
+                           min="1" 
+                           max="25" 
+                           value="${bloquesActuales}" 
+                           class="swal2-input" 
+                           style="width: 100%; margin: 0; padding: 10px; font-size: 14px; border-radius: 8px; border: 1px solid #d1d5db;">
+                    <small style="color: #6b7280; font-size: 12px; display: block; margin-top: 6px;">
+                        Debe ser un valor positivo (mínimo 1) y no superar el límite institucional de 25 bloques semanales.
+                    </small>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar cambios',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#2E5299',
+            cancelButtonColor: '#94a3b8',
+            focusConfirm: false,
+            preConfirm: () => {
+                const input = document.getElementById('swal-edit-bloques');
+                const bloques = parseInt(input.value, 10);
+
+                if (isNaN(bloques)) {
+                    Swal.showValidationMessage('Debes ingresar un número válido.');
+                    return false;
+                }
+                if (bloques <= 0) {
+                    Swal.showValidationMessage('No se permiten ceros ni números negativos (mínimo 1).');
+                    return false;
+                }
+                if (bloques > 25) {
+                    Swal.showValidationMessage('No puede superar los 25 bloques de la jornada semanal.');
+                    return false;
+                }
+                return { id: id, bloques_semanales: bloques };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch("{% url 'actualizar_materia' %}", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json", 
+                        "X-CSRFToken": getCsrfToken() 
+                    },
+                    body: JSON.stringify(result.value)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Actualizado!',
+                            text: data.mensaje,
+                            timer: 1200,
+                            showConfirmButton: false
+                        }).then(() => window.location.reload());
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Validación de Carga',
+                            text: data.error,
+                            confirmButtonColor: '#2E5299'
+                        });
+                    }
+                })
+                .catch(() => Swal.fire('Error', 'Fallo de conexión con el servidor.', 'error'));
+            }
+        });
+    });
+});
     </script>
 </body>
 </html>

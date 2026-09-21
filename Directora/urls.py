@@ -25,4 +25,5 @@ urlpatterns = [
         path('resolver-horario-niveles-basicos/', views.resolver_horario_niveles_basicos, name='resolver_horario_niveles_basicos'),
         path('publicar-horario/', views.publicar_horario, name='publicar_horario'),
         path('eliminar-materia/', views.eliminar_materia, name='eliminar_materia'),
+        path('materias/actualizar/', views.actualizar_materia, name='actualizar_materia'),
 ]

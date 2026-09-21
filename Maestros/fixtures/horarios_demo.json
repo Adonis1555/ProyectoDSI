@@ -5,19 +5,19 @@
     "fields": {
       "password": "!",
       "last_login": null,
-      "is_superuser": false,
+      "is_superuser": true,
       "first_name": "",
       "last_name": "",
-      "is_staff": false,
+      "is_staff": true,
       "is_active": true,
-      "date_joined": "2026-06-07T17:42:02.691Z",
+      "date_joined": "2026-06-01T08:00:00.000Z",
       "email": "directora@cenalop.edu.sv",
       "nombre": "César",
       "apellido": "Morales",
       "rol": "directora",
       "activo": true,
-      "fecha_creacion": "2026-06-07T17:42:04.429Z",
-      "fecha_actualizacion": "2026-09-14T04:18:15.378Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "groups": [],
       "user_permissions": []
     }
@@ -33,14 +33,14 @@
       "last_name": "",
       "is_staff": false,
       "is_active": false,
-      "date_joined": "2026-06-09T20:46:18.637Z",
+      "date_joined": "2026-06-01T08:00:00.000Z",
       "email": "maestro1@cenalop.edu.sv",
       "nombre": "Juan",
       "apellido": "Pérez",
       "rol": "maestro",
       "activo": false,
-      "fecha_creacion": "2026-06-09T20:46:18.638Z",
-      "fecha_actualizacion": "2026-09-14T04:18:16.011Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "groups": [],
       "user_permissions": []
     }
@@ -56,14 +56,14 @@
       "last_name": "",
       "is_staff": false,
       "is_active": true,
-      "date_joined": "2026-06-09T20:46:20.215Z",
+      "date_joined": "2026-06-01T08:00:00.000Z",
       "email": "maestro2@cenalop.edu.sv",
       "nombre": "María",
       "apellido": "Gómez",
       "rol": "maestro",
       "activo": true,
-      "fecha_creacion": "2026-06-09T20:46:20.215Z",
-      "fecha_actualizacion": "2026-09-14T04:18:16.629Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "groups": [],
       "user_permissions": []
     }
@@ -79,14 +79,14 @@
       "last_name": "",
       "is_staff": false,
       "is_active": true,
-      "date_joined": "2026-06-09T20:46:21.705Z",
+      "date_joined": "2026-06-01T08:00:00.000Z",
       "email": "maestro3@cenalop.edu.sv",
       "nombre": "Carlos",
       "apellido": "López",
       "rol": "maestro",
       "activo": true,
-      "fecha_creacion": "2026-06-09T20:46:21.705Z",
-      "fecha_actualizacion": "2026-09-14T04:18:17.246Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "groups": [],
       "user_permissions": []
     }
@@ -102,14 +102,14 @@
       "last_name": "",
       "is_staff": false,
       "is_active": false,
-      "date_joined": "2026-06-15T01:59:30.700Z",
+      "date_joined": "2026-06-01T08:00:00.000Z",
       "email": "maestro4@cenalop.edu.sv",
       "nombre": "José",
       "apellido": "Ramírez",
       "rol": "maestro",
       "activo": false,
-      "fecha_creacion": "2026-06-15T01:59:32.155Z",
-      "fecha_actualizacion": "2026-09-14T04:18:17.866Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "groups": [],
       "user_permissions": []
     }
@@ -125,14 +125,14 @@
       "last_name": "",
       "is_staff": false,
       "is_active": true,
-      "date_joined": "2026-06-15T17:02:50.391Z",
+      "date_joined": "2026-06-01T08:00:00.000Z",
       "email": "maestro5@cenalop.edu.sv",
       "nombre": "Ana",
       "apellido": "Mendoza",
       "rol": "maestro",
       "activo": true,
-      "fecha_creacion": "2026-06-15T17:02:50.391Z",
-      "fecha_actualizacion": "2026-09-14T04:18:18.486Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "groups": [],
       "user_permissions": []
     }
@@ -148,14 +148,14 @@
       "last_name": "",
       "is_staff": false,
       "is_active": true,
-      "date_joined": "2026-06-15T17:12:40.163Z",
+      "date_joined": "2026-06-01T08:00:00.000Z",
       "email": "maestro6@cenalop.edu.sv",
       "nombre": "César",
       "apellido": "Morales",
       "rol": "maestro",
       "activo": true,
-      "fecha_creacion": "2026-06-15T17:12:41.538Z",
-      "fecha_actualizacion": "2026-09-14T04:18:19.118Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "groups": [],
       "user_permissions": []
     }
@@ -171,14 +171,14 @@
       "last_name": "",
       "is_staff": false,
       "is_active": true,
-      "date_joined": "2026-09-14T00:11:29.892Z",
+      "date_joined": "2026-06-01T08:00:00.000Z",
       "email": "maestro7@cenalop.edu.sv",
       "nombre": "Eugenio",
       "apellido": "Rodas",
       "rol": "maestro",
       "activo": true,
-      "fecha_creacion": "2026-09-14T00:11:30.644Z",
-      "fecha_actualizacion": "2026-09-14T04:18:19.738Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "groups": [],
       "user_permissions": []
     }
@@ -194,14 +194,14 @@
       "last_name": "",
       "is_staff": false,
       "is_active": true,
-      "date_joined": "2026-09-14T03:39:15.859Z",
+      "date_joined": "2026-06-01T08:00:00.000Z",
       "email": "maestro8@cenalop.edu.sv",
       "nombre": "Elena",
       "apellido": "Castillo",
       "rol": "maestro",
       "activo": true,
-      "fecha_creacion": "2026-09-14T03:39:15.859Z",
-      "fecha_actualizacion": "2026-09-14T04:18:20.360Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "groups": [],
       "user_permissions": []
     }
@@ -217,14 +217,14 @@
       "last_name": "",
       "is_staff": false,
       "is_active": true,
-      "date_joined": "2026-09-14T03:39:16.746Z",
+      "date_joined": "2026-06-01T08:00:00.000Z",
       "email": "maestro9@cenalop.edu.sv",
       "nombre": "Mario",
       "apellido": "Herrera",
       "rol": "maestro",
       "activo": true,
-      "fecha_creacion": "2026-09-14T03:39:16.746Z",
-      "fecha_actualizacion": "2026-09-14T04:18:21.021Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "groups": [],
       "user_permissions": []
     }
@@ -240,14 +240,14 @@
       "last_name": "",
       "is_staff": false,
       "is_active": true,
-      "date_joined": "2026-09-14T03:39:17.587Z",
+      "date_joined": "2026-06-01T08:00:00.000Z",
       "email": "maestro10@cenalop.edu.sv",
       "nombre": "Sofía",
       "apellido": "Aguilar",
       "rol": "maestro",
       "activo": true,
-      "fecha_creacion": "2026-09-14T03:39:17.587Z",
-      "fecha_actualizacion": "2026-09-14T04:18:21.648Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "groups": [],
       "user_permissions": []
     }
@@ -263,14 +263,14 @@
       "last_name": "",
       "is_staff": false,
       "is_active": true,
-      "date_joined": "2026-09-14T03:39:18.398Z",
+      "date_joined": "2026-06-01T08:00:00.000Z",
       "email": "maestro11@cenalop.edu.sv",
       "nombre": "Ricardo",
       "apellido": "Vásquez",
       "rol": "maestro",
       "activo": true,
-      "fecha_creacion": "2026-09-14T03:39:18.398Z",
-      "fecha_actualizacion": "2026-09-14T04:18:22.269Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "groups": [],
       "user_permissions": []
     }
@@ -286,14 +286,14 @@
       "last_name": "",
       "is_staff": false,
       "is_active": true,
-      "date_joined": "2026-09-14T06:22:48.614Z",
+      "date_joined": "2026-06-01T08:00:00.000Z",
       "email": "maestro20@cenalop.edu.sv",
       "nombre": "Daniel",
       "apellido": "Romero",
       "rol": "maestro",
       "activo": true,
-      "fecha_creacion": "2026-09-14T06:22:49.903Z",
-      "fecha_actualizacion": "2026-09-14T06:22:49.903Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "groups": [],
       "user_permissions": []
     }
@@ -302,69 +302,66 @@
     "model": "Directora.materia",
     "pk": 1,
     "fields": {
-      "nombre": "Ciencias Naturales",
-      "codigo": "CN115",
-      "color": "#00852c"
+      "nombre": "Matemática",
+      "codigo": "MAT-01",
+      "color": "#2563EB",
+      "bloques_semanales": 5,
+      "nivel_aplicable": "BASICA_Y_TERCER"
     }
   },
   {
     "model": "Directora.materia",
     "pk": 2,
     "fields": {
-      "nombre": "Informática",
-      "codigo": "IN115",
-      "color": "#757575"
+      "nombre": "Lenguaje y Literatura",
+      "codigo": "LEN-01",
+      "color": "#DC2626",
+      "bloques_semanales": 5,
+      "nivel_aplicable": "BASICA_Y_TERCER"
     }
   },
   {
     "model": "Directora.materia",
     "pk": 3,
     "fields": {
-      "nombre": "Matemática",
-      "codigo": "MA115",
-      "color": "#D6E4FF"
+      "nombre": "Ciencias Naturales",
+      "codigo": "CIE-01",
+      "color": "#16A34A",
+      "bloques_semanales": 5,
+      "nivel_aplicable": "BASICA_Y_TERCER"
     }
   },
   {
     "model": "Directora.materia",
     "pk": 4,
     "fields": {
-      "nombre": "Lenguaje y Literatura",
-      "codigo": "LL115",
-      "color": "#FFE5D6"
+      "nombre": "Estudios Sociales",
+      "codigo": "SOC-01",
+      "color": "#D97706",
+      "bloques_semanales": 5,
+      "nivel_aplicable": "BASICA_Y_TERCER"
+    }
+  },
+  {
+    "model": "Directora.materia",
+    "pk": 5,
+    "fields": {
+      "nombre": "Inglés",
+      "codigo": "ING-01",
+      "color": "#7C3AED",
+      "bloques_semanales": 3,
+      "nivel_aplicable": "BASICA_Y_TERCER"
     }
   },
   {
     "model": "Directora.materia",
     "pk": 6,
     "fields": {
-      "nombre": "Estudios Sociales",
-      "codigo": "SO115",
-      "color": "#FFF1C7"
-    }
-  },
-  {
-    "model": "Directora.materia",
-    "pk": 7,
-    "fields": {
-      "nombre": "Inglés",
-      "codigo": "IG115",
-      "color": "#E9D9FF"
-    }
-  },
-  {
-    "model": "Directora.maestro",
-    "pk": "01010514-6",
-    "fields": {
-      "nombre": "José",
-      "apellido": "Ramírez",
-      "fecha_nac": null,
-      "especialidad": "Matemática",
-      "telefono": "70000000",
-      "activo": false,
-      "fecha_creacion": "2026-06-15T01:59:32.353Z",
-      "fecha_actualizacion": "2026-09-14T04:18:17.866Z",
-      "id_usuario": 5
+      "nombre": "Informática",
+      "codigo": "INF-01",
+      "color": "#4B5563",
+      "bloques_semanales": 2,
+      "nivel_aplicable": "BASICA_Y_TERCER"
     }
   },
   {
@@ -377,8 +374,8 @@
       "especialidad": "Matemática",
       "telefono": "70000000",
       "activo": false,
-      "fecha_creacion": "2026-06-09T20:46:20.205Z",
-      "fecha_actualizacion": "2026-09-14T04:18:16.014Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "id_usuario": 2
     }
   },
@@ -392,8 +389,8 @@
       "especialidad": "Lenguaje y Literatura",
       "telefono": "70000000",
       "activo": true,
-      "fecha_creacion": "2026-06-09T20:46:21.702Z",
-      "fecha_actualizacion": "2026-09-14T04:18:16.630Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "id_usuario": 3
     }
   },
@@ -407,9 +404,24 @@
       "especialidad": "Ciencias Naturales",
       "telefono": "70000000",
       "activo": true,
-      "fecha_creacion": "2026-06-09T20:46:23.198Z",
-      "fecha_actualizacion": "2026-09-14T04:18:17.246Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "id_usuario": 4
+    }
+  },
+  {
+    "model": "Directora.maestro",
+    "pk": "01010514-6",
+    "fields": {
+      "nombre": "José",
+      "apellido": "Ramírez",
+      "fecha_nac": null,
+      "especialidad": "Matemática",
+      "telefono": "70000000",
+      "activo": false,
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
+      "id_usuario": 5
     }
   },
   {
@@ -422,8 +434,8 @@
       "especialidad": "Estudios Sociales",
       "telefono": "70000000",
       "activo": true,
-      "fecha_creacion": "2026-06-15T17:02:51.881Z",
-      "fecha_actualizacion": "2026-09-14T04:18:18.486Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "id_usuario": 6
     }
   },
@@ -437,8 +449,8 @@
       "especialidad": "Matemática",
       "telefono": "70000000",
       "activo": true,
-      "fecha_creacion": "2026-06-15T17:12:41.581Z",
-      "fecha_actualizacion": "2026-09-14T04:18:19.121Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "id_usuario": 7
     }
   },
@@ -452,8 +464,8 @@
       "especialidad": "Informática",
       "telefono": "70000000",
       "activo": true,
-      "fecha_creacion": "2026-09-14T00:11:30.664Z",
-      "fecha_actualizacion": "2026-09-14T04:18:19.741Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "id_usuario": 8
     }
   },
@@ -467,8 +479,8 @@
       "especialidad": "Matemática",
       "telefono": "70000000",
       "activo": true,
-      "fecha_creacion": "2026-09-14T03:39:16.608Z",
-      "fecha_actualizacion": "2026-09-14T04:18:20.363Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "id_usuario": 9
     }
   },
@@ -482,8 +494,8 @@
       "especialidad": "Lenguaje y Literatura",
       "telefono": "70000000",
       "activo": true,
-      "fecha_creacion": "2026-09-14T03:39:17.437Z",
-      "fecha_actualizacion": "2026-09-14T04:18:21.024Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "id_usuario": 10
     }
   },
@@ -497,8 +509,8 @@
       "especialidad": "Inglés",
       "telefono": "70000000",
       "activo": true,
-      "fecha_creacion": "2026-09-14T03:39:18.252Z",
-      "fecha_actualizacion": "2026-09-14T04:18:21.651Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "id_usuario": 11
     }
   },
@@ -512,8 +524,8 @@
       "especialidad": "Informática",
       "telefono": "70000000",
       "activo": true,
-      "fecha_creacion": "2026-09-14T03:39:19.082Z",
-      "fecha_actualizacion": "2026-09-14T04:18:22.272Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "id_usuario": 12
     }
   },
@@ -527,8 +539,8 @@
       "especialidad": "Matemática",
       "telefono": "70000000",
       "activo": true,
-      "fecha_creacion": "2026-09-14T06:22:49.943Z",
-      "fecha_actualizacion": "2026-09-14T06:22:49.943Z",
+      "fecha_creacion": "2026-06-01T08:00:00.000Z",
+      "fecha_actualizacion": "2026-09-20T08:00:00.000Z",
       "id_usuario": 13
     }
   },
@@ -550,7 +562,7 @@
     "fields": {
       "grado": "2G",
       "seccion": "A",
-      "cupo_maximo": 30,
+      "cupo_maximo": 35,
       "turno": "Mañana",
       "activo": true,
       "maestro_encargado": "11111111-1"
@@ -560,33 +572,9 @@
     "model": "Directora.gradoseccion",
     "pk": 3,
     "fields": {
-      "grado": "9G",
+      "grado": "3G",
       "seccion": "A",
-      "cupo_maximo": 25,
-      "turno": "Tarde",
-      "activo": true,
-      "maestro_encargado": "04567890-6"
-    }
-  },
-  {
-    "model": "Directora.gradoseccion",
-    "pk": 5,
-    "fields": {
-      "grado": "PK",
-      "seccion": "B",
-      "cupo_maximo": 20,
-      "turno": "Mañana",
-      "activo": false,
-      "maestro_encargado": null
-    }
-  },
-  {
-    "model": "Directora.gradoseccion",
-    "pk": 6,
-    "fields": {
-      "grado": "5G",
-      "seccion": "A",
-      "cupo_maximo": 30,
+      "cupo_maximo": 35,
       "turno": "Mañana",
       "activo": true,
       "maestro_encargado": "03456789-7"
@@ -594,12 +582,48 @@
   },
   {
     "model": "Directora.gradoseccion",
+    "pk": 4,
+    "fields": {
+      "grado": "4G",
+      "seccion": "A",
+      "cupo_maximo": 35,
+      "turno": "Mañana",
+      "activo": true,
+      "maestro_encargado": "90000004-4"
+    }
+  },
+  {
+    "model": "Directora.gradoseccion",
+    "pk": 5,
+    "fields": {
+      "grado": "5G",
+      "seccion": "A",
+      "cupo_maximo": 35,
+      "turno": "Mañana",
+      "activo": true,
+      "maestro_encargado": "04567890-6"
+    }
+  },
+  {
+    "model": "Directora.gradoseccion",
+    "pk": 6,
+    "fields": {
+      "grado": "6G",
+      "seccion": "A",
+      "cupo_maximo": 35,
+      "turno": "Mañana",
+      "activo": true,
+      "maestro_encargado": "90000002-2"
+    }
+  },
+  {
+    "model": "Directora.gradoseccion",
     "pk": 7,
     "fields": {
-      "grado": "1G",
-      "seccion": "D",
-      "cupo_maximo": 30,
-      "turno": "Mañana",
+      "grado": "7G",
+      "seccion": "B",
+      "cupo_maximo": 35,
+      "turno": "Tarde",
       "activo": true,
       "maestro_encargado": "90000001-1"
     }
@@ -608,105 +632,33 @@
     "model": "Directora.gradoseccion",
     "pk": 8,
     "fields": {
-      "grado": "7G",
-      "seccion": "D",
+      "grado": "8G",
+      "seccion": "B",
       "cupo_maximo": 35,
       "turno": "Tarde",
       "activo": true,
-      "maestro_encargado": null
+      "maestro_encargado": "88549600-0"
     }
   },
   {
     "model": "Directora.gradoseccion",
     "pk": 9,
     "fields": {
-      "grado": "2G",
-      "seccion": "D",
-      "cupo_maximo": 30,
-      "turno": "Mañana",
-      "activo": true,
-      "maestro_encargado": "90000002-2"
-    }
-  },
-  {
-    "model": "Directora.gradoseccion",
-    "pk": 10,
-    "fields": {
-      "grado": "8G",
-      "seccion": "D",
-      "cupo_maximo": 35,
-      "turno": "Tarde",
-      "activo": true,
-      "maestro_encargado": null
-    }
-  },
-  {
-    "model": "Directora.gradoseccion",
-    "pk": 11,
-    "fields": {
-      "grado": "3G",
-      "seccion": "D",
-      "cupo_maximo": 30,
-      "turno": "Mañana",
-      "activo": true,
-      "maestro_encargado": "90000003-3"
-    }
-  },
-  {
-    "model": "Directora.gradoseccion",
-    "pk": 12,
-    "fields": {
       "grado": "9G",
-      "seccion": "D",
-      "cupo_maximo": 35,
-      "turno": "Tarde",
-      "activo": true,
-      "maestro_encargado": null
-    }
-  },
-  {
-    "model": "Directora.gradoseccion",
-    "pk": 13,
-    "fields": {
-      "grado": "4G",
-      "seccion": "D",
-      "cupo_maximo": 30,
-      "turno": "Mañana",
-      "activo": true,
-      "maestro_encargado": "90000004-4"
-    }
-  },
-  {
-    "model": "Directora.gradoseccion",
-    "pk": 14,
-    "fields": {
-      "grado": "7G",
-      "seccion": "E",
-      "cupo_maximo": 35,
-      "turno": "Tarde",
-      "activo": true,
-      "maestro_encargado": null
-    }
-  },
-  {
-    "model": "Directora.gradoseccion",
-    "pk": 15,
-    "fields": {
-      "grado": "7G",
       "seccion": "B",
       "cupo_maximo": 35,
       "turno": "Tarde",
       "activo": true,
-      "maestro_encargado": null
+      "maestro_encargado": "90000003-3"
     }
   },
   {
     "model": "Directora.asignacionmateria",
     "pk": 1,
     "fields": {
-      "grado_seccion": 3,
+      "grado_seccion": 7,
       "materia": 1,
-      "docente": "03456789-7",
+      "docente": "90000001-1",
       "anio_lectivo": 2026
     }
   },
@@ -714,139 +666,49 @@
     "model": "Directora.asignacionmateria",
     "pk": 2,
     "fields": {
-      "grado_seccion": 3,
+      "grado_seccion": 7,
       "materia": 2,
-      "docente": "88549600-0",
-      "anio_lectivo": 2026
-    }
-  },
-  {
-    "model": "Directora.asignacionmateria",
-    "pk": 3,
-    "fields": {
-      "grado_seccion": 8,
-      "materia": 3,
-      "docente": "90000001-1",
-      "anio_lectivo": 2026
-    }
-  },
-  {
-    "model": "Directora.asignacionmateria",
-    "pk": 4,
-    "fields": {
-      "grado_seccion": 8,
-      "materia": 2,
-      "docente": "88549600-0",
-      "anio_lectivo": 2026
-    }
-  },
-  {
-    "model": "Directora.asignacionmateria",
-    "pk": 5,
-    "fields": {
-      "grado_seccion": 10,
-      "materia": 4,
       "docente": "90000002-2",
       "anio_lectivo": 2026
     }
   },
   {
     "model": "Directora.asignacionmateria",
-    "pk": 6,
+    "pk": 3,
     "fields": {
-      "grado_seccion": 10,
-      "materia": 6,
-      "docente": "04567890-6",
-      "anio_lectivo": 2026
-    }
-  },
-  {
-    "model": "Directora.asignacionmateria",
-    "pk": 8,
-    "fields": {
-      "grado_seccion": 12,
-      "materia": 7,
-      "docente": "90000003-3",
-      "anio_lectivo": 2026
-    }
-  },
-  {
-    "model": "Directora.asignacionmateria",
-    "pk": 9,
-    "fields": {
-      "grado_seccion": 14,
-      "materia": 2,
-      "docente": "90000004-4",
-      "anio_lectivo": 2026
-    }
-  },
-  {
-    "model": "Directora.asignacionmateria",
-    "pk": 10,
-    "fields": {
-      "grado_seccion": 14,
+      "grado_seccion": 7,
       "materia": 3,
-      "docente": "90000001-1",
-      "anio_lectivo": 2026
-    }
-  },
-  {
-    "model": "Directora.asignacionmateria",
-    "pk": 11,
-    "fields": {
-      "grado_seccion": 12,
-      "materia": 1,
       "docente": "03456789-7",
       "anio_lectivo": 2026
     }
   },
   {
     "model": "Directora.asignacionmateria",
-    "pk": 12,
+    "pk": 4,
     "fields": {
-      "grado_seccion": 3,
-      "materia": 3,
-      "docente": "11111111-1",
-      "anio_lectivo": 2026
-    }
-  },
-  {
-    "model": "Directora.asignacionmateria",
-    "pk": 13,
-    "fields": {
-      "grado_seccion": 10,
-      "materia": 3,
-      "docente": "11111111-1",
-      "anio_lectivo": 2026
-    }
-  },
-  {
-    "model": "Directora.asignacionmateria",
-    "pk": 14,
-    "fields": {
-      "grado_seccion": 8,
-      "materia": 6,
+      "grado_seccion": 7,
+      "materia": 4,
       "docente": "04567890-6",
       "anio_lectivo": 2026
     }
   },
   {
     "model": "Directora.asignacionmateria",
-    "pk": 15,
+    "pk": 5,
     "fields": {
-      "grado_seccion": 3,
-      "materia": 6,
-      "docente": "04567890-6",
+      "grado_seccion": 7,
+      "materia": 5,
+      "docente": "90000003-3",
       "anio_lectivo": 2026
     }
   },
   {
     "model": "Directora.asignacionmateria",
-    "pk": 16,
+    "pk": 6,
     "fields": {
-      "grado_seccion": 14,
+      "grado_seccion": 7,
       "materia": 6,
-      "docente": "04567890-6",
+      "docente": "88549600-0",
       "anio_lectivo": 2026
     }
   },
@@ -854,10 +716,10 @@
     "model": "Directora.asignacionbloquemaestro",
     "pk": 1,
     "fields": {
-      "maestro": "88549600-0",
-      "dia": 2,
-      "bloque": 4,
-      "turno": "Mañana",
+      "maestro": "90000001-1",
+      "dia": 1,
+      "bloque": 1,
+      "turno": "Tarde",
       "anio_lectivo": 2026,
       "activo": true
     }
@@ -866,10 +728,10 @@
     "model": "Directora.asignacionbloquemaestro",
     "pk": 2,
     "fields": {
-      "maestro": "88549600-0",
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Mañana",
+      "maestro": "90000001-1",
+      "dia": 2,
+      "bloque": 1,
+      "turno": "Tarde",
       "anio_lectivo": 2026,
       "activo": true
     }
@@ -878,10 +740,10 @@
     "model": "Directora.asignacionbloquemaestro",
     "pk": 3,
     "fields": {
-      "maestro": "88549600-0",
-      "dia": 5,
-      "bloque": 4,
-      "turno": "Mañana",
+      "maestro": "90000001-1",
+      "dia": 3,
+      "bloque": 1,
+      "turno": "Tarde",
       "anio_lectivo": 2026,
       "activo": true
     }
@@ -890,10 +752,10 @@
     "model": "Directora.asignacionbloquemaestro",
     "pk": 4,
     "fields": {
-      "maestro": "88549600-0",
+      "maestro": "90000001-1",
       "dia": 4,
-      "bloque": 5,
-      "turno": "Mañana",
+      "bloque": 1,
+      "turno": "Tarde",
       "anio_lectivo": 2026,
       "activo": true
     }
@@ -902,2124 +764,104 @@
     "model": "Directora.asignacionbloquemaestro",
     "pk": 5,
     "fields": {
-      "maestro": "88549600-0",
-      "dia": 3,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 6,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 1,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 7,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 8,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 9,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 1,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 10,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 2,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 11,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 12,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 13,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 2,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 14,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 3,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 15,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 16,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 17,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 3,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 18,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 4,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 19,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 20,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 21,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 4,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 22,
-    "fields": {
       "maestro": "90000001-1",
       "dia": 5,
       "bloque": 1,
-      "turno": "Mañana",
+      "turno": "Tarde",
       "anio_lectivo": 2026,
       "activo": true
     }
   },
   {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 23,
+    "model": "Maestros.horarioclase",
+    "pk": 1,
     "fields": {
-      "maestro": "90000001-1",
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 24,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 25,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 5,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 26,
-    "fields": {
-      "maestro": "90000002-2",
+      "docente": "90000001-1",
+      "grado_seccion": 7,
+      "materia": 1,
       "dia": 1,
       "bloque": 1,
-      "turno": "Mañana",
+      "turno": "Tarde",
       "anio_lectivo": 2026,
-      "activo": true
+      "estado": "ENVIADO",
+      "observaciones": "Horario propuesto para revisión.",
+      "fecha_publicacion": null
     }
   },
   {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 27,
+    "model": "Maestros.horarioclase",
+    "pk": 2,
     "fields": {
-      "maestro": "90000002-2",
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 28,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 29,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 1,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 30,
-    "fields": {
-      "maestro": "90000002-2",
+      "docente": "90000001-1",
+      "grado_seccion": 7,
+      "materia": 1,
       "dia": 2,
       "bloque": 1,
-      "turno": "Mañana",
+      "turno": "Tarde",
       "anio_lectivo": 2026,
-      "activo": true
+      "estado": "ENVIADO",
+      "observaciones": "Horario propuesto para revisión.",
+      "fecha_publicacion": null
     }
   },
   {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 31,
+    "model": "Maestros.horarioclase",
+    "pk": 3,
     "fields": {
-      "maestro": "90000002-2",
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 32,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 33,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 2,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 34,
-    "fields": {
-      "maestro": "90000002-2",
+      "docente": "90000001-1",
+      "grado_seccion": 7,
+      "materia": 1,
       "dia": 3,
       "bloque": 1,
-      "turno": "Mañana",
+      "turno": "Tarde",
       "anio_lectivo": 2026,
-      "activo": true
+      "estado": "ENVIADO",
+      "observaciones": "Horario propuesto para revisión.",
+      "fecha_publicacion": null
     }
   },
   {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 35,
+    "model": "Maestros.horarioclase",
+    "pk": 4,
     "fields": {
-      "maestro": "90000002-2",
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 36,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 37,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 3,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 38,
-    "fields": {
-      "maestro": "90000002-2",
+      "docente": "90000001-1",
+      "grado_seccion": 7,
+      "materia": 1,
       "dia": 4,
       "bloque": 1,
-      "turno": "Mañana",
+      "turno": "Tarde",
       "anio_lectivo": 2026,
-      "activo": true
+      "estado": "ENVIADO",
+      "observaciones": "Horario propuesto para revisión.",
+      "fecha_publicacion": null
     }
   },
   {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 39,
+    "model": "Maestros.horarioclase",
+    "pk": 5,
     "fields": {
-      "maestro": "90000002-2",
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 40,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 41,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 4,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 42,
-    "fields": {
-      "maestro": "90000002-2",
+      "docente": "90000001-1",
+      "grado_seccion": 7,
+      "materia": 1,
       "dia": 5,
       "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 43,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 44,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 45,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 5,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 46,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 1,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 47,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 48,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 49,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 1,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 50,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 2,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 51,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 52,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 53,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 2,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 54,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 3,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 55,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 56,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 57,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 3,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 58,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 4,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 59,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 60,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 61,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 4,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 62,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 5,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 63,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 64,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 65,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 5,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 66,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 1,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 67,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 68,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 69,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 1,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 70,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 2,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 71,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 72,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 73,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 2,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 74,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 3,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 75,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 76,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 77,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 3,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 78,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 4,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 79,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 80,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 81,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 4,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 82,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 5,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 83,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 84,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 85,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 5,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 86,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 1,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 87,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 1,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 88,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 89,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 2,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 90,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 91,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 4,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 92,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 4,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 93,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 94,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 5,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 95,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 1,
-      "bloque": 3,
       "turno": "Tarde",
       "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 96,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 97,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 98,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 99,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 100,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 101,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 102,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 103,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 104,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 105,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 106,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 107,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 108,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 109,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 110,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 111,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 112,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 113,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 114,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 115,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 116,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 117,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 118,
-    "fields": {
-      "maestro": "90000001-1",
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 119,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 120,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 1,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 121,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 122,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 3,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 123,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 3,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 124,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 125,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 4,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 126,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 127,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 5,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 128,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 129,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 130,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 131,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 132,
-    "fields": {
-      "maestro": "90000002-2",
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 133,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 134,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 135,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 136,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 137,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 138,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 139,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 2,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 140,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 2,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 141,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 142,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 3,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 143,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 144,
-    "fields": {
-      "maestro": "02345678-8",
-      "dia": 5,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 145,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 146,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 147,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 148,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 149,
-    "fields": {
-      "maestro": "90000004-4",
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 150,
-    "fields": {
-      "maestro": "90000003-3",
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 151,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 3,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 152,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 153,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 3,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 154,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 5,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 155,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 5,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 156,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 157,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 2,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 158,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 159,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 160,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 4,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 161,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 162,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 163,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 2,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 164,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 165,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 2,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 166,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 1,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 167,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 168,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 4,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 169,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 3,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 170,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 171,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 4,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 172,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 5,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 173,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 1,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 174,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 1,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 175,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 177,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 178,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 4,
-      "bloque": 4,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 179,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 1,
-      "bloque": 4,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 180,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 2,
-      "bloque": 4,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
-    }
-  },
-  {
-    "model": "Directora.asignacionbloquemaestro",
-    "pk": 181,
-    "fields": {
-      "maestro": "11111111-1",
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "activo": true
+      "estado": "ENVIADO",
+      "observaciones": "Horario propuesto para revisión.",
+      "fecha_publicacion": null
     }
   },
   {
     "model": "Maestros.alumno",
     "pk": "20260001",
     "fields": {
-      "nombre": "Sofía",
-      "apellido": "Portillo Portillo",
-      "fecha_nac": "2017-09-04",
+      "nombre": "Sofía Andrea",
+      "apellido": "Portillo Morales",
+      "fecha_nac": "2018-04-15",
       "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.059Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.059Z",
+      "fecha_creacion": "2026-06-16T08:00:00.000Z",
+      "fecha_actualizacion": "2026-06-16T08:00:00.000Z",
       "turno": "Mañana",
       "activo": true,
       "grado_seccion": 1
@@ -3029,3009 +871,27 @@
     "model": "Maestros.alumno",
     "pk": "20260002",
     "fields": {
-      "nombre": "Luis",
-      "apellido": "Mejía Portillo",
-      "fecha_nac": "2020-05-16",
+      "nombre": "Luis Fernando",
+      "apellido": "Mejía Aguilar",
+      "fecha_nac": "2018-08-22",
       "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.065Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.065Z",
+      "fecha_creacion": "2026-06-16T08:00:00.000Z",
+      "fecha_actualizacion": "2026-06-16T08:00:00.000Z",
       "turno": "Mañana",
       "activo": true,
       "grado_seccion": 1
     }
   },
   {
-    "model": "Maestros.alumno",
-    "pk": "20260003",
-    "fields": {
-      "nombre": "Ana",
-      "apellido": "Portillo Rivas",
-      "fecha_nac": "2019-04-03",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.067Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.067Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 1
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260004",
-    "fields": {
-      "nombre": "Manuel",
-      "apellido": "Portillo Portillo",
-      "fecha_nac": "2017-11-07",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.068Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.068Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 1
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260005",
-    "fields": {
-      "nombre": "Isabel",
-      "apellido": "Mejía Vasquez",
-      "fecha_nac": "2017-12-10",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.070Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.070Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 1
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260006",
-    "fields": {
-      "nombre": "David",
-      "apellido": "Alvarado Rivas",
-      "fecha_nac": "2020-01-11",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.071Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.071Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 1
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260007",
-    "fields": {
-      "nombre": "María",
-      "apellido": "Portillo Portillo",
-      "fecha_nac": "2018-10-21",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.073Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.073Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 1
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260008",
-    "fields": {
-      "nombre": "Ángel",
-      "apellido": "Alvarado Mejía",
-      "fecha_nac": "2020-06-08",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.075Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.075Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 1
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260009",
-    "fields": {
-      "nombre": "Sofía",
-      "apellido": "Rivas Portillo",
-      "fecha_nac": "2017-09-14",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.077Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.077Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 1
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260010",
-    "fields": {
-      "nombre": "Carlos",
-      "apellido": "Martínez Morales",
-      "fecha_nac": "2017-08-21",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.079Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.079Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 1
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260011",
-    "fields": {
-      "nombre": "Sofía",
-      "apellido": "Flores Vasquez",
-      "fecha_nac": "2019-02-28",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.081Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.081Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 2
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260012",
-    "fields": {
-      "nombre": "Miguel",
-      "apellido": "Alvarado Hernández",
-      "fecha_nac": "2017-08-29",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.083Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.083Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 2
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260013",
-    "fields": {
-      "nombre": "Isabel",
-      "apellido": "Hernández Portillo",
-      "fecha_nac": "2016-11-18",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.085Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.085Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 2
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260014",
-    "fields": {
-      "nombre": "José",
-      "apellido": "Portillo Hernández",
-      "fecha_nac": "2017-08-03",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.086Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.086Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 2
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260015",
-    "fields": {
-      "nombre": "Isabel",
-      "apellido": "Vasquez Martínez",
-      "fecha_nac": "2016-08-28",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.088Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.088Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 2
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260016",
-    "fields": {
-      "nombre": "David",
-      "apellido": "Martínez Hernández",
-      "fecha_nac": "2018-04-28",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.089Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.089Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 2
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260017",
-    "fields": {
-      "nombre": "Lucía",
-      "apellido": "Portillo Martínez",
-      "fecha_nac": "2018-03-20",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.091Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.091Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 2
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260018",
-    "fields": {
-      "nombre": "David",
-      "apellido": "Mejía Rivas",
-      "fecha_nac": "2016-09-20",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.093Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.093Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 2
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260019",
-    "fields": {
-      "nombre": "Francisca",
-      "apellido": "Vasquez Flores",
-      "fecha_nac": "2017-05-01",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.095Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.095Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 2
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260020",
-    "fields": {
-      "nombre": "Manuel",
-      "apellido": "Morales Alvarado",
-      "fecha_nac": "2018-06-30",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.097Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.097Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 2
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260021",
-    "fields": {
-      "nombre": "Isabel",
-      "apellido": "Martínez Vasquez",
-      "fecha_nac": "2010-01-25",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.099Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.099Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 3
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260022",
-    "fields": {
-      "nombre": "Daniel",
-      "apellido": "Martínez Portillo",
-      "fecha_nac": "2012-05-08",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.101Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.101Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 3
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260023",
-    "fields": {
-      "nombre": "María",
-      "apellido": "Vasquez Rivas",
-      "fecha_nac": "2012-02-02",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.102Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.102Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 3
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260024",
-    "fields": {
-      "nombre": "Javier",
-      "apellido": "Mejía Castro",
-      "fecha_nac": "2010-06-25",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.103Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.103Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 3
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260025",
-    "fields": {
-      "nombre": "Francisca",
-      "apellido": "Alvarado Flores",
-      "fecha_nac": "2011-03-28",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.105Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.105Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 3
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260026",
-    "fields": {
-      "nombre": "Francisco",
-      "apellido": "Alvarado Flores",
-      "fecha_nac": "2011-01-23",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.106Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.106Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 3
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260027",
-    "fields": {
-      "nombre": "Dolores",
-      "apellido": "Flores Vasquez",
-      "fecha_nac": "2009-09-07",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.108Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.108Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 3
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260028",
-    "fields": {
-      "nombre": "Ángel",
-      "apellido": "Vasquez Rivas",
-      "fecha_nac": "2012-04-09",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.111Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.111Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 3
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260029",
-    "fields": {
-      "nombre": "María",
-      "apellido": "Mejía Alvarado",
-      "fecha_nac": "2010-05-22",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.113Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.113Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 3
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260030",
-    "fields": {
-      "nombre": "Luis",
-      "apellido": "Vasquez Mejía",
-      "fecha_nac": "2010-03-09",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.115Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.115Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 3
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260031",
-    "fields": {
-      "nombre": "Marta",
-      "apellido": "Morales Castro",
-      "fecha_nac": "2021-06-16",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.116Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.116Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 5
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260032",
-    "fields": {
-      "nombre": "Daniel",
-      "apellido": "Portillo Portillo",
-      "fecha_nac": "2021-04-14",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.118Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.118Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 5
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260033",
-    "fields": {
-      "nombre": "Josefa",
-      "apellido": "Hernández Vasquez",
-      "fecha_nac": "2021-12-31",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.119Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.119Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 5
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260034",
-    "fields": {
-      "nombre": "Ángel",
-      "apellido": "Rivas Portillo",
-      "fecha_nac": "2022-02-13",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.121Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.121Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 5
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260035",
-    "fields": {
-      "nombre": "Ana",
-      "apellido": "Portillo Castro",
-      "fecha_nac": "2020-10-09",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.122Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.122Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 5
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260036",
-    "fields": {
-      "nombre": "Carlos",
-      "apellido": "Castro Rivas",
-      "fecha_nac": "2022-02-26",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.124Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.124Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 5
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260037",
-    "fields": {
-      "nombre": "Dolores",
-      "apellido": "Morales Portillo",
-      "fecha_nac": "2021-01-08",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.126Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.126Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 5
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260038",
-    "fields": {
-      "nombre": "Luis",
-      "apellido": "Vasquez Rivas",
-      "fecha_nac": "2021-11-21",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.128Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.128Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 5
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260039",
-    "fields": {
-      "nombre": "Isabel",
-      "apellido": "Castro Morales",
-      "fecha_nac": "2021-01-05",
-      "sexo": "F",
-      "fecha_creacion": "2026-06-16T01:43:31.129Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.129Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 5
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "20260040",
-    "fields": {
-      "nombre": "Manuel",
-      "apellido": "Hernández Portillo",
-      "fecha_nac": "2021-08-07",
-      "sexo": "M",
-      "fecha_creacion": "2026-06-16T01:43:31.131Z",
-      "fecha_actualizacion": "2026-06-16T01:43:31.131Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 5
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "D010000001",
-    "fields": {
-      "nombre": "Andrea Demo1",
-      "apellido": "López",
-      "fecha_nac": "2014-03-10",
-      "sexo": "F",
-      "fecha_creacion": "2026-09-14T03:39:16.720Z",
-      "fecha_actualizacion": "2026-09-14T03:39:16.720Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 7
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "D010000002",
-    "fields": {
-      "nombre": "Diego Demo1",
-      "apellido": "Martínez",
-      "fecha_nac": "2014-04-10",
-      "sexo": "M",
-      "fecha_creacion": "2026-09-14T03:39:16.736Z",
-      "fecha_actualizacion": "2026-09-14T03:39:16.736Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 7
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "D010000003",
-    "fields": {
-      "nombre": "Valeria Demo1",
-      "apellido": "Hernández",
-      "fecha_nac": "2014-05-10",
-      "sexo": "F",
-      "fecha_creacion": "2026-09-14T03:39:16.742Z",
-      "fecha_actualizacion": "2026-09-14T03:39:16.742Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 7
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "D020000001",
-    "fields": {
-      "nombre": "Andrea Demo2",
-      "apellido": "López",
-      "fecha_nac": "2013-03-10",
-      "sexo": "F",
-      "fecha_creacion": "2026-09-14T03:39:17.571Z",
-      "fecha_actualizacion": "2026-09-14T03:39:17.571Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 9
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "D020000002",
-    "fields": {
-      "nombre": "Diego Demo2",
-      "apellido": "Martínez",
-      "fecha_nac": "2013-04-10",
-      "sexo": "M",
-      "fecha_creacion": "2026-09-14T03:39:17.576Z",
-      "fecha_actualizacion": "2026-09-14T03:39:17.576Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 9
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "D020000003",
-    "fields": {
-      "nombre": "Valeria Demo2",
-      "apellido": "Hernández",
-      "fecha_nac": "2013-05-10",
-      "sexo": "F",
-      "fecha_creacion": "2026-09-14T03:39:17.582Z",
-      "fecha_actualizacion": "2026-09-14T03:39:17.582Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 9
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "D030000001",
-    "fields": {
-      "nombre": "Andrea Demo3",
-      "apellido": "López",
-      "fecha_nac": "2012-03-10",
-      "sexo": "F",
-      "fecha_creacion": "2026-09-14T03:39:18.380Z",
-      "fecha_actualizacion": "2026-09-14T03:39:18.380Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 11
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "D030000002",
-    "fields": {
-      "nombre": "Diego Demo3",
-      "apellido": "Martínez",
-      "fecha_nac": "2012-04-10",
-      "sexo": "M",
-      "fecha_creacion": "2026-09-14T03:39:18.387Z",
-      "fecha_actualizacion": "2026-09-14T03:39:18.387Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 11
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "D030000003",
-    "fields": {
-      "nombre": "Valeria Demo3",
-      "apellido": "Hernández",
-      "fecha_nac": "2012-05-10",
-      "sexo": "F",
-      "fecha_creacion": "2026-09-14T03:39:18.393Z",
-      "fecha_actualizacion": "2026-09-14T03:39:18.393Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 11
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "D040000001",
-    "fields": {
-      "nombre": "Andrea Demo4",
-      "apellido": "López",
-      "fecha_nac": "2011-03-10",
-      "sexo": "F",
-      "fecha_creacion": "2026-09-14T03:39:19.265Z",
-      "fecha_actualizacion": "2026-09-14T03:39:19.265Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 13
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "D040000002",
-    "fields": {
-      "nombre": "Diego Demo4",
-      "apellido": "Martínez",
-      "fecha_nac": "2011-04-10",
-      "sexo": "M",
-      "fecha_creacion": "2026-09-14T03:39:19.274Z",
-      "fecha_actualizacion": "2026-09-14T03:39:19.274Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 13
-    }
-  },
-  {
-    "model": "Maestros.alumno",
-    "pk": "D040000003",
-    "fields": {
-      "nombre": "Valeria Demo4",
-      "apellido": "Hernández",
-      "fecha_nac": "2011-05-10",
-      "sexo": "F",
-      "fecha_creacion": "2026-09-14T03:39:19.283Z",
-      "fecha_actualizacion": "2026-09-14T03:39:19.283Z",
-      "turno": "Mañana",
-      "activo": true,
-      "grado_seccion": 13
-    }
-  },
-  {
     "model": "Maestros.registrotarjeta",
-    "pk": 106,
-    "fields": {
-      "alumno": "20260005",
-      "fecha": "2026-05-04",
-      "tipo": "D",
-      "sub_letra": "B",
-      "maestro_registra": 6,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 107,
-    "fields": {
-      "alumno": "20260040",
-      "fecha": "2026-05-04",
-      "tipo": "D",
-      "sub_letra": "C",
-      "maestro_registra": 4,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 108,
-    "fields": {
-      "alumno": "20260013",
-      "fecha": "2026-05-04",
-      "tipo": "D",
-      "sub_letra": "D",
-      "maestro_registra": 6,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 109,
-    "fields": {
-      "alumno": "20260039",
-      "fecha": "2026-05-04",
-      "tipo": "D",
-      "sub_letra": "C",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 110,
-    "fields": {
-      "alumno": "20260040",
-      "fecha": "2026-05-07",
-      "tipo": "R",
-      "sub_letra": "B",
-      "maestro_registra": 3,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 111,
-    "fields": {
-      "alumno": "20260025",
-      "fecha": "2026-05-07",
-      "tipo": "D",
-      "sub_letra": "D",
-      "maestro_registra": 6,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 112,
-    "fields": {
-      "alumno": "20260029",
-      "fecha": "2026-05-07",
-      "tipo": "R",
-      "sub_letra": "C",
-      "maestro_registra": 6,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 113,
-    "fields": {
-      "alumno": "20260035",
-      "fecha": "2026-05-12",
-      "tipo": "D",
-      "sub_letra": "D",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 114,
-    "fields": {
-      "alumno": "20260025",
-      "fecha": "2026-05-12",
-      "tipo": "D",
-      "sub_letra": "B",
-      "maestro_registra": 3,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 115,
-    "fields": {
-      "alumno": "20260018",
-      "fecha": "2026-05-12",
-      "tipo": "D",
-      "sub_letra": "A",
-      "maestro_registra": 6,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 116,
-    "fields": {
-      "alumno": "20260008",
-      "fecha": "2026-05-18",
-      "tipo": "D",
-      "sub_letra": "B",
-      "maestro_registra": 4,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 117,
-    "fields": {
-      "alumno": "20260012",
-      "fecha": "2026-05-18",
-      "tipo": "D",
-      "sub_letra": "D",
-      "maestro_registra": 4,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 118,
-    "fields": {
-      "alumno": "20260003",
-      "fecha": "2026-05-18",
-      "tipo": "R",
-      "sub_letra": "A",
-      "maestro_registra": 6,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 119,
-    "fields": {
-      "alumno": "20260025",
-      "fecha": "2026-05-18",
-      "tipo": "D",
-      "sub_letra": "A",
-      "maestro_registra": 4,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 120,
-    "fields": {
-      "alumno": "20260003",
-      "fecha": "2026-05-20",
-      "tipo": "D",
-      "sub_letra": "C",
-      "maestro_registra": 4,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 121,
-    "fields": {
-      "alumno": "20260029",
-      "fecha": "2026-05-20",
-      "tipo": "D",
-      "sub_letra": "B",
-      "maestro_registra": 3,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 122,
-    "fields": {
-      "alumno": "20260035",
-      "fecha": "2026-05-25",
-      "tipo": "D",
-      "sub_letra": "B",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 123,
-    "fields": {
-      "alumno": "20260003",
-      "fecha": "2026-05-25",
-      "tipo": "D",
-      "sub_letra": "B",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 124,
-    "fields": {
-      "alumno": "20260034",
-      "fecha": "2026-05-29",
-      "tipo": "D",
-      "sub_letra": "C",
-      "maestro_registra": 4,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 125,
-    "fields": {
-      "alumno": "20260014",
-      "fecha": "2026-05-29",
-      "tipo": "D",
-      "sub_letra": "A",
-      "maestro_registra": 4,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 126,
-    "fields": {
-      "alumno": "20260010",
-      "fecha": "2026-06-02",
-      "tipo": "R",
-      "sub_letra": "A",
-      "maestro_registra": 3,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 127,
-    "fields": {
-      "alumno": "20260004",
-      "fecha": "2026-06-02",
-      "tipo": "R",
-      "sub_letra": "A",
-      "maestro_registra": 6,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 128,
-    "fields": {
-      "alumno": "20260038",
-      "fecha": "2026-06-02",
-      "tipo": "D",
-      "sub_letra": "D",
-      "maestro_registra": 4,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 129,
-    "fields": {
-      "alumno": "20260009",
-      "fecha": "2026-06-02",
-      "tipo": "D",
-      "sub_letra": "D",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 130,
-    "fields": {
-      "alumno": "20260023",
-      "fecha": "2026-06-05",
-      "tipo": "D",
-      "sub_letra": "D",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 131,
-    "fields": {
-      "alumno": "20260010",
-      "fecha": "2026-06-05",
-      "tipo": "R",
-      "sub_letra": "C",
-      "maestro_registra": 3,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 132,
-    "fields": {
-      "alumno": "20260028",
-      "fecha": "2026-06-09",
-      "tipo": "R",
-      "sub_letra": "B",
-      "maestro_registra": 4,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 133,
-    "fields": {
-      "alumno": "20260001",
-      "fecha": "2026-06-09",
-      "tipo": "D",
-      "sub_letra": "C",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 134,
-    "fields": {
-      "alumno": "20260039",
-      "fecha": "2026-06-09",
-      "tipo": "R",
-      "sub_letra": "A",
-      "maestro_registra": 6,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 135,
-    "fields": {
-      "alumno": "20260004",
-      "fecha": "2026-06-09",
-      "tipo": "D",
-      "sub_letra": "D",
-      "maestro_registra": 3,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 136,
-    "fields": {
-      "alumno": "20260010",
-      "fecha": "2026-06-11",
-      "tipo": "R",
-      "sub_letra": "A",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 137,
-    "fields": {
-      "alumno": "20260004",
-      "fecha": "2026-06-11",
-      "tipo": "R",
-      "sub_letra": "C",
-      "maestro_registra": 3,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 138,
-    "fields": {
-      "alumno": "20260027",
-      "fecha": "2026-06-11",
-      "tipo": "D",
-      "sub_letra": "B",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 139,
-    "fields": {
-      "alumno": "20260003",
-      "fecha": "2026-06-16",
-      "tipo": "R",
-      "sub_letra": "C",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 140,
-    "fields": {
-      "alumno": "20260018",
-      "fecha": "2026-06-16",
-      "tipo": "D",
-      "sub_letra": "B",
-      "maestro_registra": 4,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 141,
-    "fields": {
-      "alumno": "20260027",
-      "fecha": "2026-06-16",
-      "tipo": "D",
-      "sub_letra": "B",
-      "maestro_registra": 3,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 142,
-    "fields": {
-      "alumno": "20260002",
-      "fecha": "2026-06-22",
-      "tipo": "R",
-      "sub_letra": "C",
-      "maestro_registra": 4,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 143,
-    "fields": {
-      "alumno": "20260011",
-      "fecha": "2026-06-22",
-      "tipo": "D",
-      "sub_letra": "D",
-      "maestro_registra": 6,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 144,
-    "fields": {
-      "alumno": "20260005",
-      "fecha": "2026-06-26",
-      "tipo": "D",
-      "sub_letra": "B",
-      "maestro_registra": 6,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 145,
-    "fields": {
-      "alumno": "20260040",
-      "fecha": "2026-06-26",
-      "tipo": "R",
-      "sub_letra": "C",
-      "maestro_registra": 3,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 146,
-    "fields": {
-      "alumno": "20260001",
-      "fecha": "2026-06-04",
-      "tipo": "RC",
-      "sub_letra": "C",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 147,
-    "fields": {
-      "alumno": "20260001",
-      "fecha": "2026-06-21",
-      "tipo": "RC",
-      "sub_letra": "B",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 148,
-    "fields": {
-      "alumno": "20260001",
-      "fecha": "2026-06-07",
-      "tipo": "RC",
-      "sub_letra": "B",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 149,
-    "fields": {
-      "alumno": "20260001",
-      "fecha": "2026-06-09",
-      "tipo": "RC",
-      "sub_letra": "B",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 150,
-    "fields": {
-      "alumno": "20260001",
-      "fecha": "2026-06-24",
-      "tipo": "RC",
-      "sub_letra": "D",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 151,
-    "fields": {
-      "alumno": "20260002",
-      "fecha": "2026-06-10",
-      "tipo": "RC",
-      "sub_letra": "D",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 152,
-    "fields": {
-      "alumno": "20260002",
-      "fecha": "2026-06-07",
-      "tipo": "RC",
-      "sub_letra": "A",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 153,
-    "fields": {
-      "alumno": "20260002",
-      "fecha": "2026-06-12",
-      "tipo": "RC",
-      "sub_letra": "A",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 154,
-    "fields": {
-      "alumno": "20260002",
-      "fecha": "2026-06-18",
-      "tipo": "RC",
-      "sub_letra": "D",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 155,
-    "fields": {
-      "alumno": "20260003",
-      "fecha": "2026-06-03",
-      "tipo": "RC",
-      "sub_letra": "B",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 156,
-    "fields": {
-      "alumno": "20260003",
-      "fecha": "2026-06-07",
-      "tipo": "RC",
-      "sub_letra": "C",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 157,
-    "fields": {
-      "alumno": "20260003",
-      "fecha": "2026-06-02",
-      "tipo": "RC",
-      "sub_letra": "C",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 158,
-    "fields": {
-      "alumno": "20260004",
-      "fecha": "2026-06-21",
-      "tipo": "RC",
-      "sub_letra": "C",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 159,
-    "fields": {
-      "alumno": "20260004",
-      "fecha": "2026-06-09",
-      "tipo": "RC",
-      "sub_letra": "B",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 160,
-    "fields": {
-      "alumno": "20260005",
-      "fecha": "2026-06-28",
-      "tipo": "RC",
-      "sub_letra": "C",
-      "maestro_registra": 2,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 161,
-    "fields": {
-      "alumno": "D010000001",
-      "fecha": "2026-08-11",
-      "tipo": "D",
-      "sub_letra": "A",
-      "maestro_registra": 9,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 162,
-    "fields": {
-      "alumno": "D010000002",
-      "fecha": "2026-08-12",
-      "tipo": "R",
-      "sub_letra": "B",
-      "maestro_registra": 9,
-      "responsable_redencion": "Responsable Demo"
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 163,
-    "fields": {
-      "alumno": "D010000003",
-      "fecha": "2026-08-13",
-      "tipo": "RC",
-      "sub_letra": "C",
-      "maestro_registra": 9,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 164,
-    "fields": {
-      "alumno": "D020000001",
-      "fecha": "2026-08-11",
-      "tipo": "D",
-      "sub_letra": "A",
-      "maestro_registra": 10,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 165,
-    "fields": {
-      "alumno": "D020000002",
-      "fecha": "2026-08-12",
-      "tipo": "R",
-      "sub_letra": "B",
-      "maestro_registra": 10,
-      "responsable_redencion": "Responsable Demo"
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 166,
-    "fields": {
-      "alumno": "D020000003",
-      "fecha": "2026-08-13",
-      "tipo": "RC",
-      "sub_letra": "C",
-      "maestro_registra": 10,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 167,
-    "fields": {
-      "alumno": "D030000001",
-      "fecha": "2026-08-11",
-      "tipo": "D",
-      "sub_letra": "A",
-      "maestro_registra": 11,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 168,
-    "fields": {
-      "alumno": "D030000002",
-      "fecha": "2026-08-12",
-      "tipo": "R",
-      "sub_letra": "B",
-      "maestro_registra": 11,
-      "responsable_redencion": "Responsable Demo"
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 169,
-    "fields": {
-      "alumno": "D030000003",
-      "fecha": "2026-08-13",
-      "tipo": "RC",
-      "sub_letra": "C",
-      "maestro_registra": 11,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 170,
-    "fields": {
-      "alumno": "D040000001",
-      "fecha": "2026-08-11",
-      "tipo": "D",
-      "sub_letra": "A",
-      "maestro_registra": 12,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 171,
-    "fields": {
-      "alumno": "D040000002",
-      "fecha": "2026-08-12",
-      "tipo": "R",
-      "sub_letra": "B",
-      "maestro_registra": 12,
-      "responsable_redencion": "Responsable Demo"
-    }
-  },
-  {
-    "model": "Maestros.registrotarjeta",
-    "pk": 172,
-    "fields": {
-      "alumno": "D040000003",
-      "fecha": "2026-08-13",
-      "tipo": "RC",
-      "sub_letra": "C",
-      "maestro_registra": 12,
-      "responsable_redencion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
     "pk": 1,
     "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 7,
-      "materia": 3,
-      "dia": 1,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Falta completar demás asignaciones",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 2,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 7,
-      "materia": 4,
-      "dia": 2,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Falta completar demás asignaciones",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 3,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 7,
-      "materia": 1,
-      "dia": 3,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Falta completar demás asignaciones",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 4,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 7,
-      "materia": 6,
-      "dia": 4,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Falta completar demás asignaciones",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 5,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 7,
-      "materia": 7,
-      "dia": 5,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Falta completar demás asignaciones",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 6,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 8,
-      "materia": 3,
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "ENVIADO",
-      "observaciones": "Propuesta pendiente de revisión por Dirección.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 7,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 8,
-      "materia": 3,
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "ENVIADO",
-      "observaciones": "Propuesta pendiente de revisión por Dirección.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 8,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 8,
-      "materia": 3,
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "ENVIADO",
-      "observaciones": "Propuesta pendiente de revisión por Dirección.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 9,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 8,
-      "materia": 3,
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "ENVIADO",
-      "observaciones": "Propuesta pendiente de revisión por Dirección.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 10,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 8,
-      "materia": 3,
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "ENVIADO",
-      "observaciones": "Propuesta pendiente de revisión por Dirección.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 11,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 8,
-      "materia": 3,
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "ENVIADO",
-      "observaciones": "Propuesta pendiente de revisión por Dirección.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 12,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 8,
-      "materia": 3,
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "ENVIADO",
-      "observaciones": "Propuesta pendiente de revisión por Dirección.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 13,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 8,
-      "materia": 3,
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "ENVIADO",
-      "observaciones": "Propuesta pendiente de revisión por Dirección.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 14,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 8,
-      "materia": 3,
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "ENVIADO",
-      "observaciones": "Propuesta pendiente de revisión por Dirección.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 15,
-    "fields": {
-      "docente": "90000001-1",
-      "grado_seccion": 8,
-      "materia": 3,
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "ENVIADO",
-      "observaciones": "Propuesta pendiente de revisión por Dirección.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 16,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 9,
-      "materia": 3,
-      "dia": 1,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 17,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 9,
-      "materia": 4,
-      "dia": 2,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 18,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 9,
-      "materia": 1,
-      "dia": 3,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 19,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 9,
-      "materia": 6,
-      "dia": 4,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 20,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 9,
-      "materia": 7,
-      "dia": 5,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 21,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 10,
-      "materia": 4,
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 22,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 10,
-      "materia": 4,
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 23,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 10,
-      "materia": 4,
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 24,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 10,
-      "materia": 4,
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 25,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 10,
-      "materia": 4,
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 26,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 10,
-      "materia": 4,
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 27,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 10,
-      "materia": 4,
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 28,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 10,
-      "materia": 4,
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 29,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 10,
-      "materia": 4,
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 30,
-    "fields": {
-      "docente": "90000002-2",
-      "grado_seccion": 10,
-      "materia": 4,
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "APROBADO",
-      "observaciones": "",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 31,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 11,
-      "materia": 3,
-      "dia": 1,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 32,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 11,
-      "materia": 4,
-      "dia": 2,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 33,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 11,
-      "materia": 1,
-      "dia": 3,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 34,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 11,
-      "materia": 6,
-      "dia": 4,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 35,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 11,
-      "materia": 7,
-      "dia": 5,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 36,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 12,
-      "materia": 7,
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 37,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 12,
-      "materia": 7,
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 38,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 12,
-      "materia": 7,
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 39,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 12,
-      "materia": 7,
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 40,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 12,
-      "materia": 7,
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 41,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 12,
-      "materia": 7,
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 42,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 12,
-      "materia": 7,
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 43,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 12,
-      "materia": 7,
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 44,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 12,
-      "materia": 7,
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 45,
-    "fields": {
-      "docente": "90000003-3",
-      "grado_seccion": 12,
-      "materia": 7,
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "Horario oficial publicado.",
-      "fecha_publicacion": "2026-09-14T04:18:22.314Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 46,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 13,
-      "materia": 3,
-      "dia": 1,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 47,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 13,
-      "materia": 4,
-      "dia": 2,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 48,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 13,
-      "materia": 1,
-      "dia": 3,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 49,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 13,
-      "materia": 6,
-      "dia": 4,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 50,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 13,
-      "materia": 7,
-      "dia": 5,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 51,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 14,
-      "materia": 2,
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 52,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 14,
-      "materia": 2,
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 53,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 14,
-      "materia": 2,
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 54,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 14,
-      "materia": 2,
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 55,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 14,
-      "materia": 2,
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 56,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 14,
-      "materia": 2,
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 57,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 14,
-      "materia": 2,
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 58,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 14,
-      "materia": 2,
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 59,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 14,
-      "materia": 2,
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 60,
-    "fields": {
-      "docente": "90000004-4",
-      "grado_seccion": 14,
-      "materia": 2,
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "RECHAZADO",
-      "observaciones": "Ajustar la distribución del viernes y volver a enviar.",
-      "fecha_publicacion": null
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 61,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 1,
-      "dia": 1,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 62,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 1,
-      "dia": 1,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 63,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 3,
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 64,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 4,
-      "dia": 1,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 65,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 4,
-      "dia": 1,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 66,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 2,
-      "dia": 2,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 67,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 2,
-      "dia": 2,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 68,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 3,
-      "dia": 2,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 69,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 7,
-      "dia": 2,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 70,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 7,
-      "dia": 2,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 71,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 3,
-      "dia": 3,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 72,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 1,
-      "dia": 3,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 73,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 1,
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 74,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 6,
-      "dia": 3,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 75,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 6,
-      "dia": 3,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 76,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 6,
-      "dia": 4,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 77,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 4,
-      "dia": 4,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 78,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 4,
-      "dia": 4,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 79,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 2,
-      "dia": 4,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 80,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 6,
-      "dia": 4,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 82,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 1,
-      "dia": 5,
-      "bloque": 2,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 83,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 7,
-      "dia": 5,
-      "bloque": 3,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 84,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 7,
-      "dia": 5,
-      "bloque": 4,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 85,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 2,
-      "dia": 5,
-      "bloque": 5,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 86,
-    "fields": {
-      "docente": "02345678-8",
-      "grado_seccion": 1,
-      "materia": 3,
-      "dia": 5,
-      "bloque": 1,
-      "turno": "Mañana",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T04:29:54.334Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 87,
-    "fields": {
-      "docente": "11111111-1",
-      "grado_seccion": 3,
-      "materia": 3,
-      "dia": 1,
-      "bloque": 4,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T05:55:10.936Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 88,
-    "fields": {
-      "docente": "11111111-1",
-      "grado_seccion": 10,
-      "materia": 3,
-      "dia": 2,
-      "bloque": 4,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T05:55:10.936Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 89,
-    "fields": {
-      "docente": "11111111-1",
-      "grado_seccion": 3,
-      "materia": 3,
-      "dia": 3,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T05:55:10.936Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 90,
-    "fields": {
-      "docente": "11111111-1",
-      "grado_seccion": 10,
-      "materia": 3,
-      "dia": 4,
-      "bloque": 4,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T05:55:10.936Z"
-    }
-  },
-  {
-    "model": "Maestros.horarioclase",
-    "pk": 91,
-    "fields": {
-      "docente": "11111111-1",
-      "grado_seccion": 3,
-      "materia": 3,
-      "dia": 1,
-      "bloque": 3,
-      "turno": "Tarde",
-      "anio_lectivo": 2026,
-      "estado": "PUBLICADO",
-      "observaciones": "",
-      "fecha_publicacion": "2026-09-14T05:55:10.936Z"
+      "alumno": "20260001",
+      "fecha": "2026-09-10",
+      "tipo": "D",
+      "sub_letra": "B",
+      "maestro_registra": 3,
+      "responsable_redencion": null
     }
   }
 ]

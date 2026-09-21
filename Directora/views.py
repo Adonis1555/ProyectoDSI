@@ -21,11 +21,11 @@ from django.db.models import ProtectedError
 from django.shortcuts import render, get_object_or_404
 import json
 import unicodedata
+from django.db.models import Sum,Q
 
 @login_required
 @directora_required
 def directora_view(request):
-    from django.db.models import Q
     q = request.GET.get('q', '')
     if q:
         maestros_lista = Maestro.objects.filter(
@@ -946,35 +946,40 @@ def directora_materia(request):
     # 1. Catálogo completo de materias
     materias = Materia.objects.all().order_by('nombre')
 
-    bloques_catalogo = sum(getattr(m, 'bloques_semanales', 5) or 5 for m in materias)
-    total_bloques_basica = bloques_catalogo if bloques_catalogo > 0 else 25
+    # Filtrar materias por nivel educativo
+    materias_parvularia = materias.filter(nivel_aplicable='PARVULARIA')
+    materias_basica = materias.filter(nivel_aplicable__in=['BASICA', 'BASICA_Y_TERCER'])
+    materias_tercer_ciclo = materias.filter(nivel_aplicable__in=['TERCER', 'BASICA_Y_TERCER'])
 
-    # 2. Secciones activas con su orientador
-    secciones_activas = GradoSeccion.objects.filter(activo=True).select_related('maestro_encargado')
+    # Carga de materias por nivel (si no hay materias de Parvularia registradas, suma 0)
+    total_bloques_parvularia = sum(getattr(m, 'bloques_semanales', 5) or 5 for m in materias_parvularia)
+    total_bloques_basica = sum(getattr(m, 'bloques_semanales', 5) or 5 for m in materias_basica)
 
-    # 3. Separar secciones por nivel usando los códigos
+    # 2. Definición de códigos y separación de secciones activas
+    codigos_parvularia = ['PK']
+    codigos_basica_pura = ['1G', '2G', '3G', '4G', '5G', '6G']
+    codigos_primera_infancia_y_basica = codigos_parvularia + codigos_basica_pura
     codigos_tercer_ciclo = ['7G', '8G', '9G']
-    codigos_basica = ['PK', '1G', '2G', '3G', '4G', '5G', '6G']
 
-    secciones_basica = [s for s in secciones_activas if s.grado in codigos_basica]
+    secciones_activas = GradoSeccion.objects.filter(activo=True).select_related('maestro_encargado')
+    secciones_basica = [s for s in secciones_activas if s.grado in codigos_primera_infancia_y_basica]
     secciones_tercer_ciclo = [s for s in secciones_activas if s.grado in codigos_tercer_ciclo]
 
-    # 4. Asignaciones existentes para el año actual en Tercer Ciclo
+    # 3. Asignaciones existentes para el año actual en Tercer Ciclo
     asignaciones = AsignacionMateria.objects.filter(
         anio_lectivo=anio_actual
     ).select_related('docente', 'materia', 'grado_seccion')
 
-    # Mapeo rápido: {(id_grado_seccion, id_materia): objeto_docente}
     mapa_asignaciones = {
         (asig.grado_seccion_id, asig.materia_id): asig.docente
         for asig in asignaciones
     }
 
-    # 5. Estructurar la matriz de Tercer Ciclo
+    # 4. Estructurar la matriz de Tercer Ciclo (solo con materias aptas para este nivel)
     matriz_tercer_ciclo = []
     for seccion in secciones_tercer_ciclo:
         fila_materias = []
-        for materia in materias:
+        for materia in materias_tercer_ciclo:
             docente = mapa_asignaciones.get((seccion.id, materia.id))
             
             iniciales = ""
@@ -995,61 +1000,73 @@ def directora_materia(request):
             'materias': fila_materias
         })
 
-  # 6. Lista de maestros activos y cálculo desglosado por turno
+    # 5. Lista de maestros activos y cálculo desglosado por turno
     maestros = Maestro.objects.filter(activo=True).order_by('nombre', 'apellido')
     
     for maestro in maestros:
-        # Secciones de Básica donde este maestro es orientador titular activo
-        grados_titular_basica = list(maestro.grados_a_cargo.filter(
+        secciones_titular = list(maestro.grados_a_cargo.filter(
             activo=True,
-            grado__in=codigos_basica
+            grado__in=codigos_primera_infancia_y_basica
         ))
 
-        # Detectar en qué turnos tiene sección de básica asignada (limpiando tildes y espacios)
-        turnos_basica_limpios = [
-            normalizar_turno(g.turno) for g in grados_titular_basica
+        turnos_titular_limpios = [
+            normalizar_turno(g.turno) for g in secciones_titular
         ]
-        maestro.turnos_basica = ','.join(sorted(set(turnos_basica_limpios)))
+        maestro.turnos_basica = ','.join(sorted(set(turnos_titular_limpios)))
 
-        # CONSULTA DIRECTA AL ORM:
-        # Django resuelve internamente la clave primaria exacta del maestro
         asigs_docente = list(AsignacionMateria.objects.filter(
             docente=maestro,
             anio_lectivo=anio_actual
         ).select_related('materia', 'grado_seccion'))
 
         # --- TURNO MAÑANA ---
-        if 'Mañana' in turnos_basica_limpios:
-            # Es titular de básica en la mañana: carga completa (25 bloques)
-            maestro.bloques_manana = total_bloques_basica
-        else:
-            # Sumar materias de Tercer Ciclo asignadas en la Mañana
-            asigs_manana = [
-                a for a in asigs_docente 
-                if normalizar_turno(a.grado_seccion.turno) == 'Mañana'
-            ]
-            maestro.bloques_manana = sum(
-                int(getattr(a.materia, 'bloques_semanales', 5) or 5)
-                for a in asigs_manana
-            )
+        bloques_manana = 0
+
+        # Suma según nivel de titularidad
+        titular_manana = [s for s in secciones_titular if normalizar_turno(s.turno) == 'Mañana']
+        for sec in titular_manana:
+            if sec.grado in codigos_parvularia:
+                bloques_manana += total_bloques_parvularia
+            elif sec.grado in codigos_basica_pura:
+                bloques_manana += total_bloques_basica
+
+        # Suma de materias individuales asignadas en la mañana
+        asigs_manana = [
+            a for a in asigs_docente 
+            if normalizar_turno(a.grado_seccion.turno) == 'Mañana'
+        ]
+        bloques_manana += sum(
+            int(getattr(a.materia, 'bloques_semanales', 5) or 5)
+            for a in asigs_manana
+        )
+        maestro.bloques_manana = bloques_manana
 
         # --- TURNO TARDE ---
-        if 'Tarde' in turnos_basica_limpios:
-            # Es titular de básica en la tarde: carga completa (25 bloques)
-            maestro.bloques_tarde = total_bloques_basica
-        else:
-            # Sumar materias de Tercer Ciclo asignadas en la Tarde
-            asigs_tarde = [
-                a for a in asigs_docente 
-                if normalizar_turno(a.grado_seccion.turno) == 'Tarde'
-            ]
-            maestro.bloques_tarde = sum(
-                int(getattr(a.materia, 'bloques_semanales', 5) or 5)
-                for a in asigs_tarde
-            )
+        bloques_tarde = 0
 
+        # Suma según nivel de titularidad
+        titular_tarde = [s for s in secciones_titular if normalizar_turno(s.turno) == 'Tarde']
+        for sec in titular_tarde:
+            if sec.grado in codigos_parvularia:
+                bloques_tarde += total_bloques_parvularia
+            elif sec.grado in codigos_basica_pura:
+                bloques_tarde += total_bloques_basica
+
+        # Suma de materias individuales asignadas en la tarde
+        asigs_tarde = [
+            a for a in asigs_docente 
+            if normalizar_turno(a.grado_seccion.turno) == 'Tarde'
+        ]
+        bloques_tarde += sum(
+            int(getattr(a.materia, 'bloques_semanales', 5) or 5)
+            for a in asigs_tarde
+        )
+        maestro.bloques_tarde = bloques_tarde
+
+    # 6. Contexto y respuesta
     contexto = {
         'materias': materias,
+        'materias_tercer_ciclo': materias_tercer_ciclo,
         'secciones_basica': secciones_basica,
         'matriz_tercer_ciclo': matriz_tercer_ciclo,
         'maestros': maestros,
@@ -1493,11 +1510,19 @@ def guardar_materia(request):
         nombre = data.get('nombre', '').strip()
         codigo = data.get('codigo', '').strip()
         color = data.get('color', '').strip()
+        nivel_aplicable = data.get('nivel_aplicable', '').strip().upper()
 
         if not nombre:
             return JsonResponse({'success': False, 'error': 'El nombre es obligatorio.'}, status=400)
 
-        # Validación estricta de bloques semanales
+        niveles_validos = {'PARVULARIA', 'BASICA', 'TERCER', 'BASICA_Y_TERCER'}
+        if nivel_aplicable not in niveles_validos:
+            return JsonResponse({
+                'success': False, 
+                'error': 'Debes seleccionar un nivel educativo válido (Parvularia, Básica, Tercer Ciclo o Ambos).'
+            }, status=400)
+
+        # Validación de bloques semanales
         try:
             bloques_semanales = int(data.get('bloques_semanales'))
         except (ValueError, TypeError):
@@ -1506,19 +1531,70 @@ def guardar_materia(request):
                 'error': 'La cantidad de bloques semanales debe ser un número entero válido.'
             }, status=400)
 
-        # En una jornada semanal escolar (5 bloques x 5 días = 25 bloques máx)
         if bloques_semanales < 1 or bloques_semanales > 25:
             return JsonResponse({
                 'success': False, 
-                'error': f'La cantidad de bloques ({bloques_semanales}). Debe ser entre 1 y 25 bloques semanales.'
+                'error': 'Los bloques deben ser un valor positivo entre 1 y 25.'
             }, status=400)
 
+        LIMITE_SEMANAL = 25
+
+        # =========================================================================
+        # VALIDACIÓN ACUMULADA POR NIVEL
+        # =========================================================================
+        # Si aplica a BÁSICA (o BASICA_Y_TERCER), revisar cupo de Básica:
+        if nivel_aplicable in ['BASICA', 'BASICA_Y_TERCER']:
+            acumulado_basica = Materia.objects.filter(
+                Q(nivel_aplicable='BASICA') | Q(nivel_aplicable='BASICA_Y_TERCER')
+            ).aggregate(total=Sum('bloques_semanales'))['total'] or 0
+
+            disponible_basica = LIMITE_SEMANAL - acumulado_basica
+            if acumulado_basica + bloques_semanales > LIMITE_SEMANAL:
+                return JsonResponse({
+                    'success': False,
+                    'error': (
+                        f'Excede el límite en Básica: ya hay {acumulado_basica} bloques acumulados '
+                    )
+                }, status=400)
+
+        # Si aplica a TERCER CICLO (o BASICA_Y_TERCER), revisar cupo de Tercer Ciclo:
+        if nivel_aplicable in ['TERCER', 'BASICA_Y_TERCER']:
+            acumulado_tercer = Materia.objects.filter(
+                Q(nivel_aplicable='TERCER') | Q(nivel_aplicable='BASICA_Y_TERCER')
+            ).aggregate(total=Sum('bloques_semanales'))['total'] or 0
+
+            disponible_tercer = LIMITE_SEMANAL - acumulado_tercer
+            if acumulado_tercer + bloques_semanales > LIMITE_SEMANAL:
+                return JsonResponse({
+                    'success': False,
+                    'error': (
+                        f'Excede el límite en Tercer Ciclo: ya hay {acumulado_tercer} bloques acumulados '
+                    )
+                }, status=400)
+
+        # Si aplica a PARVULARIA:
+        if nivel_aplicable == 'PARVULARIA':
+            acumulado_parv = Materia.objects.filter(
+                nivel_aplicable='PARVULARIA'
+            ).aggregate(total=Sum('bloques_semanales'))['total'] or 0
+
+            disponible_parv = LIMITE_SEMANAL - acumulado_parv
+            if acumulado_parv + bloques_semanales > LIMITE_SEMANAL:
+                return JsonResponse({
+                    'success': False,
+                    'error': (
+                        f'Excede el límite en Parvularia: ya hay {acumulado_parv} bloques acumulados '
+                    )
+                }, status=400)
+
+        # Crear materia
         materia = Materia.objects.create(
             nombre=nombre,
             codigo=codigo if codigo else None,
             color=color or '#D6E4FF',
-            bloques_semanales=bloques_semanales
-        )   
+            bloques_semanales=bloques_semanales,
+            nivel_aplicable=nivel_aplicable
+        )
 
         return JsonResponse({
             'success': True,
@@ -1526,10 +1602,10 @@ def guardar_materia(request):
             'nombre': materia.nombre,
             'codigo': materia.codigo or '',
             'color': materia.color,
-            'bloques_semanales': materia.bloques_semanales
+            'bloques_semanales': materia.bloques_semanales,
+            'nivel_aplicable': materia.get_nivel_aplicable_display()
         })
     except Exception as e:
-        print("Error en guardar_materia:", e)
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
@@ -1639,5 +1715,69 @@ def eliminar_materia(request):
             'success': False,
             'error': f'Imposible eliminar: la materia mantiene registros asociados en otras secciones del sistema.'
         }, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+@directora_required
+@require_POST
+def actualizar_materia(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        materia_id = data.get('id')
+
+        if not materia_id:
+            return JsonResponse({'success': False, 'error': 'ID de materia no proporcionado.'}, status=400)
+
+        materia = get_object_or_404(Materia, id=materia_id)
+
+        # 1. Validación de número entero
+        try:
+            nuevos_bloques = int(data.get('bloques_semanales'))
+        except (ValueError, TypeError):
+            return JsonResponse({
+                'success': False, 
+                'error': 'La cantidad de bloques semanales debe ser un número entero válido.'
+            }, status=400)
+
+        # 2. Bloqueo estricto de números negativos y ceros
+        if nuevos_bloques <= 0:
+            return JsonResponse({
+                'success': False, 
+                'error': 'La cantidad de bloques debe ser mayor que cero (mínimo 1 bloque).'
+            }, status=400)
+
+        # 3. Validación acumulada institucional: Máximo 25 bloques semanales en total
+        LIMITE_SEMANAL = 25
+        total_otras = Materia.objects.exclude(id=materia.id).aggregate(
+            total=Sum('bloques_semanales')
+        )['total'] or 0
+
+        cupo_disponible = LIMITE_SEMANAL - total_otras
+
+        if total_otras + nuevos_bloques > LIMITE_SEMANAL:
+            if cupo_disponible <= 0:
+                mensaje = (
+                    f'No es posible asignar bloques: las demás materias ya ocupan los {LIMITE_SEMANAL} '
+                    f'bloques semanales disponibles en la jornada.'
+                )
+            else:
+                mensaje = (
+                    f'No se pueden asignar {nuevos_bloques} bloques a "{materia.nombre}". '
+                    f'Las demás materias ya suman {total_otras} bloques. '
+                    f'El cupo máximo disponible para esta materia es de {cupo_disponible} bloque(s).'
+                )
+            return JsonResponse({'success': False, 'error': mensaje}, status=400)
+
+        # Guardar únicamente el cambio de bloques
+        materia.bloques_semanales = nuevos_bloques
+        materia.save()
+
+        return JsonResponse({
+            'success': True,
+            'mensaje': f'Bloques de "{materia.nombre}" actualizados a {nuevos_bloques}.',
+            'bloques_semanales': nuevos_bloques
+        })
+
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)

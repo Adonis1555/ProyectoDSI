@@ -97,13 +97,24 @@ class GradoSeccion(models.Model):
 
 
 class Materia(models.Model):
+    NIVELES_CHOICES = [
+        ('PARVULARIA', 'Solo Parvularia'),
+        ('BASICA', 'Solo Básica (1° a 6°)'),
+        ('TERCER', 'Solo Tercer Ciclo (7° a 9°)'),
+        ('BASICA_Y_TERCER', 'Básica y Tercer Ciclo'),
+    ]
     nombre = models.CharField(max_length=100)
     codigo = models.CharField(max_length=20, blank=True, null=True)
     color = models.CharField(max_length=7, default="#D6E4FF")
     bloques_semanales = models.PositiveSmallIntegerField(default=5)
+    nivel_aplicable = models.CharField(
+        max_length=20,
+        choices=NIVELES_CHOICES,
+        default='BASICA_Y_TERCER'
+    )
 
     def __str__(self):
-        return self.nombre
+        return f"{self.nombre} ({self.get_nivel_aplicable_display()})"
 
 
 class AsignacionMateria(models.Model):
