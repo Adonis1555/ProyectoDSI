@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from django.db import models
 from django.conf import settings
-from Directora.models import Maestro, GradoSeccion, Materia, normalizar_turno
+from Directora.models import Maestro, GradoSeccion, Materia, normalizar_turno, especialidad_coincide_con_materia
 
 
 class Alumno(models.Model):
@@ -178,7 +178,11 @@ def obtener_materias_docente(maestro, anio=None):
     ).select_related('grado_seccion', 'materia')
 
     for asig in asignaciones:
+        if not asig.grado_seccion.activo or not asig.grado_seccion.es_tercer_ciclo:
+            continue
         if normalizar_turno(asig.grado_seccion.turno) in turnos_basica:
+            continue
+        if not especialidad_coincide_con_materia(maestro, asig.materia):
             continue
         materias_permitidas.append({
             'grado_seccion': asig.grado_seccion,

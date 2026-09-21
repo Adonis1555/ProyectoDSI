@@ -517,18 +517,8 @@ def horario_maestro(request):
         docente=maestro, anio_lectivo=anio_actual
     ).select_related('materia', 'grado_seccion')
 
-    niveles_disponibles = {
-        'tercer' if opcion['grado_seccion'].es_tercer_ciclo else 'basica'
-        for opcion in todas_las_materias
-    }
-    niveles_disponibles.update(
-        'tercer' if clase.grado_seccion.es_tercer_ciclo else 'basica'
-        for clase in todas_las_clases
-    )
     if nivel_solicitado not in {'basica', 'tercer'}:
         nivel_solicitado = 'basica'
-    if niveles_disponibles and nivel_solicitado not in niveles_disponibles:
-        nivel_solicitado = 'basica' if 'basica' in niveles_disponibles else 'tercer'
     nivel_actual = nivel_solicitado
     grados_nivel = grados_tercer if nivel_actual == 'tercer' else grados_basica
 
@@ -548,6 +538,14 @@ def horario_maestro(request):
         turno=turno_actual,
         activo=True,
     ).values_list('dia', 'bloque'))
+    bloques_utilizables = bloques_asignados.intersection({
+        (dia['id'], bloque['id'])
+        for dia in DIAS_SEMANA for bloque in BLOQUES_HORARIO
+        if not bloque['es_receso']
+    })
+    tiene_carga = bool(materias_disponibles)
+    tiene_clases = clases.exists()
+    puede_programar = tiene_carga and bool(bloques_utilizables)
 
     # Mapa rápido: (dia, bloque) -> objeto HorarioClase
     mapa_horario = {(c.dia, c.bloque): c for c in clases}
@@ -564,7 +562,7 @@ def horario_maestro(request):
                     'dia_id': d['id'],
                     'bloque_id': b['id'],
                     'clase': clase_slot,
-                    'permitido': (d['id'], b['id']) in bloques_asignados,
+                    'permitido': puede_programar and (d['id'], b['id']) in bloques_utilizables,
                 })
         grilla.append(fila)
 
@@ -625,6 +623,9 @@ def horario_maestro(request):
         'anio_actual': anio_actual,
         'estado_actual': estado_actual,
         'motivo_rechazo': motivo_rechazo,
+        'tiene_carga': tiene_carga,
+        'tiene_clases': tiene_clases,
+        'puede_programar': puede_programar,
         'estados_propuestas': estados_propuestas,
         'nivel_actual': nivel_actual,
         'titulo_nivel_actual': 'Tercer ciclo' if nivel_actual == 'tercer' else 'Niveles básicos',
