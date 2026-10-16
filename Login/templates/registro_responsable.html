@@ -1,0 +1,176 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/login.css' %}">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <title>Registro de Responsable</title>
+</head>
+<body>
+
+    <form id="formRegistro" method="POST" action="">
+        {% csrf_token %}
+        <div class="Card-Login Card-Registro">
+            <div class="imgContainer">
+                <img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo">
+            </div>
+
+            <h2 class="form-title">Registro de Responsable</h2>
+            
+            <div class="inputsContainer">
+                
+                <div class="form-row">
+                    <div class="input-group">
+                        <label class="input-label">Nombres</label>
+                        <input type="text" class="loginInput" name="nombre" placeholder="Nombres" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Apellidos</label>
+                        <input type="text" class="loginInput" name="apellido" placeholder="Apellidos" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group">
+                        <label class="input-label">DUI (00000000-0)</label>
+                        <input type="text" class="loginInput" name="dui" placeholder="00000000-0" maxlength="10" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Teléfono</label>
+                        <input type="text" class="loginInput" name="telefono" placeholder="7000-0000" maxlength="9" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Correo electrónico</label>
+                    <input type="email" class="loginInput" name="email" placeholder="ejemplo@correo.com" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group">
+                        <label class="input-label">Contraseña</label>
+                        <input type="password" class="loginInput" name="password" placeholder="••••••••" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Confirmar Contraseña</label>
+                        <input type="password" class="loginInput" name="password_confirm" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <button class="loginButton" type="submit" style="margin-top: 10px;">Registrarme</button>
+                <a class="registrarseLink" href="{% url 'login' %}">¿Ya tienes cuenta? Inicia sesión</a>
+
+            </div>
+        </div>
+    </form>
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const form = document.getElementById('formRegistro');
+            const inputDui = document.querySelector('input[name="dui"]');
+            const inputTelefono = document.querySelector('input[name="telefono"]');
+
+            // Máscara para DUI (00000000-0)
+            if (inputDui) {
+                inputDui.addEventListener('input', function(e) {
+                    let valor = e.target.value.replace(/\D/g, '');
+                    if (valor.length > 9) valor = valor.slice(0, 9);
+                    if (valor.length > 8) {
+                        e.target.value = valor.slice(0, 8) + '-' + valor.slice(8);
+                    } else {
+                        e.target.value = valor;
+                    }
+                });
+            }
+
+            // Máscara para Teléfono (0000-0000)
+            if (inputTelefono) {
+                inputTelefono.addEventListener('input', function(e) {
+                    let valor = e.target.value.replace(/\D/g, '');
+                    if (valor.length > 8) valor = valor.slice(0, 8);
+                    if (valor.length > 4) {
+                        e.target.value = valor.slice(0, 4) + '-' + valor.slice(4);
+                    } else {
+                        e.target.value = valor;
+                    }
+                });
+            }
+
+            // Envío con Fetch para Spinner continuo y SweetAlert de Éxito
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                // 1. Mostrar Spinner Inmediatamente
+                Swal.fire({
+                    title: 'Validando información',
+                    text: 'Comprobando datos y verificando correo electrónico...',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // 2. Enviar petición por AJAX (Fetch)
+                const formData = new FormData(form);
+
+                fetch("{% url 'registro_responsable' %}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json().then(data => ({ status: response.status, body: data })))
+                .then(({ status, body }) => {
+                    if (status === 200 && body.status === 'success') {
+                        // 3. Spinner se transforma en alerta de Éxito
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Registro Exitoso!',
+                            text: body.message,
+                            confirmButtonColor: '#111827',
+                            confirmButtonText: 'Iniciar Sesión',
+                            allowOutsideClick: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = "{% url 'login' %}";
+                            }
+                        });
+                    } else {
+                        // Alerta de Error limpia en SweetAlert2
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Atención',
+                            text: body.message || 'Ocurrió un error inesperado.',
+                            confirmButtonColor: '#111827',
+                            confirmButtonText: 'Entendido'
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de Conexión',
+                        text: 'No se pudo conectar con el servidor. Intenta de nuevo.',
+                        confirmButtonColor: '#111827',
+                        confirmButtonText: 'Aceptar'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
