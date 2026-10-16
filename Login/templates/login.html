@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="{% static 'styles/login.css' %}">
     <title>Login</title>
 </head>
@@ -33,7 +34,7 @@
             <input type="text" class="loginInput {% if messages %}input-error{% endif %}"name="Usuario" placeholder="Usuario"> 
             <input type="password" class="loginInput {% if messages %}input-error{% endif %}"name="Password" placeholder="Contraseña">
             <button class="loginButton" type="submit">Iniciar Sesión</button>
-            <a class="registrarseLink" href="">Registrate</a>
+            <a class="registrarseLink" href="{% url 'registro_responsable' %}">Regístrate</a>
             </div>
            
         </div>

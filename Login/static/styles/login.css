@@ -1,16 +1,20 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family: Arial, Helvetica, sans-serif;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
 }
 
-body{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-    background-color:#f3f4f6;
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f3f4f6;
+    font-family: 'Inter', sans-serif;
+    padding: 20px 0;
 }
 
 
@@ -192,4 +196,69 @@ body{
     background-color: #f44336;
     color: #ffffff;
     transform: scale(1.1);
+}
+
+/* AJUSTES PARA FORMULARIO DE REGISTRO */
+
+/* Ancho ampliado para formularios de registro */
+.Card-Registro {
+    width: 100%;
+    max-width: 520px;
+}
+
+/* Fila de 2 columnas para Nombres/Apellidos, DUI/Teléfono, etc. */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+}
+
+/* Contenedor individual con etiqueta superior */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    text-align: left;
+}
+
+.input-label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #1f2937;
+}
+
+.input-group .loginInput {
+    width: 100%;
+}
+
+/* Título de la tarjeta */
+.form-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #111827;
+    margin-bottom: 18px;
+    text-align: center;
+}
+
+/* Responsive para celulares */
+@media (max-width: 560px) {
+    .Card-Registro {
+        max-width: 92%;
+        padding: 30px 20px;
+    }
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}
+/* Soporte para mensajes de éxito en login.css */
+.toast-card.toast-success {
+    border-left: 5px solid #10b981; /* Verde */
+}
+
+.toast-card.toast-success .toast-icon,
+.toast-card.toast-success .toast-close-btn {
+    background-color: #d1fae5;
+    color: #059669;
 }
