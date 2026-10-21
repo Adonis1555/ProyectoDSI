@@ -1,0 +1,325 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: #e5e7eb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 24px;
+}
+
+/* MARCO CONTENEDOR REDONDEADO */
+.maestro-alumno {
+    background-color: #ffffff;
+    width: 95%;
+    max-width: 1250px;
+    height: 90vh;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    display: flex;
+    overflow: hidden;
+}
+
+/* ==================== BARRA LATERAL ==================== */
+.menu-opciones {
+    width: 230px;
+    min-width: 230px;
+    border-right: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 18px;
+}
+
+.imgContainer {
+    width: 120px;
+    height: 120px;
+    margin-top: 10px;
+    margin-bottom: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.Logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+}
+
+.opciones {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+
+.opciones ul {
+    list-style: none;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.item-menu {
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.item-menu a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
+    text-decoration: none;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+}
+
+.item-menu:hover:not(.activo) a {
+    background-color: #f3f4f6;
+    color: #111827;
+    border-radius: 8px;
+}
+
+.item-menu.activo {
+    background-color: #2b529a;
+}
+
+.item-menu.activo a {
+    color: #ffffff;
+}
+
+.sidebar-footer {
+    width: 100%;
+}
+
+.btnCerrarSesion {
+    width: 100%;
+    padding: 10px;
+    background-color: #b91c1c;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btnCerrarSesion:hover {
+    background-color: #991b1b;
+}
+
+/* ==================== CONTENIDO CON SCROLL ==================== */
+.contenido-ficha {
+    flex: 1;
+    padding: 35px 45px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ENCABEZADO CON BOTÓN FLECHA A LA DERECHA */
+.encabezado-ficha {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.encabezado-textos {
+    display: flex;
+    flex-direction: column;
+}
+
+.titulo-pagina {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.subtitulo-pagina {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.btn-volver-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #f3f4f6;
+    color: #1f2937;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid #e5e7eb;
+}
+
+.btn-volver-icono:hover {
+    background-color: #111827;
+    color: #ffffff;
+    border-color: #111827;
+    transform: translateX(-2px);
+}
+
+/* PANELES DE CAMPOS */
+.form-ficha {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.panel-ficha {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.titulo-seccion {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+}
+
+.divisor-subseccion {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4b5563;
+    margin-top: 6px;
+}
+
+/* GRILLAS ADAPTABLES */
+.grid-col-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.grid-col-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+}
+
+/* INPUTS Y SELECTS */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.label-custom {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.req {
+    color: #dc2626;
+}
+
+.input-custom, .select-custom {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #111827;
+    background-color: #ffffff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-custom:focus, .select-custom:focus {
+    outline: none;
+    border-color: #2b529a;
+    box-shadow: 0 0 0 3px rgba(43, 82, 154, 0.1);
+}
+
+/* ALERTA Y PANEL TUTOR ALTERNATIVO */
+.panel-alerta {
+    background-color: #fffbeb;
+    border: 1px dashed #f59e0b;
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 10px;
+}
+
+.subtitulo-alerta {
+    font-size: 14px;
+    font-weight: 700;
+    color: #b45309;
+    margin-bottom: 4px;
+}
+
+.desc-alerta {
+    font-size: 12px;
+    color: #92400e;
+    margin-bottom: 12px;
+}
+
+/* BOTONES DE ACCIÓN */
+.acciones-formulario {
+    display: flex;
+    gap: 12px;
+    padding-top: 10px;
+    margin-bottom: 25px;
+}
+
+.btn-enviar-ficha {
+    background-color: #0f172a;
+    color: #ffffff;
+    padding: 11px 22px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-enviar-ficha:hover {
+    opacity: 0.9;
+}
+
+.btn-cancelar-ficha {
+    display: inline-block;
+    padding: 11px 18px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.btn-cancelar-ficha:hover {
+    background-color: #f3f4f6;
+}
