@@ -110,20 +110,23 @@ body {
 }
 
 .btnCerrarSesion {
-    width: 100%;
-    padding: 10px;
-    background-color: #b91c1c;
-    color: #ffffff;
+    background-color: #C0392B;
+    padding: 12px 24px;
+    color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.3s;
+    height: fit-content;
+    white-space: nowrap; 
+    margin-left: 25px;
 }
 
 .btnCerrarSesion:hover {
-    background-color: #991b1b;
+    background-color: #A93226;
+    transform: translateY(-1px);
 }
 
 /* ==================== CONTENIDO CON SCROLL ==================== */

@@ -37,7 +37,7 @@
         <!-- CONTENIDO PRINCIPAL -->
         <section class="registro-alumno">
             
-            <!-- HEADER DE SECCIÓN (Sin botón + Registrar Alumno) -->
+            <!-- HEADER DE SECCIÓN -->
             <div class="container-titulo-alumno">
                 <div>
                     <h1 class="titulo-alumno">Alumnos Registrados</h1>
@@ -45,7 +45,7 @@
                 </div>
             </div>
 
-            <!-- BLOQUE 1: TARJETAS DE ALUMNOS -->
+            <!-- BLOQUE 1: TARJETAS DE ALUMNOS (Aprobados en el sistema) -->
             <div class="contenedor-panel">
                 <h2 class="subtitulo-seccion">Mis Hijos / Alumnos Asociados</h2>
                 <div class="cards-grid">
@@ -68,14 +68,17 @@
                             </div>
                             <h4 class="empty-title">Aún no tienes alumnos asociados</h4>
                             <p class="empty-description">
-                                No encontramos ningún estudiante registrado bajo tu número de DUI. Puedes inscribir o postular a tu primer alumno desde el módulo lateral de matrícula.
+                                No encontramos ningún estudiante matriculado y aprobado bajo tu cuenta. Las postulaciones enviadas se listan abajo en espera de aprobación docente.
                             </p>
+                            <a href="{% url 'ficha_matricula' %}" class="btn-empty-action">
+                                Ir a Ficha de Matrícula
+                            </a>
                         </div>
                     {% endfor %}
                 </div>
             </div>
 
-            <!-- BLOQUE 2: ESTADO DE SOLICITUDES DE MATRÍCULA -->
+            <!-- BLOQUE 2: ESTADO DE FICHAS DE MATRÍCULA -->
             <div class="contenedor-panel">
                 <h2 class="subtitulo-seccion">Estado de Solicitudes de Matrícula</h2>
                 <div class="table-responsive">
@@ -84,7 +87,7 @@
                             <tr>
                                 <th>NIE</th>
                                 <th>Nombre del Alumno</th>
-                                <th>Grado Solicitado</th>
+                                <th>Grado y Sección</th>
                                 <th>Fecha de Solicitud</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
@@ -93,10 +96,10 @@
                         <tbody>
                             {% for sol in solicitudes %}
                                 <tr>
-                                    <td>{{ sol.alumno.nie }}</td>
-                                    <td>{{ sol.alumno.nombre }} {{ sol.alumno.apellido }}</td>
-                                    <td>{{ sol.grado_solicitado }}</td>
-                                    <td>{{ sol.fecha_solicitud|date:"d/m/Y" }}</td>
+                                    <td><strong>{{ sol.nie }}</strong></td>
+                                    <td>{{ sol.nombres }} {{ sol.apellidos }}</td>
+                                    <td>{{ sol.grado_seccion.get_grado_display }} - Sección "{{ sol.grado_seccion.seccion }}"</td>
+                                    <td>{{ sol.fecha_envio|date:"d/m/Y h:i A" }}</td>
                                     <td>
                                         {% if sol.estado == 'PENDIENTE' %}
                                             <span class="badge badge-pendiente">Pendiente</span>
@@ -105,17 +108,17 @@
                                         {% elif sol.estado == 'RECHAZADA' %}
                                             <span class="badge badge-rechazada">Rechazada</span>
                                         {% else %}
-                                            <span class="badge">{{ sol.estado }}</span>
+                                            <span class="badge">{{ sol.get_estado_display }}</span>
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <a href="#" class="link-detalle">Ver Detalle</a>
+                                        <a href="{% url 'comprobante_ficha' sol.id %}" class="link-detalle">Ver Comprobante</a>
                                     </td>
                                 </tr>
                             {% empty %}
                                 <tr>
                                     <td colspan="6" class="empty-state">
-                                        No hay solicitudes de matrícula registradas en este periodo.
+                                        No has enviado ninguna ficha de matrícula en este periodo.
                                     </td>
                                 </tr>
                             {% endfor %}

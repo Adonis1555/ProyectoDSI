@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'styles/ficha_matricula.css' %}">
-    <title>Ficha de Matrícula</title>
+    <title>{% if modo_lectura %}Comprobante de Matrícula{% else %}Ficha de Matrícula{% endif %}</title>
 </head>
 <body>
 
     <main class="maestro-alumno">
-        <!-- BARRA LATERAL (Ficha de Matrícula Activo) -->
+        <!-- BARRA LATERAL -->
         <section class="menu-opciones">
             <div class="imgContainer">
                 <img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo Institucional">
@@ -21,8 +21,8 @@
                     <li class="item-menu">
                         <a href="{% url 'dashboard_responsable' %}">Mis Alumnos</a>
                     </li>
-                    <li class="item-menu activo">
-                        <a href="{% url 'registro_alumnos' %}">Ficha de Matrícula</a>
+                    <li class="item-menu {% if not modo_lectura %}activo{% endif %}">
+                        <a href="{% url 'ficha_matricula' %}">Ficha de Matrícula</a>
                     </li>
                 </ul>
                 <div class="sidebar-footer">
@@ -34,15 +34,29 @@
             </div>
         </section>
 
-        <!-- CONTENIDO PRINCIPAL: FORMULARIO -->
+        <!-- CONTENIDO PRINCIPAL -->
         <section class="contenido-ficha">
             
-            <!-- ENCABEZADO CON BOTÓN FLECHA A LA DERECHA -->
+            <!-- ENCABEZADO DINÁMICO -->
             <div class="encabezado-ficha">
                 <div class="encabezado-textos">
-                    <h1 class="titulo-pagina">Ficha de Inscripción y Matrícula 2026</h1>
-                    <p class="subtitulo-pagina">Completa la información conforme a la Partida de Nacimiento y datos del hogar.</p>
+                    {% if modo_lectura %}
+                        <h1 class="titulo-pagina">Comprobante de Inscripción y Matrícula</h1>
+                        <p class="subtitulo-pagina">
+                            Estado: <strong style="color: #2563eb;">{{ ficha.get_estado_display }}</strong> 
+                            | Enviada el {{ ficha.fecha_envio|date:"d/m/Y h:i A" }}
+                        </p>
+                    {% else %}
+                        <h1 class="titulo-pagina">Ficha de Inscripción y Matrícula 2026</h1>
+                        <p class="subtitulo-pagina">Completa la información conforme a la Partida de Nacimiento y datos del hogar.</p>
+                    {% endif %}
                 </div>
+                <a href="{% url 'dashboard_responsable' %}" class="btn-volver-icono" title="Volver al Panel">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
             </div>
 
             <form method="POST" action="" class="form-ficha">
@@ -53,34 +67,41 @@
                     <div class="grid-col-3">
                         <div class="form-group">
                             <label class="label-custom">NIE del Estudiante <span class="req">*</span></label>
-                            <input type="text" name="nie" class="input-custom" placeholder="Ej: 20260001" required>
+                            <input type="text" 
+                                   name="nie" 
+                                   id="input_nie"
+                                   class="input-custom" 
+                                   placeholder="Ej: 20260001" 
+                                   maxlength="8" 
+                                   minlength="7"
+                                   pattern="^[0-9]{7,8}$"
+                                   value="{{ ficha.nie|default:'' }}"
+                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}
+                                   required>
                         </div>
+                
                         <div class="form-group">
                             <label class="label-custom">Grado a Matricular <span class="req">*</span></label>
-                            <select name="grado_solicitado" class="select-custom" required>
+                            <select name="grado_solicitado" id="select_grado" class="select-custom" required {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
                                 <option value="">Seleccione grado...</option>
-                                <option value="Parvularia 4">Parvularia 4</option>
-                                <option value="Parvularia 5">Parvularia 5</option>
-                                <option value="Parvularia 6">Parvularia 6</option>
-                                <option value="1° Grado">1° Grado</option>
-                                <option value="2° Grado">2° Grado</option>
-                                <option value="3° Grado">3° Grado</option>
-                                <option value="4° Grado">4° Grado</option>
-                                <option value="5° Grado">5° Grado</option>
-                                <option value="6° Grado">6° Grado</option>
-                                <option value="7° Grado">7° Grado</option>
-                                <option value="8° Grado">8° Grado</option>
-                                <option value="9° Grado">9° Grado</option>
+                                {% for codigo, nombre in grados_disponibles %}
+                                    <option value="{{ codigo }}" {% if ficha and ficha.grado_seccion.grado == codigo %}selected{% endif %}>
+                                        {{ nombre }}
+                                    </option>
+                                {% empty %}
+                                    <option value="" disabled>No hay grados registrados</option>
+                                {% endfor %}
                             </select>
                         </div>
+                
                         <div class="form-group">
                             <label class="label-custom">Sección <span class="req">*</span></label>
-                            <select name="seccion_solicitada" class="select-custom" required>
-                                <option value="">Seleccione sección...</option>
-                                <option value="A">Sección A</option>
-                                <option value="B">Sección B</option>
-                                <option value="C">Sección C</option>
-
+                            <select name="seccion_solicitada" id="select_seccion" class="select-custom" required {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% else %}disabled{% endif %}>
+                                {% if modo_lectura %}
+                                    <option value="{{ ficha.grado_seccion.seccion }}" selected>Sección "{{ ficha.grado_seccion.seccion }}"</option>
+                                {% else %}
+                                    <option value="">Primero elija un grado...</option>
+                                {% endif %}
                             </select>
                         </div>
                     </div>
@@ -93,79 +114,117 @@
                     <div class="grid-col-2">
                         <div class="form-group">
                             <label class="label-custom">Nombres <span class="req">*</span></label>
-                            <input type="text" name="nombre" class="input-custom" placeholder="Nombres del alumno" required>
+                            <input type="text" name="nombre" class="input-custom" placeholder="Nombres del alumno" 
+                                   value="{{ ficha.nombres|default:'' }}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %} required>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Apellidos <span class="req">*</span></label>
-                            <input type="text" name="apellido" class="input-custom" placeholder="Apellidos del alumno" required>
+                            <input type="text" name="apellido" class="input-custom" placeholder="Apellidos del alumno" 
+                                   value="{{ ficha.apellidos|default:'' }}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %} required>
                         </div>
                     </div>
 
                     <div class="grid-col-3">
                         <div class="form-group">
                             <label class="label-custom">Fecha de Nacimiento <span class="req">*</span></label>
-                            <input type="date" name="fecha_nacimiento" class="input-custom" required>
+                            <input type="date" name="fecha_nacimiento" class="input-custom" 
+                                   value="{{ ficha.fecha_nacimiento|date:'Y-m-d' }}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %} required>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Nacionalidad</label>
-                            <input type="text" name="nacionalidad" class="input-custom" value="Salvadoreña">
+                            <input type="text" name="nacionalidad" class="input-custom" 
+                                   value="{{ ficha.nacionalidad|default:'Salvadoreña' }}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Género <span class="req">*</span></label>
-                            <select name="genero" class="select-custom" required>
+                            <select name="genero" class="select-custom" required {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
                                 <option value="">Seleccione...</option>
-                                <option value="M">Masculino</option>
-                                <option value="F">Femenino</option>
+                                <option value="M" {% if ficha.genero == 'M' %}selected{% endif %}>Masculino</option>
+                                <option value="F" {% if ficha.genero == 'F' %}selected{% endif %}>Femenino</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="grid-col-2">
+                    <!-- LUGAR DE NACIMIENTO -->
+                    <div class="divisor-subseccion">Lugar de Nacimiento</div>
+                    <div class="grid-col-3">
                         <div class="form-group">
                             <label class="label-custom">Departamento de Nacimiento</label>
-                            <input type="text" name="depto_nacimiento" class="input-custom" placeholder="Ej: La Libertad">
+                            <select name="depto_nacimiento" id="depto_nacimiento" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                                <option value="">Seleccione Departamento...</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Municipio de Nacimiento</label>
-                            <input type="text" name="municipio_nacimiento" class="input-custom" placeholder="Ej: San Juan Opico">
+                            <select name="municipio_nacimiento" id="municipio_nacimiento" class="select-custom" disabled {% if modo_lectura %}style="background-color: #f3f4f6;"{% endif %}>
+                                <option value="">Primero elija departamento...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Distrito de Nacimiento</label>
+                            <select name="distrito_nacimiento" id="distrito_nacimiento" class="select-custom" disabled {% if modo_lectura %}style="background-color: #f3f4f6;"{% endif %}>
+                                <option value="">Primero elija municipio...</option>
+                            </select>
                         </div>
                     </div>
 
                     <div class="grid-col-2">
                         <div class="form-group">
                             <label class="label-custom">¿Posee alguna discapacidad?</label>
-                            <select name="tiene_discapacidad" id="tiene_discapacidad" class="select-custom">
-                                <option value="No">No</option>
-                                <option value="Si">Sí</option>
+                            <select name="tiene_discapacidad" id="tiene_discapacidad" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                                <option value="No" {% if ficha and not ficha.tiene_discapacidad %}selected{% endif %}>No</option>
+                                <option value="Si" {% if ficha.tiene_discapacidad %}selected{% endif %}>Sí</option>
                             </select>
                         </div>
-                        <div class="form-group" id="grupo_tipo_discapacidad" style="display: none;">
+                        <div class="form-group" id="grupo_tipo_discapacidad" style="{% if ficha.tiene_discapacidad %}display: block;{% else %}display: none;{% endif %}">
                             <label class="label-custom">Especifique discapacidad</label>
-                            <input type="text" name="tipo_discapacidad" class="input-custom" placeholder="Tipo de discapacidad">
+                            <input type="text" name="tipo_discapacidad" class="input-custom" placeholder="Tipo de discapacidad" 
+                                   value="{{ ficha.tipo_discapacidad|default:'' }}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                         </div>
                     </div>
 
+                    <!-- LUGAR DE RESIDENCIA -->
+                    <div class="divisor-subseccion">Lugar de Residencia</div>
                     <div class="grid-col-3">
                         <div class="form-group">
-                            <label class="label-custom">Zona de Residencia</label>
-                            <select name="zona_residencia" class="select-custom">
-                                <option value="Urbana">Urbana</option>
-                                <option value="Rural">Rural</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
                             <label class="label-custom">Departamento de Residencia</label>
-                            <input type="text" name="depto_residencia" class="input-custom" placeholder="Departamento">
+                            <select name="depto_residencia" id="depto_residencia" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                                <option value="">Seleccione Departamento...</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Municipio de Residencia</label>
-                            <input type="text" name="municipio_residencia" class="input-custom" placeholder="Municipio">
+                            <select name="municipio_residencia" id="municipio_residencia" class="select-custom" disabled {% if modo_lectura %}style="background-color: #f3f4f6;"{% endif %}>
+                                <option value="">Primero elija departamento...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Distrito de Residencia</label>
+                            <select name="distrito_residencia" id="distrito_residencia" class="select-custom" disabled {% if modo_lectura %}style="background-color: #f3f4f6;"{% endif %}>
+                                <option value="">Primero elija municipio...</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="label-custom">Dirección Exacta de Residencia</label>
-                        <input type="text" name="direccion_exacta" class="input-custom" placeholder="Colonia, calle, pasaje, polígono o número de casa">
+                    <div class="grid-col-2">
+                        <div class="form-group">
+                            <label class="label-custom">Zona de Residencia</label>
+                            <select name="zona_residencia" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                                <option value="Urbana" {% if ficha.zona_residencia == 'Urbana' %}selected{% endif %}>Urbana</option>
+                                <option value="Rural" {% if ficha.zona_residencia == 'Rural' %}selected{% endif %}>Rural</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Dirección Exacta de Residencia</label>
+                            <input type="text" name="direccion_exacta" class="input-custom" placeholder="Colonia, calle, pasaje, polígono o número de casa" 
+                                   value="{{ ficha.direccion_exacta|default:'' }}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                        </div>
                     </div>
                 </div>
 
@@ -176,163 +235,282 @@
                     <div class="grid-col-2">
                         <div class="form-group">
                             <label class="label-custom">¿Presenta problemas de salud o alergias?</label>
-                            <select name="tiene_problemas_salud" id="tiene_problemas_salud" class="select-custom">
-                                <option value="No">No</option>
-                                <option value="Si">Sí</option>
+                            <select name="tiene_problemas_salud" id="tiene_problemas_salud" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                                <option value="No" {% if ficha and not ficha.tiene_problemas_salud %}selected{% endif %}>No</option>
+                                <option value="Si" {% if ficha.tiene_problemas_salud %}selected{% endif %}>Sí</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">¿Esquema de vacunas completo?</label>
-                            <select name="vacunas_completas" class="select-custom">
-                                <option value="Si">Sí</option>
-                                <option value="No">No</option>
+                            <select name="vacunas_completas" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                                <option value="Si" {% if ficha.vacunas_completas or not ficha %}selected{% endif %}>Sí</option>
+                                <option value="No" {% if ficha and not ficha.vacunas_completas %}selected{% endif %}>No</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="form-group" id="grupo_detalle_salud" style="display: none;">
+                    <div class="form-group" id="grupo_detalle_salud" style="{% if ficha.tiene_problemas_salud %}display: block;{% else %}display: none;{% endif %}">
                         <label class="label-custom">Detalle de salud o alergias</label>
-                        <input type="text" name="detalle_salud" class="input-custom" placeholder="Medicamentos, asma, etc.">
+                        <input type="text" name="detalle_salud" class="input-custom" placeholder="Medicamentos, asma, etc." 
+                               value="{{ ficha.detalle_salud|default:'' }}" 
+                               {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                     </div>
 
+                    <!-- DATOS DEL PADRE -->
                     <div class="divisor-subseccion">Datos del Padre</div>
                     <div class="grid-col-3">
                         <div class="form-group">
                             <label class="label-custom">Nombre Completo del Padre</label>
-                            <input type="text" name="nombre_padre" class="input-custom" placeholder="Nombre del padre">
+                            <input type="text" name="nombre_padre" class="input-custom" placeholder="Nombre del padre" 
+                                   value="{{ ficha.nombre_padre|default:'' }}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">DUI del Padre</label>
-                            <input type="text" name="dui_padre" class="input-custom mask-dui" placeholder="00000000-0" maxlength="10">
+                            <input type="text" name="dui_padre" class="input-custom mask-dui" placeholder="00000000-0" maxlength="10" 
+                                   value="{{ ficha.dui_padre|default:'' }}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Estado del Padre</label>
-                            <select name="estado_padre" id="estado_padre" class="select-custom check-ausencia">
-                                <option value="Presente">Presente</option>
-                                <option value="Fallecido">Fallecido</option>
-                                <option value="Ausente">Ausente / No reconocido</option>
+                            <select name="estado_padre" id="estado_padre" class="select-custom check-ausencia" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                                <option value="Presente" {% if ficha.estado_padre == 'Presente' %}selected{% endif %}>Presente</option>
+                                <option value="Fallecido" {% if ficha.estado_padre == 'Fallecido' %}selected{% endif %}>Fallecido</option>
+                                <option value="Ausente" {% if ficha.estado_padre == 'Ausente' %}selected{% endif %}>Ausente / No reconocido</option>
                             </select>
                         </div>
                     </div>
 
+                    <!-- DATOS DE LA MADRE -->
                     <div class="divisor-subseccion">Datos de la Madre</div>
                     <div class="grid-col-3">
                         <div class="form-group">
                             <label class="label-custom">Nombre Completo de la Madre</label>
-                            <input type="text" name="nombre_madre" class="input-custom" placeholder="Nombre de la madre">
+                            <input type="text" name="nombre_madre" class="input-custom" placeholder="Nombre de la madre" 
+                                   value="{{ ficha.nombre_madre|default:'' }}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">DUI de la Madre</label>
-                            <input type="text" name="dui_madre" class="input-custom mask-dui" placeholder="00000000-0" maxlength="10">
+                            <input type="text" name="dui_madre" class="input-custom mask-dui" placeholder="00000000-0" maxlength="10" 
+                                   value="{{ ficha.dui_madre|default:'' }}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Estado de la Madre</label>
-                            <select name="estado_madre" id="estado_madre" class="select-custom check-ausencia">
-                                <option value="Presente">Presente</option>
-                                <option value="Fallecido">Fallecida</option>
-                                <option value="Ausente">Ausente / No reconocida</option>
+                            <select name="estado_madre" id="estado_madre" class="select-custom check-ausencia" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                                <option value="Presente" {% if ficha.estado_madre == 'Presente' %}selected{% endif %}>Presente</option>
+                                <option value="Fallecido" {% if ficha.estado_madre == 'Fallecido' %}selected{% endif %}>Fallecida</option>
+                                <option value="Ausente" {% if ficha.estado_madre == 'Ausente' %}selected{% endif %}>Ausente / No reconocida</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- CONDICIONAL: SEGUNDO TUTOR O RESPONSABLE ALTERNATIVO -->
+                    <!-- TUTOR ALTERNATIVO -->
                     <div id="panel_tutor_alternativo" class="panel-alerta" style="display: none;">
-                        <h3 class="subtitulo-alerta">⚠️ Agregar Tutor / Responsable Alternativo</h3>
-                        <p class="desc-alerta">Se habilitó este apartado debido a que uno o ambos progenitores no se encuentran disponibles.</p>
+                        <h3 class="subtitulo-alerta">⚠️ Tutor / Responsable Alternativo</h3>
+                        <p class="desc-alerta">Habilitado debido a la ausencia o fallecimiento de uno o ambos padres.</p>
                         
                         <div class="grid-col-3">
                             <div class="form-group">
                                 <label class="label-custom">Nombre Completo del Tutor</label>
-                                <input type="text" name="nombre_tutor_alt" class="input-custom" placeholder="Nombre del tutor">
+                                <input type="text" name="nombre_tutor_alt" class="input-custom" placeholder="Nombre del tutor" 
+                                       value="{{ ficha.nombre_tutor_alt|default:'' }}" 
+                                       {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                             </div>
                             <div class="form-group">
                                 <label class="label-custom">DUI del Tutor</label>
-                                <input type="text" name="dui_tutor_alt" class="input-custom mask-dui" placeholder="00000000-0" maxlength="10">
+                                <input type="text" name="dui_tutor_alt" class="input-custom mask-dui" placeholder="00000000-0" maxlength="10" 
+                                       value="{{ ficha.dui_tutor_alt|default:'' }}" 
+                                       {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                             </div>
                             <div class="form-group">
                                 <label class="label-custom">Parentesco</label>
-                                <input type="text" name="parentesco_tutor_alt" class="input-custom" placeholder="Ej: Tío/a, Abuelo/a">
+                                <input type="text" name="parentesco_tutor_alt" class="input-custom" placeholder="Ej: Tío/a, Abuelo/a" 
+                                       value="{{ ficha.parentesco_tutor_alt|default:'' }}" 
+                                       {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                             </div>
                         </div>
                     </div>
-
                 </div>
 
-                <!-- SECCIÓN 3: RESPONSABLE PRINCIPAL -->
+                <!-- SECCIÓN 3: RESPONSABLE TITULAR -->
                 <div class="panel-ficha">
                     <h2 class="titulo-seccion">3. Responsable Titular (Asiste a reuniones y emergencias)</h2>
                     
                     <div class="grid-col-3">
                         <div class="form-group">
                             <label class="label-custom">Nombres <span class="req">*</span></label>
-                            <input type="text" name="nombre_resp" class="input-custom" value="{{ responsable.nombre }}" required>
+                            <input type="text" name="nombre_resp" class="input-custom" 
+                                   value="{% if modo_lectura %}{{ ficha.responsable.nombre }}{% else %}{{ responsable.nombre }}{% endif %}" 
+                                   readonly style="background-color: #f3f4f6;">
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Apellidos <span class="req">*</span></label>
-                            <input type="text" name="apellido_resp" class="input-custom" value="{{ responsable.apellido }}" required>
+                            <input type="text" name="apellido_resp" class="input-custom" 
+                                   value="{% if modo_lectura %}{{ ficha.responsable.apellido }}{% else %}{{ responsable.apellido }}{% endif %}" 
+                                   readonly style="background-color: #f3f4f6;">
                         </div>
                         <div class="form-group">
                             <label class="label-custom">DUI <span class="req">*</span></label>
-                            <input type="text" name="dui_resp" class="input-custom" value="{{ responsable.dui }}" readonly style="background-color: #f9fafb;">
+                            <input type="text" name="dui_resp" class="input-custom" 
+                                   value="{% if modo_lectura %}{{ ficha.responsable.dui }}{% else %}{{ responsable.dui }}{% endif %}" 
+                                   readonly style="background-color: #f3f4f6;">
                         </div>
                     </div>
 
                     <div class="grid-col-3">
                         <div class="form-group">
                             <label class="label-custom">Parentesco con el Alumno <span class="req">*</span></label>
-                            <select name="parentesco_resp" class="select-custom" required>
+                            <select name="parentesco_resp" class="select-custom" required {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
                                 <option value="">Seleccione parentesco...</option>
-                                <option value="Padre">Padre</option>
-                                <option value="Madre">Madre</option>
-                                <option value="Abuelo/a">Abuelo/a</option>
-                                <option value="Tío/a">Tío/a</option>
-                                <option value="Hermano/a Mayor">Hermano/a Mayor</option>
-                                <option value="Tutor Legal">Tutor Legal</option>
+                                <option value="Padre" {% if ficha.parentesco_responsable == 'Padre' %}selected{% endif %}>Padre</option>
+                                <option value="Madre" {% if ficha.parentesco_responsable == 'Madre' %}selected{% endif %}>Madre</option>
+                                <option value="Abuelo/a" {% if ficha.parentesco_responsable == 'Abuelo/a' %}selected{% endif %}>Abuelo/a</option>
+                                <option value="Tío/a" {% if ficha.parentesco_responsable == 'Tío/a' %}selected{% endif %}>Tío/a</option>
+                                <option value="Hermano/a Mayor" {% if ficha.parentesco_responsable == 'Hermano/a Mayor' %}selected{% endif %}>Hermano/a Mayor</option>
+                                <option value="Tutor Legal" {% if ficha.parentesco_responsable == 'Tutor Legal' %}selected{% endif %}>Tutor Legal</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Teléfono de Contacto <span class="req">*</span></label>
-                            <input type="text" name="telefono_resp" class="input-custom mask-tel" value="{{ responsable.telefono }}" required maxlength="9">
+                            <input type="text" name="telefono_resp" class="input-custom mask-tel" 
+                                   value="{% if modo_lectura %}{{ ficha.telefono_contacto }}{% else %}{{ responsable.telefono }}{% endif %}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %} required maxlength="9">
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Correo para Envío de Notas</label>
-                            <input type="email" name="email_resp" class="input-custom" value="{{ request.user.email }}">
+                            <input type="email" name="email_resp" class="input-custom" 
+                                   value="{% if modo_lectura %}{{ ficha.correo_notas|default:'' }}{% else %}{{ request.user.email }}{% endif %}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="label-custom">Dirección de Residencia del Responsable</label>
-                        <input type="text" name="direccion_resp" class="input-custom" placeholder="Dirección completa del responsable">
+                        <input type="text" name="direccion_resp" class="input-custom" placeholder="Dirección completa del responsable" 
+                               value="{% if modo_lectura %}{{ ficha.direccion_responsable|default:'' }}{% else %}{{ responsable.direccion|default:'' }}{% endif %}" 
+                               {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                     </div>
                 </div>
 
-                <!-- BOTONES DE ACCIÓN -->
+                <!-- ACCIONES DE FORMULARIO -->
                 <div class="acciones-formulario">
-                    <button type="submit" class="btn-enviar-ficha">Guardar y Enviar Solicitud de Matrícula</button>
-                    <a href="{% url 'dashboard_responsable' %}" class="btn-cancelar-ficha">Cancelar</a>
+                    {% if modo_lectura %}
+                        <a href="{% url 'dashboard_responsable' %}" class="btn-cancelar-ficha">Regresar al Panel</a>
+                    {% else %}
+                        <button type="submit" class="btn-enviar-ficha">Guardar y Enviar Solicitud de Matrícula</button>
+                    {% endif %}
                 </div>
 
             </form>
         </section>
     </main>
 
+    <!-- SCRIPTS -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Discapacidad
+            // 1. Relación dinámica Grado -> Sección
+            const relaciones = [
+                {% for gs in grados_secciones %}
+                    { 
+                        gradoCodigo: "{{ gs.grado|escapejs }}", 
+                        seccion: "{{ gs.seccion|escapejs }}",
+                        turno: "{{ gs.turno|escapejs }}"
+                    },
+                {% endfor %}
+            ];
+
+            const selectGrado = document.getElementById('select_grado');
+            const selectSeccion = document.getElementById('select_seccion');
+
+            {% if not modo_lectura %}
+            selectGrado.addEventListener('change', function() {
+                const codigoSeleccionado = this.value;
+                selectSeccion.innerHTML = '<option value="">Seleccione sección...</option>';
+
+                if (!codigoSeleccionado) {
+                    selectSeccion.disabled = true;
+                    selectSeccion.innerHTML = '<option value="">Primero elija un grado...</option>';
+                    return;
+                }
+
+                const seccionesFiltradas = relaciones.filter(item => item.gradoCodigo === codigoSeleccionado);
+
+                if (seccionesFiltradas.length > 0) {
+                    seccionesFiltradas.forEach(item => {
+                        const opt = document.createElement('option');
+                        opt.value = item.seccion;
+                        opt.textContent = `Sección "${item.seccion}" (${item.turno})`;
+                        selectSeccion.appendChild(opt);
+                    });
+                    selectSeccion.disabled = false;
+                } else {
+                    const opt = document.createElement('option');
+                    opt.value = "";
+                    opt.textContent = "Sin secciones disponibles";
+                    selectSeccion.appendChild(opt);
+                    selectSeccion.disabled = true;
+                }
+            });
+            {% endif %}
+
+            // 2. Validación de NIE en tiempo real (solo dígitos, max 8)
+            const inputNie = document.getElementById('input_nie');
+            if (inputNie && !inputNie.readOnly) {
+                inputNie.addEventListener('input', function() {
+                    this.value = this.value.replace(/\D/g, '');
+                    if (this.value.length > 8) this.value = this.value.slice(0, 8);
+                });
+            }
+
+            // 3. Máscara DUI
+            document.querySelectorAll('.mask-dui').forEach(input => {
+                if (!input.readOnly) {
+                    input.addEventListener('input', function(e) {
+                        let v = e.target.value.replace(/\D/g, '');
+                        if (v.length > 9) v = v.slice(0, 9);
+                        if (v.length > 8) {
+                            e.target.value = v.slice(0, 8) + '-' + v.slice(8);
+                        } else {
+                            e.target.value = v;
+                        }
+                    });
+                }
+            });
+
+            // 4. Máscara Teléfono
+            document.querySelectorAll('.mask-tel').forEach(input => {
+                if (!input.readOnly) {
+                    input.addEventListener('input', function(e) {
+                        let v = e.target.value.replace(/\D/g, '');
+                        if (v.length > 8) v = v.slice(0, 8);
+                        if (v.length > 4) {
+                            e.target.value = v.slice(0, 4) + '-' + v.slice(4);
+                        } else {
+                            e.target.value = v;
+                        }
+                    });
+                }
+            });
+
+            // 5. Visibilidad dinámica campos condicionales
             const selectDiscapacidad = document.getElementById('tiene_discapacidad');
             const grupoTipoDiscapacidad = document.getElementById('grupo_tipo_discapacidad');
-            selectDiscapacidad.addEventListener('change', function() {
-                grupoTipoDiscapacidad.style.display = this.value === 'Si' ? 'block' : 'none';
-            });
+            if (selectDiscapacidad && !selectDiscapacidad.disabled) {
+                selectDiscapacidad.addEventListener('change', function() {
+                    grupoTipoDiscapacidad.style.display = this.value === 'Si' ? 'block' : 'none';
+                });
+            }
 
-            // Salud
             const selectSalud = document.getElementById('tiene_problemas_salud');
             const grupoDetalleSalud = document.getElementById('grupo_detalle_salud');
-            selectSalud.addEventListener('change', function() {
-                grupoDetalleSalud.style.display = this.value === 'Si' ? 'block' : 'none';
-            });
+            if (selectSalud && !selectSalud.disabled) {
+                selectSalud.addEventListener('change', function() {
+                    grupoDetalleSalud.style.display = this.value === 'Si' ? 'block' : 'none';
+                });
+            }
 
-            // Tutor alternativo si falta Padre o Madre
             const estadoPadre = document.getElementById('estado_padre');
             const estadoMadre = document.getElementById('estado_madre');
             const panelTutor = document.getElementById('panel_tutor_alternativo');
@@ -343,34 +521,181 @@
                 panelTutor.style.display = (padreAusente || madreAusente) ? 'block' : 'none';
             }
 
-            estadoPadre.addEventListener('change', verificarTutoria);
-            estadoMadre.addEventListener('change', verificarTutoria);
+            if (estadoPadre && estadoMadre) {
+                verificarTutoria();
+                if (!estadoPadre.disabled) {
+                    estadoPadre.addEventListener('change', verificarTutoria);
+                    estadoMadre.addEventListener('change', verificarTutoria);
+                }
+            }
 
-            // Máscara DUI
-            document.querySelectorAll('.mask-dui').forEach(input => {
-                input.addEventListener('input', function(e) {
-                    let v = e.target.value.replace(/\D/g, '');
-                    if (v.length > 9) v = v.slice(0, 9);
-                    if (v.length > 8) {
-                        e.target.value = v.slice(0, 8) + '-' + v.slice(8);
-                    } else {
-                        e.target.value = v;
-                    }
-                });
-            });
+            // 6. Geografía Oficial (14 Deptos -> 44 Municipios -> 262 Distritos)
+            const geografiaElSalvador = {
+                "Ahuachapán": {
+                    "Ahuachapán Norte": ["Atiquizaya", "El Refugio", "San Lorenzo", "Turín"],
+                    "Ahuachapán Centro": ["Ahuachapán", "Apaneca", "Concepción de Ataco", "Tacuba"],
+                    "Ahuachapán Sur": ["Guaymango", "Jujutla", "San Francisco Menéndez", "San Pedro Puxtla"]
+                },
+                "Santa Ana": {
+                    "Santa Ana Norte": ["Masahuat", "Metapán", "Santa Rosa Guachipilín", "Texistepeque"],
+                    "Santa Ana Centro": ["Santa Ana"],
+                    "Santa Ana Este": ["Coatepeque", "El Congo"],
+                    "Santa Ana Oeste": ["Candelaria de la Frontera", "Chalchuapa", "El Porvenir", "San Antonio Pajonal", "San Sebastián Salitrillo", "Santiago de la Frontera"]
+                },
+                "Sonsonate": {
+                    "Sonsonate Norte": ["Juayúa", "Nahuizalco", "Salcoatitán", "Santa Catarina Masahuat"],
+                    "Sonsonate Centro": ["Sonsonate", "Sonzacate", "Nahulingo", "San Antonio del Monte", "Santo Domingo de Guzmán"],
+                    "Sonsonate Este": ["Izalco", "Armenia", "Caluco", "San Julián", "Cuisnahuat", "Santa Isabel Ishuatán"],
+                    "Sonsonate Oeste": ["Acajutla"]
+                },
+                "Chalatenango": {
+                    "Chalatenango Norte": ["La Palma", "San Ignacio", "Citalá"],
+                    "Chalatenango Centro": ["Nueva Concepción", "Tejutla", "La Reina", "Agua Caliente", "Dulce Nombre de María", "El Paraíso", "San Fernando", "San Francisco Morazán", "San Rafael", "Santa Rita"],
+                    "Chalatenango Sur": ["Chalatenango", "Arcatao", "Azacualpa", "Cancasque", "Comalapa", "Concepción Quezaltepeque", "El Carrizal", "La Laguna", "Las Vueltas", "Nombre de Jesús", "Nueva Trinidad", "Ojos de Agua", "Potonico", "San Antonio de la Cruz", "San Antonio Los Ranchos", "San Francisco Lempa", "San Isidro Labrador", "San José Cancasque", "San José Las Flores", "San Luis del Carmen", "San Miguel de Mercedes"]
+                },
+                "La Libertad": {
+                    "La Libertad Norte": ["Quezaltepeque", "San Matías", "San Pablo Tacachico"],
+                    "La Libertad Centro": ["San Juan Opico", "Ciudad Arce"],
+                    "La Libertad Oeste": ["Colón", "Jayaque", "Sacacoyo", "Tepecoyo", "Talnique"],
+                    "La Libertad Este": ["Santa Tecla", "Antiguo Cuscatlán", "Huizúcar", "Nuevo Cuscatlán", "San José Villanueva", "Zaragoza"],
+                    "La Libertad Costa": ["Chiltiupán", "Jicalapa", "La Libertad", "Tamanique", "Teotepeque"],
+                    "La Libertad Sur": ["Comasagua"]
+                },
+                "San Salvador": {
+                    "San Salvador Norte": ["Aguilares", "El Paisnal", "Guazapa"],
+                    "San Salvador Oeste": ["Apopa", "Nejapa"],
+                    "San Salvador Este": ["Ilopango", "San Martín", "Soyapango", "Tonacatepeque"],
+                    "San Salvador Centro": ["San Salvador", "Ayutuxtepeque", "Cuscatancingo", "Ciudad Delgado", "Mejicanos"],
+                    "San Salvador Sur": ["Panchimalco", "Rosario de Mora", "San Marcos", "Santo Tomás", "Santiago Texacuangos"]
+                },
+                "Cuscatlán": {
+                    "Cuscatlán Norte": ["Suchitoto", "San José Guayabal", "Oratorio de Concepción", "San Bartolomé Perulapía", "San Pedro Perulapán"],
+                    "Cuscatlán Sur": ["Cojutepeque", "Candelaria", "El Carmen", "El Rosario", "Monte San Juan", "San Cristóbal", "San Rafael Cedros", "San Ramón", "Santa Cruz Analquito", "Santa Cruz Michapa", "Tenancingo"]
+                },
+                "La Paz": {
+                    "La Paz Oeste": ["Cuyultitán", "Olocuilta", "San Juan Talpa", "San Luis Talpa", "San Pedro Masahuat", "Tapalhuaca", "San Francisco Chinameca"],
+                    "La Paz Centro": ["El Rosario", "Jerusalén", "Mercedes La Ceiba", "Paraíso de Osorio", "San Antonio Masahuat", "San Emigdio", "San Juan Tepezontes", "San Luis La Herradura", "San Miguel Tepezontes", "San Pedro Nonualco", "Santa María Ostuma", "Santiago Nonualco"],
+                    "La Paz Este": ["San Juan Nonualco", "San Rafael Obrajuelo", "Zacatecoluca"]
+                },
+                "Cabañas": {
+                    "Cabañas Este": ["Sensuntepeque", "Victoria", "Dolores", "Guacotecti", "San Isidro"],
+                    "Cabañas Oeste": ["Ilobasco", "Tejutepeque", "Jutiapa", "Cinquera"]
+                },
+                "San Vicente": {
+                    "San Vicente Norte": ["Apastepeque", "Santa Clara", "San Ildefonso", "San Esteban Catarina", "San Sebastián", "San Lorenzo", "Santo Domingo"],
+                    "San Vicente Sur": ["San Vicente", "Guadalupe", "Verapaz", "Tepetitán", "Tecoluca", "San Cayetano Istepeque"]
+                },
+                "Usulután": {
+                    "Usulután Norte": ["Santiago de María", "Alegría", "Berlín", "Mercedes Umaña", "Jucuapa", "El Triunfo", "Estanzuelas", "San Buenaventura", "Nueva Granada"],
+                    "Usulután Este": ["Usulután", "Jucuarán", "San Dionisio", "Concepción Batres", "Santa María", "Ereguayquín", "Tecapán", "Santa Elena", "California", "Ozatlán"],
+                    "Usulután Oeste": ["Jiquilisco", "Puerto El Triunfo", "San Agustín", "San Francisco Javier"]
+                },
+                "San Miguel": {
+                    "San Miguel Norte": ["Ciudad Barrios", "Sesori", "Nuevo Edén de San Juan", "San Gerardo", "San Luis de la Reina", "Carolina", "San Antonio del Mosco", "Chapeltique"],
+                    "San Miguel Centro": ["San Miguel", "Comacarán", "Uluazapa", "Moncagua", "Quelepa", "Chirilagua"],
+                    "San Miguel Oeste": ["Chinameca", "Nueva Guadalupe", "Lolotique", "San Jorge", "San Rafael Oriente", "El Tránsito"]
+                },
+                "Morazán": {
+                    "Morazán Norte": ["Arambala", "Cacaopera", "Corinto", "El Rosario", "Joateca", "Jocoaitique", "Meanguera", "Perquín", "San Fernando", "San Isidro", "Torola"],
+                    "Morazán Sur": ["San Francisco Gotera", "Chilanga", "Delicias de Concepción", "El Divisadero", "Gualococti", "Guatajiagua", "Jocoro", "Lolotiquillo", "Osicala", "San Carlos", "San Simón", "Sensembra", "Sociedad", "Yamabal", "Yoloaiquín"]
+                },
+                "La Unión": {
+                    "La Unión Norte": ["Anamorós", "Bolívar", "Concepción de Oriente", "El Sauce", "Lislique", "Nueva Esparta", "Pasaquina", "Polorós", "San José", "Santa Rosa de Lima"],
+                    "La Unión Sur": ["La Unión", "Conchagua", "El Carmen", "Intipucá", "Meanguera del Golfo", "San Alejo", "Yayantique", "Yucuaiquín"]
+                }
+            };
 
-            // Máscara Teléfono
-            document.querySelectorAll('.mask-tel').forEach(input => {
-                input.addEventListener('input', function(e) {
-                    let v = e.target.value.replace(/\D/g, '');
-                    if (v.length > 8) v = v.slice(0, 8);
-                    if (v.length > 4) {
-                        e.target.value = v.slice(0, 4) + '-' + v.slice(4);
-                    } else {
-                        e.target.value = v;
-                    }
+            function inicializarCascada(idDepto, idMuni, idDist, valDepto, valMuni, valDist) {
+                const sDepto = document.getElementById(idDepto);
+                const sMuni = document.getElementById(idMuni);
+                const sDist = document.getElementById(idDist);
+
+                if (!sDepto || !sMuni || !sDist) return;
+
+                // Llenar Departamentos
+                Object.keys(geografiaElSalvador).forEach(depto => {
+                    const opt = document.createElement("option");
+                    opt.value = depto;
+                    opt.textContent = depto;
+                    if (valDepto && valDepto === depto) opt.selected = true;
+                    sDepto.appendChild(opt);
                 });
-            });
+
+                function cargarMunicipios(deptoSeleccionado, muniSeleccionado) {
+                    sMuni.innerHTML = '<option value="">Seleccione Municipio...</option>';
+                    sDist.innerHTML = '<option value="">Primero elija municipio...</option>';
+                    sDist.disabled = true;
+
+                    if (!deptoSeleccionado || !geografiaElSalvador[deptoSeleccionado]) {
+                        sMuni.disabled = true;
+                        return;
+                    }
+
+                    Object.keys(geografiaElSalvador[deptoSeleccionado]).forEach(muni => {
+                        const opt = document.createElement("option");
+                        opt.value = muni;
+                        opt.textContent = muni;
+                        if (muniSeleccionado && muniSeleccionado === muni) opt.selected = true;
+                        sMuni.appendChild(opt);
+                    });
+                    {% if not modo_lectura %}
+                    sMuni.disabled = false;
+                    {% endif %}
+                }
+
+                function cargarDistritos(deptoSeleccionado, muniSeleccionado, distSeleccionado) {
+                    sDist.innerHTML = '<option value="">Seleccione Distrito...</option>';
+
+                    if (!muniSeleccionado || !geografiaElSalvador[deptoSeleccionado] || !geografiaElSalvador[deptoSeleccionado][muniSeleccionado]) {
+                        sDist.disabled = true;
+                        return;
+                    }
+
+                    geografiaElSalvador[deptoSeleccionado][muniSeleccionado].forEach(dist => {
+                        const opt = document.createElement("option");
+                        opt.value = dist;
+                        opt.textContent = dist;
+                        if (distSeleccionado && distSeleccionado === dist) opt.selected = true;
+                        sDist.appendChild(opt);
+                    });
+                    {% if not modo_lectura %}
+                    sDist.disabled = false;
+                    {% endif %}
+                }
+
+                {% if not modo_lectura %}
+                sDepto.addEventListener("change", function() {
+                    cargarMunicipios(this.value, null);
+                });
+
+                sMuni.addEventListener("change", function() {
+                    cargarDistritos(sDepto.value, this.value, null);
+                });
+                {% endif %}
+
+                // Cargar valores iniciales si estamos en modo lectura
+                if (valDepto) {
+                    cargarMunicipios(valDepto, valMuni);
+                    if (valMuni) {
+                        cargarDistritos(valDepto, valMuni, valDist);
+                    }
+                }
+            }
+
+            // Inicializar casillas de Nacimiento y Residencia
+            inicializarCascada(
+                "depto_nacimiento", "municipio_nacimiento", "distrito_nacimiento",
+                "{{ ficha.depto_nacimiento|default:''|escapejs }}",
+                "{{ ficha.municipio_nacimiento|default:''|escapejs }}",
+                "{{ ficha.distrito_nacimiento|default:''|escapejs }}"
+            );
+
+            inicializarCascada(
+                "depto_residencia", "municipio_residencia", "distrito_residencia",
+                "{{ ficha.depto_residencia|default:''|escapejs }}",
+                "{{ ficha.municipio_residencia|default:''|escapejs }}",
+                "{{ ficha.distrito_residencia|default:''|escapejs }}"
+            );
         });
     </script>
 </body>
