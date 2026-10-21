@@ -1,0 +1,377 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/ficha_matricula.css' %}">
+    <title>Ficha de Matrícula</title>
+</head>
+<body>
+
+    <main class="maestro-alumno">
+        <!-- BARRA LATERAL (Ficha de Matrícula Activo) -->
+        <section class="menu-opciones">
+            <div class="imgContainer">
+                <img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo Institucional">
+            </div>
+           
+            <div class="opciones">
+                <ul>
+                    <li class="item-menu">
+                        <a href="{% url 'dashboard_responsable' %}">Mis Alumnos</a>
+                    </li>
+                    <li class="item-menu activo">
+                        <a href="{% url 'registro_alumnos' %}">Ficha de Matrícula</a>
+                    </li>
+                </ul>
+                <div class="sidebar-footer">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btnCerrarSesion">cerrar sesión</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTENIDO PRINCIPAL: FORMULARIO -->
+        <section class="contenido-ficha">
+            
+            <!-- ENCABEZADO CON BOTÓN FLECHA A LA DERECHA -->
+            <div class="encabezado-ficha">
+                <div class="encabezado-textos">
+                    <h1 class="titulo-pagina">Ficha de Inscripción y Matrícula 2026</h1>
+                    <p class="subtitulo-pagina">Completa la información conforme a la Partida de Nacimiento y datos del hogar.</p>
+                </div>
+            </div>
+
+            <form method="POST" action="" class="form-ficha">
+                {% csrf_token %}
+
+                <!-- NIE, GRADO Y SECCIÓN -->
+                <div class="panel-ficha">
+                    <div class="grid-col-3">
+                        <div class="form-group">
+                            <label class="label-custom">NIE del Estudiante <span class="req">*</span></label>
+                            <input type="text" name="nie" class="input-custom" placeholder="Ej: 20260001" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Grado a Matricular <span class="req">*</span></label>
+                            <select name="grado_solicitado" class="select-custom" required>
+                                <option value="">Seleccione grado...</option>
+                                <option value="Parvularia 4">Parvularia 4</option>
+                                <option value="Parvularia 5">Parvularia 5</option>
+                                <option value="Parvularia 6">Parvularia 6</option>
+                                <option value="1° Grado">1° Grado</option>
+                                <option value="2° Grado">2° Grado</option>
+                                <option value="3° Grado">3° Grado</option>
+                                <option value="4° Grado">4° Grado</option>
+                                <option value="5° Grado">5° Grado</option>
+                                <option value="6° Grado">6° Grado</option>
+                                <option value="7° Grado">7° Grado</option>
+                                <option value="8° Grado">8° Grado</option>
+                                <option value="9° Grado">9° Grado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Sección <span class="req">*</span></label>
+                            <select name="seccion_solicitada" class="select-custom" required>
+                                <option value="">Seleccione sección...</option>
+                                <option value="A">Sección A</option>
+                                <option value="B">Sección B</option>
+                                <option value="C">Sección C</option>
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 1: DATOS DEL ESTUDIANTE -->
+                <div class="panel-ficha">
+                    <h2 class="titulo-seccion">1. Datos del Estudiante (Según Partida de Nacimiento)</h2>
+                    
+                    <div class="grid-col-2">
+                        <div class="form-group">
+                            <label class="label-custom">Nombres <span class="req">*</span></label>
+                            <input type="text" name="nombre" class="input-custom" placeholder="Nombres del alumno" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Apellidos <span class="req">*</span></label>
+                            <input type="text" name="apellido" class="input-custom" placeholder="Apellidos del alumno" required>
+                        </div>
+                    </div>
+
+                    <div class="grid-col-3">
+                        <div class="form-group">
+                            <label class="label-custom">Fecha de Nacimiento <span class="req">*</span></label>
+                            <input type="date" name="fecha_nacimiento" class="input-custom" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Nacionalidad</label>
+                            <input type="text" name="nacionalidad" class="input-custom" value="Salvadoreña">
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Género <span class="req">*</span></label>
+                            <select name="genero" class="select-custom" required>
+                                <option value="">Seleccione...</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid-col-2">
+                        <div class="form-group">
+                            <label class="label-custom">Departamento de Nacimiento</label>
+                            <input type="text" name="depto_nacimiento" class="input-custom" placeholder="Ej: La Libertad">
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Municipio de Nacimiento</label>
+                            <input type="text" name="municipio_nacimiento" class="input-custom" placeholder="Ej: San Juan Opico">
+                        </div>
+                    </div>
+
+                    <div class="grid-col-2">
+                        <div class="form-group">
+                            <label class="label-custom">¿Posee alguna discapacidad?</label>
+                            <select name="tiene_discapacidad" id="tiene_discapacidad" class="select-custom">
+                                <option value="No">No</option>
+                                <option value="Si">Sí</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="grupo_tipo_discapacidad" style="display: none;">
+                            <label class="label-custom">Especifique discapacidad</label>
+                            <input type="text" name="tipo_discapacidad" class="input-custom" placeholder="Tipo de discapacidad">
+                        </div>
+                    </div>
+
+                    <div class="grid-col-3">
+                        <div class="form-group">
+                            <label class="label-custom">Zona de Residencia</label>
+                            <select name="zona_residencia" class="select-custom">
+                                <option value="Urbana">Urbana</option>
+                                <option value="Rural">Rural</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Departamento de Residencia</label>
+                            <input type="text" name="depto_residencia" class="input-custom" placeholder="Departamento">
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Municipio de Residencia</label>
+                            <input type="text" name="municipio_residencia" class="input-custom" placeholder="Municipio">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label-custom">Dirección Exacta de Residencia</label>
+                        <input type="text" name="direccion_exacta" class="input-custom" placeholder="Colonia, calle, pasaje, polígono o número de casa">
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 2: SALUD Y PADRES -->
+                <div class="panel-ficha">
+                    <h2 class="titulo-seccion">2. Salud y Datos de los Padres</h2>
+                    
+                    <div class="grid-col-2">
+                        <div class="form-group">
+                            <label class="label-custom">¿Presenta problemas de salud o alergias?</label>
+                            <select name="tiene_problemas_salud" id="tiene_problemas_salud" class="select-custom">
+                                <option value="No">No</option>
+                                <option value="Si">Sí</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">¿Esquema de vacunas completo?</label>
+                            <select name="vacunas_completas" class="select-custom">
+                                <option value="Si">Sí</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="grupo_detalle_salud" style="display: none;">
+                        <label class="label-custom">Detalle de salud o alergias</label>
+                        <input type="text" name="detalle_salud" class="input-custom" placeholder="Medicamentos, asma, etc.">
+                    </div>
+
+                    <div class="divisor-subseccion">Datos del Padre</div>
+                    <div class="grid-col-3">
+                        <div class="form-group">
+                            <label class="label-custom">Nombre Completo del Padre</label>
+                            <input type="text" name="nombre_padre" class="input-custom" placeholder="Nombre del padre">
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">DUI del Padre</label>
+                            <input type="text" name="dui_padre" class="input-custom mask-dui" placeholder="00000000-0" maxlength="10">
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Estado del Padre</label>
+                            <select name="estado_padre" id="estado_padre" class="select-custom check-ausencia">
+                                <option value="Presente">Presente</option>
+                                <option value="Fallecido">Fallecido</option>
+                                <option value="Ausente">Ausente / No reconocido</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="divisor-subseccion">Datos de la Madre</div>
+                    <div class="grid-col-3">
+                        <div class="form-group">
+                            <label class="label-custom">Nombre Completo de la Madre</label>
+                            <input type="text" name="nombre_madre" class="input-custom" placeholder="Nombre de la madre">
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">DUI de la Madre</label>
+                            <input type="text" name="dui_madre" class="input-custom mask-dui" placeholder="00000000-0" maxlength="10">
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Estado de la Madre</label>
+                            <select name="estado_madre" id="estado_madre" class="select-custom check-ausencia">
+                                <option value="Presente">Presente</option>
+                                <option value="Fallecido">Fallecida</option>
+                                <option value="Ausente">Ausente / No reconocida</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- CONDICIONAL: SEGUNDO TUTOR O RESPONSABLE ALTERNATIVO -->
+                    <div id="panel_tutor_alternativo" class="panel-alerta" style="display: none;">
+                        <h3 class="subtitulo-alerta">⚠️ Agregar Tutor / Responsable Alternativo</h3>
+                        <p class="desc-alerta">Se habilitó este apartado debido a que uno o ambos progenitores no se encuentran disponibles.</p>
+                        
+                        <div class="grid-col-3">
+                            <div class="form-group">
+                                <label class="label-custom">Nombre Completo del Tutor</label>
+                                <input type="text" name="nombre_tutor_alt" class="input-custom" placeholder="Nombre del tutor">
+                            </div>
+                            <div class="form-group">
+                                <label class="label-custom">DUI del Tutor</label>
+                                <input type="text" name="dui_tutor_alt" class="input-custom mask-dui" placeholder="00000000-0" maxlength="10">
+                            </div>
+                            <div class="form-group">
+                                <label class="label-custom">Parentesco</label>
+                                <input type="text" name="parentesco_tutor_alt" class="input-custom" placeholder="Ej: Tío/a, Abuelo/a">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- SECCIÓN 3: RESPONSABLE PRINCIPAL -->
+                <div class="panel-ficha">
+                    <h2 class="titulo-seccion">3. Responsable Titular (Asiste a reuniones y emergencias)</h2>
+                    
+                    <div class="grid-col-3">
+                        <div class="form-group">
+                            <label class="label-custom">Nombres <span class="req">*</span></label>
+                            <input type="text" name="nombre_resp" class="input-custom" value="{{ responsable.nombre }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Apellidos <span class="req">*</span></label>
+                            <input type="text" name="apellido_resp" class="input-custom" value="{{ responsable.apellido }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">DUI <span class="req">*</span></label>
+                            <input type="text" name="dui_resp" class="input-custom" value="{{ responsable.dui }}" readonly style="background-color: #f9fafb;">
+                        </div>
+                    </div>
+
+                    <div class="grid-col-3">
+                        <div class="form-group">
+                            <label class="label-custom">Parentesco con el Alumno <span class="req">*</span></label>
+                            <select name="parentesco_resp" class="select-custom" required>
+                                <option value="">Seleccione parentesco...</option>
+                                <option value="Padre">Padre</option>
+                                <option value="Madre">Madre</option>
+                                <option value="Abuelo/a">Abuelo/a</option>
+                                <option value="Tío/a">Tío/a</option>
+                                <option value="Hermano/a Mayor">Hermano/a Mayor</option>
+                                <option value="Tutor Legal">Tutor Legal</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Teléfono de Contacto <span class="req">*</span></label>
+                            <input type="text" name="telefono_resp" class="input-custom mask-tel" value="{{ responsable.telefono }}" required maxlength="9">
+                        </div>
+                        <div class="form-group">
+                            <label class="label-custom">Correo para Envío de Notas</label>
+                            <input type="email" name="email_resp" class="input-custom" value="{{ request.user.email }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label-custom">Dirección de Residencia del Responsable</label>
+                        <input type="text" name="direccion_resp" class="input-custom" placeholder="Dirección completa del responsable">
+                    </div>
+                </div>
+
+                <!-- BOTONES DE ACCIÓN -->
+                <div class="acciones-formulario">
+                    <button type="submit" class="btn-enviar-ficha">Guardar y Enviar Solicitud de Matrícula</button>
+                    <a href="{% url 'dashboard_responsable' %}" class="btn-cancelar-ficha">Cancelar</a>
+                </div>
+
+            </form>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Discapacidad
+            const selectDiscapacidad = document.getElementById('tiene_discapacidad');
+            const grupoTipoDiscapacidad = document.getElementById('grupo_tipo_discapacidad');
+            selectDiscapacidad.addEventListener('change', function() {
+                grupoTipoDiscapacidad.style.display = this.value === 'Si' ? 'block' : 'none';
+            });
+
+            // Salud
+            const selectSalud = document.getElementById('tiene_problemas_salud');
+            const grupoDetalleSalud = document.getElementById('grupo_detalle_salud');
+            selectSalud.addEventListener('change', function() {
+                grupoDetalleSalud.style.display = this.value === 'Si' ? 'block' : 'none';
+            });
+
+            // Tutor alternativo si falta Padre o Madre
+            const estadoPadre = document.getElementById('estado_padre');
+            const estadoMadre = document.getElementById('estado_madre');
+            const panelTutor = document.getElementById('panel_tutor_alternativo');
+
+            function verificarTutoria() {
+                const padreAusente = (estadoPadre.value === 'Fallecido' || estadoPadre.value === 'Ausente');
+                const madreAusente = (estadoMadre.value === 'Fallecido' || estadoMadre.value === 'Ausente');
+                panelTutor.style.display = (padreAusente || madreAusente) ? 'block' : 'none';
+            }
+
+            estadoPadre.addEventListener('change', verificarTutoria);
+            estadoMadre.addEventListener('change', verificarTutoria);
+
+            // Máscara DUI
+            document.querySelectorAll('.mask-dui').forEach(input => {
+                input.addEventListener('input', function(e) {
+                    let v = e.target.value.replace(/\D/g, '');
+                    if (v.length > 9) v = v.slice(0, 9);
+                    if (v.length > 8) {
+                        e.target.value = v.slice(0, 8) + '-' + v.slice(8);
+                    } else {
+                        e.target.value = v;
+                    }
+                });
+            });
+
+            // Máscara Teléfono
+            document.querySelectorAll('.mask-tel').forEach(input => {
+                input.addEventListener('input', function(e) {
+                    let v = e.target.value.replace(/\D/g, '');
+                    if (v.length > 8) v = v.slice(0, 8);
+                    if (v.length > 4) {
+                        e.target.value = v.slice(0, 4) + '-' + v.slice(4);
+                    } else {
+                        e.target.value = v;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
