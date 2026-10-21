@@ -2,6 +2,7 @@ from django.db import models
 
 from django.core.exceptions import ValidationError
 from Login.models import Usuario
+from Directora.models import GradoSeccion
 
 
 class Responsable(models.Model):
@@ -51,3 +52,84 @@ class Responsable(models.Model):
             self.id_usuario.save(update_fields=['rol'])
         self.full_clean()
         super().save(*args, **kwargs)
+
+class FichaMatricula(models.Model):
+    ESTADOS = [
+        ('PENDIENTE', 'Pendiente de Revisión'),
+        ('APROBADA', 'Aprobada'),
+        ('RECHAZADA', 'Rechazada'),
+    ]
+
+    # Relación con la sección y el responsable que la llena
+    grado_seccion = models.ForeignKey(
+        GradoSeccion,
+        on_delete=models.PROTECT,
+        related_name='fichas_matricula'
+    )
+    responsable = models.ForeignKey(
+        Responsable,
+        on_delete=models.PROTECT,
+        related_name='fichas_enviadas'
+    )
+
+    # 1. Identificación y Datos del Estudiante
+    nie = models.CharField(max_length=15)
+    nombres = models.CharField(max_length=100)
+    apellidos = models.CharField(max_length=100)
+    fecha_nacimiento = models.DateField()
+    nacionalidad = models.CharField(max_length=50, default="Salvadoreña")
+    genero = models.CharField(max_length=1, choices=[('M', 'Masculino'), ('F', 'Femenino')])
+
+    # Lugar de Nacimiento
+    depto_nacimiento = models.CharField(max_length=50, blank=True, null=True)
+    municipio_nacimiento = models.CharField(max_length=50, blank=True, null=True)
+    distrito_nacimiento = models.CharField(max_length=50, blank=True, null=True)
+
+    # Discapacidad
+    tiene_discapacidad = models.BooleanField(default=False)
+    tipo_discapacidad = models.CharField(max_length=100, blank=True, null=True)
+
+    # Residencia del Estudiante
+    zona_residencia = models.CharField(max_length=10, choices=[('Urbana', 'Urbana'), ('Rural', 'Rural')], default='Urbana')
+    depto_residencia = models.CharField(max_length=50, blank=True, null=True)
+    municipio_residencia = models.CharField(max_length=50, blank=True, null=True)
+    distrito_residencia = models.CharField(max_length=50, blank=True, null=True)
+    direccion_exacta = models.TextField(blank=True, null=True)
+
+    # 2. Salud
+    tiene_problemas_salud = models.BooleanField(default=False)
+    detalle_salud = models.TextField(blank=True, null=True)
+    vacunas_completas = models.BooleanField(default=True)
+
+    # Datos Progenitores
+    nombre_padre = models.CharField(max_length=150, blank=True, null=True)
+    dui_padre = models.CharField(max_length=10, blank=True, null=True)
+    estado_padre = models.CharField(max_length=20, default='Presente')
+
+    nombre_madre = models.CharField(max_length=150, blank=True, null=True)
+    dui_madre = models.CharField(max_length=10, blank=True, null=True)
+    estado_madre = models.CharField(max_length=20, default='Presente')
+
+    # Tutor Alternativo
+    nombre_tutor_alt = models.CharField(max_length=150, blank=True, null=True)
+    dui_tutor_alt = models.CharField(max_length=10, blank=True, null=True)
+    parentesco_tutor_alt = models.CharField(max_length=50, blank=True, null=True)
+
+    # 3. Datos del Responsable al momento del llenado
+    parentesco_responsable = models.CharField(max_length=50)
+    telefono_contacto = models.CharField(max_length=10)
+    correo_notas = models.EmailField(blank=True, null=True)
+    direccion_responsable = models.TextField(blank=True, null=True)
+
+    # Control y Estado
+    fecha_envio = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='PENDIENTE')
+    observaciones = models.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Ficha de Matrícula"
+        verbose_name_plural = "Fichas de Matrícula"
+        ordering = ['-fecha_envio']
+
+    def __str__(self):
+        return f"Ficha {self.nie} - {self.nombres} {self.apellidos} ({self.get_estado_display()})"
