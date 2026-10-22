@@ -118,7 +118,9 @@ AUTHENTICATION_BACKENDS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/El_Salvador'
+USE_TZ = True
+
 
 USE_I18N = True
 

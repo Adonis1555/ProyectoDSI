@@ -1,3 +1,5 @@
+import re
+from django.http import JsonResponse
 from django.shortcuts import render,redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from Login.decorators import directora_required, maestro_required, responsable_required,roles_permitidos
@@ -35,40 +37,34 @@ def responsable_view(request):
 @responsable_required
 @login_required
 def ficha_matricula_view(request, ficha_id=None):
-    # 1. Obtener el perfil del responsable autenticado
     responsable = getattr(request.user, 'perfil_responsable', None)
     if not responsable:
         responsable = Responsable.objects.filter(user=request.user).first()
 
     if not responsable:
-        messages.error(request, "No posees un perfil de responsable registrado en el sistema.")
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.method == 'POST':
+            return JsonResponse({'ok': False, 'error': 'No posees un perfil de responsable registrado.'}, status=403)
         return redirect('dashboard_responsable')
 
     ficha = None
     modo_lectura = False
 
-    # 2. Si viene un ID, se activa el modo comprobante protegido
     if ficha_id:
-        # Validación de seguridad: solo el dueño de la ficha puede consultarla
         ficha = get_object_or_404(FichaMatricula, id=ficha_id, responsable=responsable)
         modo_lectura = True
 
-    # 3. Procesamiento del envío (POST)
     if request.method == 'POST':
         if modo_lectura:
-            messages.warning(request, "Este comprobante es de solo lectura y no puede modificarse.")
-            return redirect('comprobante_ficha', ficha_id=ficha_id)
+            return JsonResponse({'ok': False, 'error': 'Este comprobante es de solo lectura.'}, status=400)
 
         nie = request.POST.get('nie', '').strip()
         grado_codigo = request.POST.get('grado_solicitado', '').strip()
         seccion_codigo = request.POST.get('seccion_solicitada', '').strip()
 
-        # Validación estricta del NIE salvadoreño (7 a 8 dígitos numéricos)
+        # Validación del NIE salvadoreño (7 a 8 dígitos)
         if not re.match(r'^\d{7,8}$', nie):
-            messages.error(request, "El NIE debe contener entre 7 y 8 dígitos numéricos.")
-            return redirect('ficha_matricula')
+            return JsonResponse({'ok': False, 'error': 'El NIE debe contener entre 7 y 8 dígitos numéricos.'}, status=400)
 
-        # Validar grado y sección seleccionados
         grado_seccion = GradoSeccion.objects.filter(
             grado=grado_codigo, 
             seccion=seccion_codigo, 
@@ -76,15 +72,12 @@ def ficha_matricula_view(request, ficha_id=None):
         ).first()
 
         if not grado_seccion:
-            messages.error(request, "El grado y sección seleccionados no existen o no están disponibles.")
-            return redirect('ficha_matricula')
+            return JsonResponse({'ok': False, 'error': 'El grado y sección seleccionados no existen o no están disponibles.'}, status=400)
 
-        # Evitar solicitudes duplicadas pendientes para el mismo NIE
         if FichaMatricula.objects.filter(nie=nie, grado_seccion=grado_seccion, estado='PENDIENTE').exists():
-            messages.warning(request, f"Ya existe una ficha de matrícula pendiente para el NIE {nie}.")
-            return redirect('dashboard_responsable')
+            return JsonResponse({'ok': False, 'error': f'Ya existe una ficha pendiente de revisión para el NIE {nie}.'}, status=400)
 
-        # Guardar la postulación
+        # Crear registro de la ficha
         FichaMatricula.objects.create(
             grado_seccion=grado_seccion,
             responsable=responsable,
@@ -131,10 +124,12 @@ def ficha_matricula_view(request, ficha_id=None):
             estado='PENDIENTE'
         )
 
-        messages.success(request, "¡Ficha enviada con éxito! Ha quedado en estado pendiente de revisión.")
-        return redirect('dashboard_responsable')
+        return JsonResponse({
+            'ok': True, 
+            'mensaje': 'La ficha de matrícula fue enviada exitosamente y quedó en espera de revisión.'
+        })
 
-    # 4. Datos para el método GET
+    # Render GET
     grados_secciones = GradoSeccion.objects.filter(activo=True).order_by('grado', 'seccion')
     grados_unicos = {}
     for gs in grados_secciones:
