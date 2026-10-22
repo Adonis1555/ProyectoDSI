@@ -1,10 +1,13 @@
 {% load static %}
+{% load tz %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'styles/ficha_matricula.css' %}">
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>{% if modo_lectura %}Comprobante de Matrícula{% else %}Ficha de Matrícula{% endif %}</title>
 </head>
 <body>
@@ -37,14 +40,16 @@
         <!-- CONTENIDO PRINCIPAL -->
         <section class="contenido-ficha">
             
-            <!-- ENCABEZADO DINÁMICO -->
+            <!-- ENCABEZADO CON HUSO HORARIO LOCAL FORZADO -->
             <div class="encabezado-ficha">
                 <div class="encabezado-textos">
                     {% if modo_lectura %}
                         <h1 class="titulo-pagina">Comprobante de Inscripción y Matrícula</h1>
                         <p class="subtitulo-pagina">
                             Estado: <strong style="color: #2563eb;">{{ ficha.get_estado_display }}</strong> 
-                            | Enviada el {{ ficha.fecha_envio|date:"d/m/Y h:i A" }}
+                            {% timezone "America/El_Salvador" %}
+                                | Enviada el {{ ficha.fecha_envio|date:"d/m/Y h:i A" }}
+                            {% endtimezone %}
                         </p>
                     {% else %}
                         <h1 class="titulo-pagina">Ficha de Inscripción y Matrícula 2026</h1>
@@ -59,7 +64,8 @@
                 </a>
             </div>
 
-            <form method="POST" action="" class="form-ficha">
+            <!-- FORMULARIO CON ID PARA FETCH -->
+            <form method="POST" id="form_ficha" action="" class="form-ficha">
                 {% csrf_token %}
 
                 <!-- NIE, GRADO Y SECCIÓN -->
@@ -397,9 +403,11 @@
                 <!-- ACCIONES DE FORMULARIO -->
                 <div class="acciones-formulario">
                     {% if modo_lectura %}
+                        <button type="button" class="btn-enviar-ficha" onclick="window.print()">Imprimir Comprobante</button>
                         <a href="{% url 'dashboard_responsable' %}" class="btn-cancelar-ficha">Regresar al Panel</a>
                     {% else %}
-                        <button type="submit" class="btn-enviar-ficha">Guardar y Enviar Solicitud de Matrícula</button>
+                        <button type="submit" id="btn_guardar_ficha" class="btn-enviar-ficha">Guardar y Enviar Solicitud de Matrícula</button>
+                        <a href="{% url 'dashboard_responsable' %}" class="btn-cancelar-ficha">Cancelar</a>
                     {% endif %}
                 </div>
 
@@ -410,6 +418,82 @@
     <!-- SCRIPTS -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+
+            // INTERCEPTOR FETCH: EVITA REDIRECCIÓN BRUSCA Y MUESTRA SWEETALERT2
+            const formFicha = document.getElementById('form_ficha');
+            {% if not modo_lectura %}
+            if (formFicha) {
+                formFicha.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const btnSubmit = document.getElementById('btn_guardar_ficha');
+                    if (btnSubmit) {
+                        btnSubmit.disabled = true;
+                        btnSubmit.textContent = 'Enviando postulación...';
+                    }
+
+                    const formData = new FormData(formFicha);
+
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        return response.json().then(data => ({
+                            okStatus: response.ok,
+                            data: data
+                        }));
+                    })
+                    .then(res => {
+                        if (res.data.ok) {
+                            Swal.fire({
+                                title: '¡Ficha Enviada con Éxito!',
+                                text: res.data.mensaje || 'La ficha de matrícula fue registrada y quedó pendiente de revisión.',
+                                icon: 'success',
+                                confirmButtonColor: '#2563eb',
+                                confirmButtonText: 'Ir a Mis Alumnos',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = "{% url 'dashboard_responsable' %}";
+                                }
+                            });
+                        } else {
+                            if (btnSubmit) {
+                                btnSubmit.disabled = false;
+                                btnSubmit.textContent = 'Guardar y Enviar Solicitud de Matrícula';
+                            }
+                            Swal.fire({
+                                title: 'Atención',
+                                text: res.data.error || 'Ocurrió un error al procesar el formulario.',
+                                icon: 'error',
+                                confirmButtonColor: '#dc2626',
+                                confirmButtonText: 'Revisar datos'
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error:', err);
+                        if (btnSubmit) {
+                            btnSubmit.disabled = false;
+                            btnSubmit.textContent = 'Guardar y Enviar Solicitud de Matrícula';
+                        }
+                        Swal.fire({
+                            title: 'Error de Red',
+                            text: 'No se pudo conectar con el servidor. Revisa tu conexión e intenta de nuevo.',
+                            icon: 'error',
+                            confirmButtonColor: '#dc2626',
+                            confirmButtonText: 'Entendido'
+                        });
+                    });
+                });
+            }
+            {% endif %}
+
             // 1. Relación dinámica Grado -> Sección
             const relaciones = [
                 {% for gs in grados_secciones %}
@@ -455,7 +539,7 @@
             });
             {% endif %}
 
-            // 2. Validación de NIE en tiempo real (solo dígitos, max 8)
+            // 2. Validación de NIE en tiempo real (solo dígitos, 7 a 8 caracteres)
             const inputNie = document.getElementById('input_nie');
             if (inputNie && !inputNie.readOnly) {
                 inputNie.addEventListener('input', function() {
@@ -464,7 +548,7 @@
                 });
             }
 
-            // 3. Máscara DUI
+            // 3. Máscara DUI (00000000-0)
             document.querySelectorAll('.mask-dui').forEach(input => {
                 if (!input.readOnly) {
                     input.addEventListener('input', function(e) {
@@ -479,7 +563,7 @@
                 }
             });
 
-            // 4. Máscara Teléfono
+            // 4. Máscara Teléfono (0000-0000)
             document.querySelectorAll('.mask-tel').forEach(input => {
                 if (!input.readOnly) {
                     input.addEventListener('input', function(e) {
@@ -529,7 +613,7 @@
                 }
             }
 
-            // 6. Geografía Oficial (14 Deptos -> 44 Municipios -> 262 Distritos)
+            // 6. Cascada Geográfica Oficial de El Salvador
             const geografiaElSalvador = {
                 "Ahuachapán": {
                     "Ahuachapán Norte": ["Atiquizaya", "El Refugio", "San Lorenzo", "Turín"],
@@ -612,7 +696,6 @@
 
                 if (!sDepto || !sMuni || !sDist) return;
 
-                // Llenar Departamentos
                 Object.keys(geografiaElSalvador).forEach(depto => {
                     const opt = document.createElement("option");
                     opt.value = depto;
@@ -673,7 +756,6 @@
                 });
                 {% endif %}
 
-                // Cargar valores iniciales si estamos en modo lectura
                 if (valDepto) {
                     cargarMunicipios(valDepto, valMuni);
                     if (valMuni) {
@@ -682,7 +764,6 @@
                 }
             }
 
-            // Inicializar casillas de Nacimiento y Residencia
             inicializarCascada(
                 "depto_nacimiento", "municipio_nacimiento", "distrito_nacimiento",
                 "{{ ficha.depto_nacimiento|default:''|escapejs }}",
