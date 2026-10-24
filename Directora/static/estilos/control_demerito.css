@@ -1,0 +1,277 @@
+/* --- CONTENEDOR GENERAL Y ENCABEZADOS --- */
+.registro-maestro {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background-color: #f8fafc;
+    border-radius: 0 1.5rem 1.5rem 0;
+    overflow-y: auto;
+    max-height: 90vh;
+}
+
+.header-control-conducta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.subtitulo-control {
+    font-size: 13px;
+    color: #64748b;
+    margin: 4px 0 0 0;
+}
+
+.acciones-exportacion {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-print {
+    background-color: #1e3a8a;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-print:hover {
+    background-color: #172554;
+}
+
+.btn-export {
+    background-color: #16a34a;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-export:hover {
+    background-color: #15803d;
+}
+
+/* --- BARRA DE FILTROS --- */
+.FiltroContainer {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: #ffffff;
+    padding: 12px 18px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.filtro-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.labelFiltro {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.selectFiltro {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    color: #1e293b;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.selectFiltro:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* --- DATOS GENERALES INSTITUCIONALES --- */
+.datos-generales {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.titulo-dato {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 6px;
+}
+
+.container-datos {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.fila-datos {
+    display: grid;
+    gap: 15px;
+}
+
+.tres-columnas {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.dato {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dato label {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.input-dato {
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1e293b;
+    outline: none;
+}
+
+/* --- TABLA MATRICIAL --- */
+.contenedor-tabla-director {
+    background: #ffffff;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+    border: 1px solid #cbd5e1;
+    overflow-x: auto;
+}
+
+.tabla-consolidado-director {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.tabla-consolidado-director th,
+.tabla-consolidado-director td {
+    border: 1px solid #cbd5e1;
+    padding: 6px 4px;
+    text-align: center;
+}
+
+.tabla-consolidado-director th {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.num-sub {
+    font-size: 9px;
+    color: #64748b;
+    font-weight: normal;
+    display: block;
+}
+
+.total-fila-director td {
+    background-color: #e2e8f0;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.firma-director-seccion {
+    margin-top: 35px;
+    padding-top: 15px;
+    border-top: 1px dashed #94a3b8;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+/* --- ESTILOS DE IMPRESIÓN --- */
+@media print {
+    .menu-opciones,
+    .FiltroContainer,
+    .no-print,
+    .cerrar-sesion-container {
+        display: none !important;
+    }
+    
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    .directora-maestro {
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .registro-maestro {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        background: transparent !important;
+    }
+
+    .datos-generales {
+        border: 1px solid #000000 !important;
+        box-shadow: none !important;
+    }
+
+    .contenedor-tabla-director {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+
+    .tabla-consolidado-director {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+
+    .tabla-consolidado-director th, 
+    .tabla-consolidado-director td {
+        border: 1px solid #000000 !important;
+        color: #000000 !important;
+    }
+
+    .total-fila-director td {
+        background-color: #e2e8f0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

@@ -133,3 +133,22 @@ class FichaMatricula(models.Model):
 
     def __str__(self):
         return f"Ficha {self.nie} - {self.nombres} {self.apellidos} ({self.get_estado_display()})"
+
+class Matricula(models.Model):
+    ESTADOS = [
+        ('ACTIVO', 'Activo'),
+        ('RETIRADO', 'Retirado'),
+        ('PROMOVIDO', 'Promovido'),
+        ('GRADUADO', 'Graduado'),
+    ]
+
+    alumno = models.ForeignKey('Maestros.Alumno', on_delete=models.CASCADE, related_name='matriculas')
+    grado_seccion = models.ForeignKey('Directora.GradoSeccion', on_delete=models.CASCADE, related_name='matriculas_seccion')
+    anio_lectivo = models.PositiveIntegerField(default=2026)
+    fecha_matricula = models.DateField(auto_now_add=True)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='ACTIVO')
+
+    class Meta:
+        # Un alumno solo puede tener una matrícula por año escolar
+        unique_together = ('alumno', 'anio_lectivo')
+        verbose_name = "Matrícula Anual"
