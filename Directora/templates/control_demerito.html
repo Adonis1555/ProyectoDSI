@@ -192,9 +192,9 @@
                             <i class="ti ti-dashboard"></i> Dashboard
                         </li>
                     </a>
-                     <a href="{% url 'control_maestro' %}" style="text-decoration: none;">
-                         <li class="item-menu"><i class="ti ti-maestros"></i> Maestros</li>
-                     </a>
+                    <a href="{% url 'control_maestro' %}" style="text-decoration: none;">
+                        <li class="item-menu"><i class="ti ti-maestros"></i> Maestros</li>
+                    </a>
                     <a href="{% url 'grado_seccion_control' %}" style="text-decoration: none;">
                         <li class="item-menu">
                             <i class="ti ti-grado_seccion"></i> Control de Grados
@@ -252,10 +252,15 @@
                     <option value="9" {% if mes_actual == 9 %}selected{% endif %}>Septiembre</option>
                     <option value="10" {% if mes_actual == 10 %}selected{% endif %}>Octubre</option>
                     <option value="11" {% if mes_actual == 11 %}selected{% endif %}>Noviembre</option>
+                    <option value="12" {% if mes_actual == 12 %}selected{% endif %}>Diciembre</option>
                 </select>
 
                 <select id="selectAnioFiltro" class="selectFiltro" onchange="actualizarReporte()">
-                    <option value="2026" selected>2026</option>
+                    {% for a in anios_disponibles %}
+                        <option value="{{ a }}" {% if anio_actual == a %}selected{% endif %}>{{ a }}</option>
+                    {% empty %}
+                        <option value="{{ anio_actual }}" selected>{{ anio_actual }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
@@ -381,7 +386,7 @@
         function actualizarReporte() {
             const mes = document.getElementById('selectMesFiltro').value;
             const anio = document.getElementById('selectAnioFiltro').value;
-            window.location.href = "?mes=" + mes + "&anio=" + anio;
+            window.location.href = window.location.pathname + "?mes=" + mes + "&anio=" + anio;
         }
     </script>
 </body>

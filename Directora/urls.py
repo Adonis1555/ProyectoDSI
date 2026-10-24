@@ -26,4 +26,6 @@ urlpatterns = [
         path('publicar-horario/', views.publicar_horario, name='publicar_horario'),
         path('eliminar-materia/', views.eliminar_materia, name='eliminar_materia'),
         path('materias/actualizar/', views.actualizar_materia, name='actualizar_materia'),
+        path('periodo/alternar/', views.alternar_periodo_ajax, name='alternar_periodo'),
+        path('editar_grado_seccion_ajax/<int:pk>/', views.editar_grado_seccion_ajax, name='editar_grado_seccion_ajax'),
 ]

@@ -45,8 +45,9 @@ class Maestro(models.Model):
 
 class GradoSeccion(models.Model):
     GRADOS_EL_SALVADOR = [
-        ('Parvularia', (
-            ('PK', 'Parvularia'),
+        ('Educación Parvularia', (
+            ('PK5', 'Parvularia 5'),
+            ('PK6', 'Parvularia 6'),
         )),
         ('Básica Ciclo I', (
             ('1G', '1° Grado'),
@@ -195,3 +196,26 @@ class AsignacionBloqueMaestro(models.Model):
 
     def __str__(self):
         return f"{self.maestro} - {self.get_dia_display()} {self.get_bloque_display()}"
+
+
+class ConfiguracionPeriodo(models.Model):
+    FASES = [
+        ('MATRICULA', 'Periodo de Matrícula'),
+        ('CLASES', 'Periodo de Clases'),
+    ]
+
+    fase_actual = models.CharField(max_length=20, choices=FASES, default='MATRICULA')
+    anio_activo = models.PositiveIntegerField(default=2026)
+    actualizado_el = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.anio_activo} - {self.get_fase_actual_display()}"
+
+    @classmethod
+    def get_solo(cls):
+        """Retorna o crea la configuración única del sistema."""
+        obj, created = cls.objects.get_or_create(id=1, defaults={'fase_actual': 'MATRICULA', 'anio_activo': 2026})
+        return obj
+
+    class Meta:
+        verbose_name = "Configuración del Periodo"
