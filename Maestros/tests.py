@@ -1,6 +1,6 @@
 import json
 from io import StringIO
-from datetime import datetime
+from datetime import date, datetime
 
 from django.core.management import call_command, CommandError
 from django.test import TestCase, override_settings
@@ -8,7 +8,143 @@ from django.urls import reverse
 
 from Directora.models import AsignacionBloqueMaestro, AsignacionMateria, GradoSeccion, Maestro, Materia
 from Login.models import Usuario
-from .models import HorarioClase
+from Responsable.models import FichaMatricula, Matricula, Responsable
+from .models import Alumno, HorarioClase
+
+
+class ControlAlumnosMatriculaTests(TestCase):
+    def setUp(self):
+        self.usuario_maestro = Usuario.objects.create_user(
+            email='maestro-tercero@cenalop.edu.sv', password='sistema123',
+            nombre='Ana', apellido='Martínez', rol='maestro'
+        )
+        self.maestro = Maestro.objects.create(
+            dui='11111111-1', nombre='Ana', apellido='Martínez',
+            especialidad='Educación Básica', telefono='70001001',
+            id_usuario=self.usuario_maestro,
+        )
+        self.tercero = GradoSeccion.objects.create(
+            grado='3G', seccion='A', turno='mañana', maestro_encargado=self.maestro, cupo_maximo=30
+        )
+        self.septimo = GradoSeccion.objects.create(
+            grado='7G', seccion='A', turno='tarde'
+        )
+        usuario_responsable = Usuario.objects.create_user(
+            email='responsable-pruebas@cenalop.edu.sv', password='sistema123',
+            nombre='Carlos', apellido='López', rol='responsable'
+        )
+        self.responsable = Responsable.objects.create(
+            dui='22222222-2', nombre='Carlos', apellido='López',
+            telefono='70001002', parentesco='PADRE', id_usuario=usuario_responsable,
+        )
+        self.solicitud_tercero = self.crear_solicitud(
+            self.tercero, '30000001', 'Estudiante', 'Tercero'
+        )
+        self.solicitud_septimo = self.crear_solicitud(
+            self.septimo, '70000001', 'Estudiante', 'Séptimo'
+        )
+        self.client.force_login(self.usuario_maestro)
+
+    def crear_solicitud(self, seccion, nie, nombres, apellidos):
+        return FichaMatricula.objects.create(
+            grado_seccion=seccion, responsable=self.responsable, nie=nie,
+            nombres=nombres, apellidos=apellidos,
+            fecha_nacimiento=date(2017, 5, 10), genero='M',
+            parentesco_responsable='Padre', telefono_contacto='70001002',
+        )
+
+    def test_muestra_las_dos_opciones_y_solo_solicitudes_asignadas(self):
+        respuesta = self.client.get(reverse('control_alumnos'), {'vista': 'solicitudes'})
+
+        self.assertContains(respuesta, 'Solicitudes matrícula de estudiantes')
+        self.assertContains(respuesta, 'Alumnos registrados')
+        self.assertContains(respuesta, 'Estudiante Tercero')
+        self.assertNotContains(respuesta, 'Estudiante Séptimo')
+
+    def test_al_asignar_otro_grado_sus_solicitudes_se_habilitan_sin_cambios(self):
+        self.septimo.maestro_encargado = self.maestro
+        self.septimo.save(update_fields=['maestro_encargado'])
+
+        respuesta = self.client.get(reverse('control_alumnos'), {'vista': 'solicitudes'})
+
+        self.assertContains(respuesta, 'Estudiante Tercero')
+        self.assertContains(respuesta, 'Estudiante Séptimo')
+
+    def test_alumnos_registrados_conserva_el_filtro_por_seccion_asignada(self):
+        Alumno.objects.create(
+            NIE='30000002', nombre='Alumno', apellido='Registrado', sexo='M',
+            fecha_nac=date(2017, 3, 1), grado_seccion=self.tercero,
+        )
+        Alumno.objects.create(
+            NIE='70000002', nombre='Alumno', apellido='No asignado', sexo='F',
+            fecha_nac=date(2013, 3, 1), grado_seccion=self.septimo,
+        )
+
+        respuesta = self.client.get(reverse('control_alumnos'), {'vista': 'registrados'})
+
+        self.assertContains(respuesta, 'Alumno Registrado')
+        self.assertNotContains(respuesta, 'Alumno No asignado')
+        self.assertContains(respuesta, '+ Registrar Alumno')
+
+    def test_docente_puede_ver_la_ficha_completa_de_su_seccion(self):
+        self.solicitud_tercero.direccion_exacta = 'Colonia Las Flores, casa 10'
+        self.solicitud_tercero.detalle_salud = 'Alergia al polvo'
+        self.solicitud_tercero.tiene_problemas_salud = True
+        self.solicitud_tercero.save()
+
+        respuesta = self.client.get(reverse(
+            'solicitud_matricula_detalle', args=[self.solicitud_tercero.id]
+        ))
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, 'Colonia Las Flores, casa 10')
+        self.assertContains(respuesta, 'Alergia al polvo')
+        self.assertContains(respuesta, 'Aceptar solicitud')
+        self.assertContains(respuesta, 'Solicitar subsanación')
+
+    def test_docente_no_puede_ver_solicitud_de_otra_seccion(self):
+        respuesta = self.client.get(reverse(
+            'solicitud_matricula_detalle', args=[self.solicitud_septimo.id]
+        ))
+
+        self.assertEqual(respuesta.status_code, 404)
+
+    def test_aceptar_solicitud_matricula_al_estudiante(self):
+        respuesta = self.client.post(reverse(
+            'resolver_solicitud_matricula', args=[self.solicitud_tercero.id]
+        ), {'accion': 'aceptar'})
+
+        self.assertRedirects(respuesta, reverse(
+            'solicitud_matricula_detalle', args=[self.solicitud_tercero.id]
+        ))
+        self.solicitud_tercero.refresh_from_db()
+        self.assertEqual(self.solicitud_tercero.estado, 'APROBADA')
+        alumno = Alumno.objects.get(NIE=self.solicitud_tercero.nie)
+        self.assertEqual(alumno.grado_seccion, self.tercero)
+        self.assertTrue(Matricula.objects.filter(
+            alumno=alumno,
+            grado_seccion=self.tercero,
+            anio_lectivo=self.solicitud_tercero.anio_lectivo,
+            estado='ACTIVO',
+        ).exists())
+
+    def test_subsanacion_exige_y_conserva_el_motivo(self):
+        url = reverse('resolver_solicitud_matricula', args=[self.solicitud_tercero.id])
+
+        self.client.post(url, {'accion': 'subsanar', 'observaciones': ''})
+        self.solicitud_tercero.refresh_from_db()
+        self.assertEqual(self.solicitud_tercero.estado, 'PENDIENTE')
+
+        self.client.post(url, {
+            'accion': 'subsanar',
+            'observaciones': 'Adjuntar la dirección completa del estudiante.',
+        })
+        self.solicitud_tercero.refresh_from_db()
+        self.assertEqual(self.solicitud_tercero.estado, 'RECHAZADA')
+        self.assertEqual(
+            self.solicitud_tercero.observaciones,
+            'Adjuntar la dirección completa del estudiante.',
+        )
 
 
 class EstadosPropuestasHorarioTests(TestCase):

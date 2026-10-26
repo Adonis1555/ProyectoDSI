@@ -112,7 +112,7 @@
                                             data-dia="{{ c.dia_id }}" 
                                             data-bloque="{{ c.bloque_id }}">
                                             <div class="tarjeta-horario" style="background-color: {{ c.clase.materia.color|default:'#D6E4FF' }};">
-                                                {% if estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' and estado_actual != 'PUBLICADO' %}
+                                                {% if periodo.fase_actual == 'MATRICULA' and estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' and estado_actual != 'PUBLICADO' %}
                                                 <button type="button" class="btn-quitar-clase" title="Quitar clase">&times;</button>
                                                 {% endif %}
                                                 <span class="materia-tag">{{ c.clase.materia.nombre }}</span>
@@ -123,7 +123,7 @@
                                         <td class="celda-clase vacia" 
                                             data-dia="{{ c.dia_id }}" 
                                             data-bloque="{{ c.bloque_id }}">
-                                            {% if c.permitido and estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' and estado_actual != 'PUBLICADO' %}
+                                            {% if periodo.fase_actual == 'MATRICULA' and c.permitido and estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' and estado_actual != 'PUBLICADO' %}
                                             <button type="button" class="btn-asignar-bloque" title="Asignar clase">
                                                 <i class="ti ti-plus"></i>
                                             </button>
@@ -173,7 +173,9 @@
                                     <small>Modifica esta propuesta y vuelve a enviarla a Dirección.</small>
                                 </div>
                             {% endif %}
-                            {% if estado_actual == 'ENVIADO' %}
+                            {% if periodo.fase_actual == 'CLASES' %}
+                                <p>Periodo de clases: planificación académica de solo lectura.</p>
+                            {% elif estado_actual == 'ENVIADO' %}
                                 <div style="background: #fef3c7; color: #92400e; padding: 10px; border-radius: 8px; font-size: 12px; text-align: center; font-weight: 600; border: 1px solid #fde68a;">
                                     <i class="ti ti-clock"></i> Horario en revisión por Dirección
                                 </div>

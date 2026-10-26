@@ -1,0 +1,188 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/control_alumnos.css' %}">
+    <title>Solicitud de matrícula</title>
+    <style>
+        .detalle-contenido { padding: 40px; background: #fcfcfc; border-radius: 0 1.5rem 1.5rem 0; }
+        .detalle-encabezado { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 24px; }
+        .detalle-encabezado h1 { color: #111827; font-size: 24px; margin-bottom: 6px; }
+        .detalle-encabezado p { color: #64748b; font-size: 14px; }
+        .btn-volver { color: #334155; text-decoration: none; padding: 9px 14px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; white-space: nowrap; }
+        .estado-ficha { display: inline-block; margin-top: 10px; padding: 6px 10px; border-radius: 999px; background: #e2e8f0; color: #334155; font-size: 12px; font-weight: 600; }
+        .estado-ficha.aprobada { background: #dcfce7; color: #166534; }
+        .estado-ficha.subsanar { background: #fee2e2; color: #991b1b; }
+        .panel-detalle { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 18px; }
+        .panel-detalle h2 { color: #1e293b; font-size: 16px; margin-bottom: 16px; }
+        .datos-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 22px; }
+        .dato dt { color: #64748b; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+        .dato dd { color: #1f2937; font-size: 14px; margin: 0; overflow-wrap: anywhere; }
+        .dato-amplio { grid-column: 1 / -1; }
+        .aviso-subsanacion { padding: 14px 16px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; color: #9a3412; margin-bottom: 18px; }
+        .acciones-revision { display: flex; justify-content: flex-end; gap: 10px; }
+        .panel-subsanacion { display: none; margin-top: 18px; padding-top: 18px; border-top: 1px solid #e5e7eb; }
+        .panel-subsanacion.visible { display: block; }
+        .panel-subsanacion label { display: block; margin-bottom: 8px; color: #1e293b; }
+        .panel-subsanacion textarea { width: 100%; min-height: 90px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; resize: vertical; font-family: inherit; }
+        .panel-subsanacion textarea:focus { outline: none; border-color: #2E5299; box-shadow: 0 0 0 3px rgba(46, 82, 153, 0.15); }
+        .botones-decision { display: flex; gap: 10px; justify-content: flex-end; }
+        .btn-aceptar, .btn-subsanar, .btn-cancelar { padding: 11px 16px; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; }
+        .btn-aceptar { background: #2E5299; }
+        .btn-subsanar { background: #C0392B; }
+        .btn-cancelar { background: #64748b; }
+        .mensaje { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; background: #f1f5f9; color: #334155; }
+        @media (max-width: 850px) { .datos-grid, .acciones-revision { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<main class="maestro-alumno">
+    <section class="menu-opciones">
+        <div class="imgContainer"><img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo institucional"></div>
+        <div class="opciones">
+            <ul>
+                <a href="{% url 'control_demeritos' %}" style="text-decoration:none;"><li class="item-menu">Demeritos</li></a>
+                <a href="{% url 'control_alumnos' %}?vista=solicitudes" style="text-decoration:none;"><li class="item-menu activo">Alumnos</li></a>
+                <a href="{% url 'dashboard_maestro' %}" style="text-decoration:none;"><li class="item-menu">Control de demeritos</li></a>
+                <a href="{% url 'horarios' %}" style="text-decoration:none;"><li class="item-menu">Horarios</li></a>
+            </ul>
+            <div class="cerrar-sesion-container"><form action="{% url 'logout' %}" method="post">{% csrf_token %}<button type="submit" class="btnCerrarSesion">cerrar sesión</button></form></div>
+        </div>
+    </section>
+    <section class="detalle-contenido">
+        <div class="detalle-encabezado">
+            <div>
+                <h1>Solicitud de matrícula</h1>
+                <p>{{ ficha.nombres }} {{ ficha.apellidos }} · {{ ficha.grado_seccion }}</p>
+                <span class="estado-ficha {% if ficha.estado == 'APROBADA' %}aprobada{% elif ficha.estado == 'RECHAZADA' %}subsanar{% endif %}">{% if ficha.estado == 'RECHAZADA' %}Debe ser subsanada{% else %}{{ ficha.get_estado_display }}{% endif %}</span>
+            </div>
+            <a class="btn-volver" href="{% url 'control_alumnos' %}?vista=solicitudes">Volver a solicitudes</a>
+        </div>
+
+        {% for mensaje in messages %}<div class="mensaje">{{ mensaje }}</div>{% endfor %}
+        {% if ficha.observaciones %}<div class="aviso-subsanacion"><strong>Motivo de subsanación:</strong> {{ ficha.observaciones }}</div>{% endif %}
+
+        <section class="panel-detalle">
+            <h2>Datos de la solicitud</h2>
+            <dl class="datos-grid">
+                <div class="dato"><dt>Año lectivo</dt><dd>{{ ficha.anio_lectivo }}</dd></div>
+                <div class="dato"><dt>Grado y sección</dt><dd>{{ ficha.grado_seccion }}</dd></div>
+                <div class="dato"><dt>Fecha de envío</dt><dd>{{ ficha.fecha_envio|date:"d/m/Y h:i A" }}</dd></div>
+            </dl>
+        </section>
+
+        <section class="panel-detalle">
+            <h2>1. Identificación del estudiante</h2>
+            <dl class="datos-grid">
+                <div class="dato"><dt>NIE</dt><dd>{{ ficha.nie }}</dd></div>
+                <div class="dato"><dt>Nombres</dt><dd>{{ ficha.nombres }}</dd></div>
+                <div class="dato"><dt>Apellidos</dt><dd>{{ ficha.apellidos }}</dd></div>
+                <div class="dato"><dt>Fecha de nacimiento</dt><dd>{{ ficha.fecha_nacimiento|date:"d/m/Y" }}</dd></div>
+                <div class="dato"><dt>Nacionalidad</dt><dd>{{ ficha.nacionalidad }}</dd></div>
+                <div class="dato"><dt>Género</dt><dd>{{ ficha.get_genero_display }}</dd></div>
+                <div class="dato"><dt>Departamento de nacimiento</dt><dd>{{ ficha.depto_nacimiento|default:"No registrado" }}</dd></div>
+                <div class="dato"><dt>Municipio de nacimiento</dt><dd>{{ ficha.municipio_nacimiento|default:"No registrado" }}</dd></div>
+                <div class="dato"><dt>Distrito de nacimiento</dt><dd>{{ ficha.distrito_nacimiento|default:"No registrado" }}</dd></div>
+                <div class="dato"><dt>Discapacidad</dt><dd>{% if ficha.tiene_discapacidad %}Sí: {{ ficha.tipo_discapacidad|default:"Sin detalle" }}{% else %}No{% endif %}</dd></div>
+            </dl>
+        </section>
+
+        <section class="panel-detalle">
+            <h2>2. Residencia y salud</h2>
+            <dl class="datos-grid">
+                <div class="dato"><dt>Zona</dt><dd>{{ ficha.zona_residencia }}</dd></div>
+                <div class="dato"><dt>Departamento</dt><dd>{{ ficha.depto_residencia|default:"No registrado" }}</dd></div>
+                <div class="dato"><dt>Municipio</dt><dd>{{ ficha.municipio_residencia|default:"No registrado" }}</dd></div>
+                <div class="dato"><dt>Distrito</dt><dd>{{ ficha.distrito_residencia|default:"No registrado" }}</dd></div>
+                <div class="dato dato-amplio"><dt>Dirección exacta</dt><dd>{{ ficha.direccion_exacta|default:"No registrada" }}</dd></div>
+                <div class="dato"><dt>Problemas de salud o alergias</dt><dd>{% if ficha.tiene_problemas_salud %}Sí: {{ ficha.detalle_salud|default:"Sin detalle" }}{% else %}No{% endif %}</dd></div>
+                <div class="dato"><dt>Vacunas completas</dt><dd>{% if ficha.vacunas_completas %}Sí{% else %}No{% endif %}</dd></div>
+            </dl>
+        </section>
+
+        <section class="panel-detalle">
+            <h2>3. Padres y tutor alternativo</h2>
+            <dl class="datos-grid">
+                <div class="dato"><dt>Nombre del padre</dt><dd>{{ ficha.nombre_padre|default:"No registrado" }}</dd></div>
+                <div class="dato"><dt>DUI del padre</dt><dd>{{ ficha.dui_padre|default:"No registrado" }}</dd></div>
+                <div class="dato"><dt>Estado del padre</dt><dd>{{ ficha.estado_padre }}</dd></div>
+                <div class="dato"><dt>Nombre de la madre</dt><dd>{{ ficha.nombre_madre|default:"No registrada" }}</dd></div>
+                <div class="dato"><dt>DUI de la madre</dt><dd>{{ ficha.dui_madre|default:"No registrado" }}</dd></div>
+                <div class="dato"><dt>Estado de la madre</dt><dd>{{ ficha.estado_madre }}</dd></div>
+                <div class="dato"><dt>Tutor alternativo</dt><dd>{{ ficha.nombre_tutor_alt|default:"No registrado" }}</dd></div>
+                <div class="dato"><dt>DUI del tutor alternativo</dt><dd>{{ ficha.dui_tutor_alt|default:"No registrado" }}</dd></div>
+                <div class="dato"><dt>Parentesco</dt><dd>{{ ficha.parentesco_tutor_alt|default:"No registrado" }}</dd></div>
+            </dl>
+        </section>
+
+        <section class="panel-detalle">
+            <h2>4. Responsable</h2>
+            <dl class="datos-grid">
+                <div class="dato"><dt>Nombre</dt><dd>{{ ficha.responsable.nombre }} {{ ficha.responsable.apellido }}</dd></div>
+                <div class="dato"><dt>Parentesco</dt><dd>{{ ficha.parentesco_responsable }}</dd></div>
+                <div class="dato"><dt>Teléfono</dt><dd>{{ ficha.telefono_contacto }}</dd></div>
+                <div class="dato"><dt>Correo para notas</dt><dd>{{ ficha.correo_notas|default:"No registrado" }}</dd></div>
+                <div class="dato dato-amplio"><dt>Dirección</dt><dd>{{ ficha.direccion_responsable|default:"No registrada" }}</dd></div>
+            </dl>
+        </section>
+
+        {% if ficha.revisiones.all %}
+        <section class="panel-detalle">
+            <h2>Historial de revisión</h2>
+            {% for revision in ficha.revisiones.all %}
+            <p style="margin-bottom: 12px;">{{ revision.fecha|date:"d/m/Y h:i A" }} · {{ revision.get_accion_display }}{% if revision.motivo %}: {{ revision.motivo }}{% endif %}</p>
+            {% endfor %}
+        </section>
+        {% endif %}
+        {% if ficha.estado == 'PENDIENTE' and puede_revisar %}
+        <section class="panel-detalle">
+            <h2>Decisión docente</h2>
+            <div class="acciones-revision">
+                <button class="btn-subsanar" type="button" id="btnMostrarSubsanacion">Solicitar subsanación</button>
+                <form method="post" action="{% url 'resolver_solicitud_matricula' ficha.id %}">
+                    {% csrf_token %}
+                    <div class="botones-decision">
+                        <button class="btn-aceptar" type="submit" name="accion" value="aceptar">Aceptar solicitud</button>
+                    </div>
+                </form>
+            </div>
+            <div class="panel-subsanacion" id="panelSubsanacion">
+                <form method="post" action="{% url 'resolver_solicitud_matricula' ficha.id %}">
+                    {% csrf_token %}
+                    <label for="observaciones"><strong>Información que debe subsanarse</strong></label>
+                    <textarea id="observaciones" name="observaciones" placeholder="Describe claramente qué información debe corregir o completar el responsable." required></textarea>
+                    <div class="botones-decision" style="margin-top: 12px;">
+                        <button class="btn-cancelar" type="button" id="btnCancelarSubsanacion">Cancelar</button>
+                        <button class="btn-subsanar" type="submit" name="accion" value="subsanar">Enviar solicitud de subsanación</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+        {% endif %}
+    </section>
+</main>
+<script>
+    const botonMostrar = document.getElementById('btnMostrarSubsanacion');
+    const botonCancelar = document.getElementById('btnCancelarSubsanacion');
+    const panelSubsanacion = document.getElementById('panelSubsanacion');
+    const campoObservaciones = document.getElementById('observaciones');
+
+    if (botonMostrar && panelSubsanacion) {
+        botonMostrar.addEventListener('click', () => {
+            panelSubsanacion.classList.add('visible');
+            botonMostrar.style.display = 'none';
+            campoObservaciones.focus();
+        });
+    }
+    if (botonCancelar && panelSubsanacion) {
+        botonCancelar.addEventListener('click', () => {
+            panelSubsanacion.classList.remove('visible');
+            botonMostrar.style.display = 'inline-block';
+            campoObservaciones.value = '';
+        });
+    }
+</script>
+</body>
+</html>

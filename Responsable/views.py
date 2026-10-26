@@ -3,13 +3,17 @@ from django.http import JsonResponse
 from django.shortcuts import render,redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from Login.decorators import directora_required, maestro_required, responsable_required,roles_permitidos
-from Directora.models import GradoSeccion
+from Directora.models import ConfiguracionPeriodo, GradoSeccion
+from Maestros.models import Alumno
 from django.contrib import messages
-from .models import Responsable, FichaMatricula,Matricula
+from django.core.exceptions import ValidationError
+from Directora.periodos import periodo_requerido
+from .models import Responsable, FichaMatricula,Matricula, RevisionFicha
 
 SECUENCIA_GRADOS = {
     'PK5': 'PK6', 
     'PK6': '1G',   
+    '1G': '2G',
     '2G': '3G',
     '3G': '4G',
     '4G': '5G',
@@ -25,7 +29,7 @@ SECUENCIA_GRADOS = {
 def responsable_view(request):
     responsable = getattr(request.user, 'perfil_responsable', None)
     if not responsable:
-        responsable = Responsable.objects.filter(user=request.user).first()
+        responsable = Responsable.objects.filter(id_usuario=request.user).first()
 
     if not responsable:
         return redirect('login')
@@ -36,23 +40,28 @@ def responsable_view(request):
     ).select_related('grado_seccion').order_by('-fecha_envio')
 
     # Alumnos que ya han sido aprobados/matriculados formalmente (si existe el modelo Alumno ligado)
-    alumnos_matriculados = getattr(responsable, 'alumnos', None)
-    alumnos = alumnos_matriculados.all() if alumnos_matriculados else []
+    periodo = ConfiguracionPeriodo.get_solo()
+    alumnos = Alumno.objects.filter(
+        NIE__in=solicitudes.filter(estado='APROBADA', anio_lectivo=periodo.anio_activo).values('nie'),
+        matriculas__anio_lectivo=periodo.anio_activo, matriculas__estado='ACTIVO',
+    ).distinct()
 
     context = {
         'responsable': responsable,
         'solicitudes': solicitudes,
         'alumnos': alumnos,
+        'periodo': periodo,
     }
     return render(request, 'dashboard_responsable.html', context)
 
 @responsable_required
 @login_required
-def ficha_matricula_view(request, ficha_id=None):
+@periodo_requerido('MATRICULA')
+def ficha_matricula_view(request, ficha_id=None, corregir=False):
     # 1. Obtener el perfil del responsable logueado
     responsable = getattr(request.user, 'perfil_responsable', None)
     if not responsable:
-        responsable = Responsable.objects.filter(user=request.user).first()
+        responsable = Responsable.objects.filter(id_usuario=request.user).first()
 
     if not responsable:
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.method == 'POST':
@@ -69,7 +78,9 @@ def ficha_matricula_view(request, ficha_id=None):
     # 3. Modo comprobante (solo lectura)
     if ficha_id:
         ficha = get_object_or_404(FichaMatricula, id=ficha_id, responsable=responsable)
-        modo_lectura = True
+        if corregir and (ficha.estado != 'RECHAZADA' or ficha.anio_lectivo != periodo.anio_activo or periodo.fase_actual != 'MATRICULA'):
+            return JsonResponse({'ok': False, 'error': 'Esta ficha no está habilitada para corrección.'}, status=403)
+        modo_lectura = not corregir
 
     # 4. Procesamiento del envío (POST)
     if request.method == 'POST':
@@ -84,6 +95,8 @@ def ficha_matricula_view(request, ficha_id=None):
             }, status=400)
 
         nie = request.POST.get('nie', '').strip()
+        if corregir and nie != ficha.nie:
+            return JsonResponse({'ok': False, 'error': 'El NIE identifica esta solicitud y no puede cambiarse.'}, status=400)
         grado_codigo = request.POST.get('grado_solicitado', '').strip()
         seccion_codigo = request.POST.get('seccion_solicitada', '').strip()
 
@@ -96,7 +109,7 @@ def ficha_matricula_view(request, ficha_id=None):
         if alumno_existente:
             # Buscar su última matrícula registrada
             ultima_matricula = Matricula.objects.filter(
-                alumno=alumno_existente
+                alumno=alumno_existente, anio_lectivo__lt=periodo.anio_activo
             ).select_related('grado_seccion').order_by('-anio_lectivo').first()
 
             if ultima_matricula:
@@ -104,14 +117,16 @@ def ficha_matricula_view(request, ficha_id=None):
                 grado_siguiente = SECUENCIA_GRADOS.get(grado_anterior)
 
                 # Si ya culminó 9° grado
-                if grado_anterior == '9G' or grado_siguiente is None:
+                if ultima_matricula.estado == 'GRADUADO':
                     return JsonResponse({
                         'ok': False,
                         'error': f'El estudiante con NIE {nie} ya completó y aprobó el 9° Grado. Se encuentra graduado de este centro escolar.'
                     }, status=400)
 
                 # Si intenta matricularse en un grado que no es el siguiente en orden
-                if grado_codigo != grado_siguiente:
+                if ultima_matricula.estado != 'PROMOVIDO':
+                    return JsonResponse({'ok': False, 'error': 'La matrícula anterior necesita un resultado académico confirmado antes de determinar el siguiente grado.'}, status=400)
+                if not grado_siguiente or grado_codigo != grado_siguiente:
                     nombre_grado_esperado = dict(GradoSeccion.GRADOS_EL_SALVADOR).get(grado_siguiente, grado_siguiente)
                     return JsonResponse({
                         'ok': False,
@@ -129,19 +144,26 @@ def ficha_matricula_view(request, ficha_id=None):
             return JsonResponse({'ok': False, 'error': 'El grado y sección seleccionados no existen o no están habilitados.'}, status=400)
 
         # 7. Validar duplicidad de fichas para el mismo año activo
-        ficha_existente = FichaMatricula.objects.filter(
+        otras_fichas = FichaMatricula.objects.filter(
             nie=nie, 
             anio_lectivo=periodo.anio_activo
-        ).first()
+        )
+        if corregir:
+            otras_fichas = otras_fichas.exclude(pk=ficha.pk)
+        ficha_existente = otras_fichas.first()
 
         if ficha_existente:
             if ficha_existente.estado == 'PENDIENTE':
                 return JsonResponse({'ok': False, 'error': f'Ya existe una ficha pendiente de revisión para el NIE {nie} en el ciclo {periodo.anio_activo}.'}, status=400)
             elif ficha_existente.estado == 'APROBADA':
                 return JsonResponse({'ok': False, 'error': f'El estudiante con NIE {nie} ya fue formalmente matriculado para el ciclo {periodo.anio_activo}.'}, status=400)
+            else:
+                return JsonResponse({'ok': False, 'error': 'Ya existe una solicitud por subsanar. Usa la opción Corregir solicitud desde tu panel.'}, status=400)
+        if Matricula.objects.filter(alumno_id=nie, anio_lectivo=periodo.anio_activo).exists():
+            return JsonResponse({'ok': False, 'error': 'El estudiante ya tiene matrícula en este año.'}, status=400)
 
         # 8. Creación de la Ficha ligada al año escolar activo
-        FichaMatricula.objects.create(
+        datos_ficha = dict(
             anio_lectivo=periodo.anio_activo,
             grado_seccion=grado_seccion,
             responsable=responsable,
@@ -188,6 +210,20 @@ def ficha_matricula_view(request, ficha_id=None):
             estado='PENDIENTE'
         )
 
+        nueva_ficha = FichaMatricula(**datos_ficha)
+        try:
+            nueva_ficha.full_clean()
+        except ValidationError as error:
+            return JsonResponse({'ok': False, 'error': '; '.join(error.messages)}, status=400)
+        if corregir:
+            RevisionFicha.registrar(ficha, request.user, 'REENVIAR', ficha.observaciones or '')
+            for campo, valor in datos_ficha.items():
+                setattr(ficha, campo, valor)
+            ficha.observaciones = ''
+            ficha.save()
+        else:
+            nueva_ficha.save()
+
         return JsonResponse({
             'ok': True, 
             'mensaje': f'La ficha para el ciclo {periodo.anio_activo} fue enviada exitosamente y quedó en espera de revisión docente.'
@@ -207,5 +243,7 @@ def ficha_matricula_view(request, ficha_id=None):
         'grados_disponibles': grados_unicos.items(),
         'ficha': ficha,
         'modo_lectura': modo_lectura,
+        'corregir': corregir,
+        'matricula_abierta': periodo.fase_actual == 'MATRICULA',
     }
     return render(request, 'ficha_matricula.html', context)

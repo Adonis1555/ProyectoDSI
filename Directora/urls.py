@@ -27,5 +27,7 @@ urlpatterns = [
         path('eliminar-materia/', views.eliminar_materia, name='eliminar_materia'),
         path('materias/actualizar/', views.actualizar_materia, name='actualizar_materia'),
         path('periodo/alternar/', views.alternar_periodo_ajax, name='alternar_periodo'),
+        path('periodo/revision-matricula/', views.revision_cierre_matricula, name='revision_cierre_matricula'),
+        path('periodo/cerrar-matricula/', views.cerrar_matricula, name='cerrar_matricula'),
         path('editar_grado_seccion_ajax/<int:pk>/', views.editar_grado_seccion_ajax, name='editar_grado_seccion_ajax'),
 ]

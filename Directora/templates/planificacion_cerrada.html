@@ -1,0 +1,27 @@
+{% if periodo.fase_actual == 'CLASES' %}
+<style>
+    .btnRegistrarGrado, .btn-editar-grado, .btn-toggle-grado,
+    #btnAbrirModalMateria, .btn-accion-editar, .btn-accion-eliminar,
+    #guardar-bloques, #btn-rechazar, #btn-aprobar, #btn-publicar { display: none !important; }
+    .celda-interactiva { cursor: default; }
+    .celda-bloque { pointer-events: none; cursor: default; }
+    .aviso-planificacion-cerrada { color: #334155; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const zona = document.querySelector('.materia-container, .horarios-container, .grado-seccion-container, main > section:last-child');
+        if (zona) {
+            const aviso = document.createElement('p');
+            aviso.className = 'aviso-planificacion-cerrada';
+            aviso.textContent = 'Periodo de clases: planificación académica de solo lectura.';
+            zona.prepend(aviso);
+        }
+        document.addEventListener('click', evento => {
+            if (evento.target.closest('.celda-interactiva, .celda-bloque')) {
+                evento.preventDefault();
+                evento.stopImmediatePropagation();
+            }
+        }, true);
+    });
+</script>
+{% endif %}

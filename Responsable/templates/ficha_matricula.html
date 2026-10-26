@@ -52,7 +52,7 @@
                             {% endtimezone %}
                         </p>
                     {% else %}
-                        <h1 class="titulo-pagina">Ficha de Inscripción y Matrícula 2026</h1>
+                        <h1 class="titulo-pagina">{% if corregir %}Corregir solicitud de matrícula{% else %}Ficha de Inscripción y Matrícula {{ periodo.anio_activo }}{% endif %}</h1>
                         <p class="subtitulo-pagina">Completa la información conforme a la Partida de Nacimiento y datos del hogar.</p>
                     {% endif %}
                 </div>
@@ -65,8 +65,24 @@
             </div>
 
             <!-- FORMULARIO CON ID PARA FETCH -->
+            {% if not matricula_abierta and not modo_lectura %}
+            <p role="status">El periodo de matrícula está cerrado. Puedes consultar tus solicitudes desde el panel.</p>
+            {% endif %}
+            {% if ficha.observaciones %}
+            <p role="status" style="padding: 14px; color: #991b1b; background: #fee2e2; border-radius: 8px; margin-bottom: 16px;">Información que debes subsanar: {{ ficha.observaciones }}</p>
+            {% endif %}
+            {% if ficha.revisiones.all %}
+            <div class="panel-ficha">
+                <h2 class="titulo-seccion">Historial de revisión</h2>
+                {% for revision in ficha.revisiones.all %}
+                <p>{{ revision.fecha|date:"d/m/Y h:i A" }} · {{ revision.get_accion_display }}{% if revision.motivo %}: {{ revision.motivo }}{% endif %}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
             <form method="POST" id="form_ficha" action="" class="form-ficha">
                 {% csrf_token %}
+                <input type="hidden" name="anio_activo" value="{{ periodo.anio_activo }}">
+                <fieldset {% if not matricula_abierta and not modo_lectura %}disabled{% endif %} style="border: none; padding: 0; margin: 0; min-width: 0;">
 
                 <!-- NIE, GRADO Y SECCIÓN -->
                 <div class="panel-ficha">
@@ -82,6 +98,7 @@
                                    minlength="7"
                                    pattern="^[0-9]{7,8}$"
                                    value="{{ ficha.nie|default:'' }}"
+                                   {% if corregir %}readonly{% endif %}
                                    {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}
                                    required>
                         </div>
@@ -381,13 +398,13 @@
                         <div class="form-group">
                             <label class="label-custom">Teléfono de Contacto <span class="req">*</span></label>
                             <input type="text" name="telefono_resp" class="input-custom mask-tel" 
-                                   value="{% if modo_lectura %}{{ ficha.telefono_contacto }}{% else %}{{ responsable.telefono }}{% endif %}" 
+                                   value="{% if ficha %}{{ ficha.telefono_contacto }}{% else %}{{ responsable.telefono }}{% endif %}"
                                    {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %} required maxlength="9">
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Correo para Envío de Notas</label>
                             <input type="email" name="email_resp" class="input-custom" 
-                                   value="{% if modo_lectura %}{{ ficha.correo_notas|default:'' }}{% else %}{{ request.user.email }}{% endif %}" 
+                                   value="{% if ficha %}{{ ficha.correo_notas|default:'' }}{% else %}{{ request.user.email }}{% endif %}"
                                    {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                         </div>
                     </div>
@@ -395,7 +412,7 @@
                     <div class="form-group">
                         <label class="label-custom">Dirección de Residencia del Responsable</label>
                         <input type="text" name="direccion_resp" class="input-custom" placeholder="Dirección completa del responsable" 
-                               value="{% if modo_lectura %}{{ ficha.direccion_responsable|default:'' }}{% else %}{{ responsable.direccion|default:'' }}{% endif %}" 
+                               value="{% if ficha %}{{ ficha.direccion_responsable|default:'' }}{% else %}{{ responsable.direccion|default:'' }}{% endif %}"
                                {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
                     </div>
                 </div>
@@ -405,12 +422,12 @@
                     {% if modo_lectura %}
                         <button type="button" class="btn-enviar-ficha" onclick="window.print()">Imprimir Comprobante</button>
                         <a href="{% url 'dashboard_responsable' %}" class="btn-cancelar-ficha">Regresar al Panel</a>
-                    {% else %}
-                        <button type="submit" id="btn_guardar_ficha" class="btn-enviar-ficha">Guardar y Enviar Solicitud de Matrícula</button>
+                    {% elif matricula_abierta %}
+                        <button type="submit" id="btn_guardar_ficha" class="btn-enviar-ficha">{% if corregir %}Reenviar solicitud corregida{% else %}Guardar y Enviar Solicitud de Matrícula{% endif %}</button>
                         <a href="{% url 'dashboard_responsable' %}" class="btn-cancelar-ficha">Cancelar</a>
                     {% endif %}
                 </div>
-
+                </fieldset>
             </form>
         </section>
     </main>
@@ -537,6 +554,10 @@
                     selectSeccion.disabled = true;
                 }
             });
+            {% if corregir %}
+            selectGrado.dispatchEvent(new Event('change'));
+            selectSeccion.value = '{{ ficha.grado_seccion.seccion|escapejs }}';
+            {% endif %}
             {% endif %}
 
             // 2. Validación de NIE en tiempo real (solo dígitos, 7 a 8 caracteres)

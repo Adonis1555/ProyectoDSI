@@ -55,6 +55,7 @@
             </div>
 
             <form action="" id="formEditarAlumno" data-url="{% url 'editar_alumno' alumno.NIE %}" data-redirect="{% url 'control_alumnos' %}" data-current-grado="{{ alumno.grado_seccion.grado }}" data-current-seccion="{{ alumno.grado_seccion.seccion }}">
+                <input type="hidden" name="anio_activo" value="{{ periodo.anio_activo }}">
                 {% csrf_token %}
                 <div class="registro-container-alumno">
                     <div class="registro-datos-alumno">

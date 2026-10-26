@@ -56,6 +56,7 @@
 
             <form action="" id="formRegistroAlumno" data-url="{% url 'registro_alumnos' %}" data-redirect="{% url 'control_alumnos' %}">
                 {% csrf_token %}
+                <input type="hidden" name="anio_activo" value="{{ periodo.anio_activo }}">
                 <div class="registro-container-alumno">
                     <div class="registro-datos-alumno">
                         <div class="container-dato">

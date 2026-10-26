@@ -53,8 +53,8 @@
                         <div class="student-card">
                             <div class="student-details">
                                 <h3 class="student-name">{{ alumno.nombre }} {{ alumno.apellido }}</h3>
-                                <p class="student-nie">NIE: {{ alumno.nie }}</p>
-                                <span class="student-grade">{{ alumno.grado|default:"Sin grado asignado" }}</span>
+                                <p class="student-nie">NIE: {{ alumno.NIE }}</p>
+                                <span class="student-grade">{{ alumno.grado_seccion|default:"Sin grado asignado" }}</span>
                             </div>
                             <a href="#" class="btn-card-action">Ver Expediente</a>
                         </div>
@@ -106,15 +106,25 @@
                                         {% elif sol.estado == 'APROBADA' %}
                                             <span class="badge badge-aprobada">Aprobada</span>
                                         {% elif sol.estado == 'RECHAZADA' %}
-                                            <span class="badge badge-rechazada">Rechazada</span>
+                                            <span class="badge badge-rechazada">Debe ser subsanada</span>
                                         {% else %}
                                             <span class="badge">{{ sol.get_estado_display }}</span>
                                         {% endif %}
                                     </td>
                                     <td>
                                         <a href="{% url 'comprobante_ficha' sol.id %}" class="link-detalle">Ver Comprobante</a>
+                                        {% if sol.estado == 'RECHAZADA' and periodo.fase_actual == 'MATRICULA' and sol.anio_lectivo == periodo.anio_activo %}
+                                        <a href="{% url 'corregir_ficha' sol.id %}" class="link-detalle">Corregir solicitud</a>
+                                        {% endif %}
                                     </td>
                                 </tr>
+                                {% if sol.estado == 'RECHAZADA' and sol.observaciones %}
+                                <tr>
+                                    <td colspan="6" class="empty-state" style="text-align: left; padding: 12px 18px;">
+                                        <strong>Información que debes subsanar:</strong> {{ sol.observaciones }}
+                                    </td>
+                                </tr>
+                                {% endif %}
                             {% empty %}
                                 <tr>
                                     <td colspan="6" class="empty-state">
