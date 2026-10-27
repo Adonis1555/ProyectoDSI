@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'styles/control_alumnos.css' %}">
+    <link rel="stylesheet" href="{% static 'estilos/acceso_historial.css' %}">
     <title>Alumnos</title>
     <style>
         .FiltroContainer {
@@ -78,6 +79,84 @@
             cursor: not-allowed;
             background-color: #f8fafc;
         }
+        .tarjetas-alumnos {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+        .tarjeta-alumnos {
+            display: block;
+            padding: 18px;
+            color: #334155;
+            text-decoration: none;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            transition: all 0.2s ease;
+        }
+        .tarjeta-alumnos:hover {
+            border-color: #2E5299;
+            transform: translateY(-1px);
+        }
+        .tarjeta-alumnos.activa {
+            color: #ffffff;
+            background: #2E5299;
+            border-color: #2E5299;
+        }
+        .tarjeta-alumnos h2 {
+            margin: 0 0 6px;
+            font-size: 16px;
+        }
+        .tarjeta-alumnos p {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.45;
+            color: #64748b;
+        }
+        .tarjeta-alumnos.activa p { color: #e2e8f0; }
+        .estado-solicitud {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .estado-solicitud.aprobada {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .estado-solicitud.subsanar {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .btn-ver-solicitud {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            border: 1px solid #2E5299;
+            border-radius: 7px;
+            background: #2E5299;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        .btn-ver-solicitud:hover {
+            background: #24437f;
+            border-color: #24437f;
+            box-shadow: 0 2px 4px rgba(46, 82, 153, 0.22);
+            transform: translateY(-1px);
+        }
+        @media (max-width: 768px) {
+            .tarjetas-alumnos { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -121,11 +200,72 @@
             </div>
         </section>
         <section class="registro-alumno">
-                <div class="container-titulo-alumno">
-                    <h1 class="titulo-alumno">Alumnos Registrados</h1>
-                    <a href="{% url 'registro_alumnos' %}">
-                        <button type="button" class="btnRegistrarAlumno">+ Registrar Alumno</button>
+                <div class="tarjetas-alumnos" aria-label="Opciones de alumnos">
+                    <a class="tarjeta-alumnos {% if vista_actual == 'solicitudes' %}activa{% endif %}" href="{% url 'control_alumnos' %}?vista=solicitudes">
+                        <h2>Solicitudes matrícula de estudiantes</h2>
+                        <p>Solicitudes enviadas por responsables para tus grados y secciones asignados.</p>
                     </a>
+                    <a class="tarjeta-alumnos {% if vista_actual == 'registrados' %}activa{% endif %}" href="{% url 'control_alumnos' %}?vista=registrados">
+                        <h2>Alumnos registrados</h2>
+                        <p>Consulta y administra los alumnos que ya se encuentran registrados.</p>
+                    </a>
+                </div>
+
+                {% if vista_actual == 'solicitudes' %}
+                <div class="container-titulo-alumno encabezado-con-historial">
+                    <h1 class="titulo-alumno">Solicitudes matrícula de estudiantes</h1>
+                    <div class="acciones-encabezado">
+                        {% include 'acceso_historial.html' %}
+                    </div>
+                </div>
+
+                <div class="containerTabla">
+                    <table class="tabla-alumno">
+                        <thead>
+                            <tr>
+                                <th>Estudiante</th>
+                                <th>NIE</th>
+                                <th>Grado y sección</th>
+                                <th>Responsable</th>
+                                <th>Fecha de envío</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for solicitud in solicitudes_matricula %}
+                            <tr>
+                                <td>{{ solicitud.nombres }} {{ solicitud.apellidos }}</td>
+                                <td>{{ solicitud.nie }}</td>
+                                <td>{{ solicitud.grado_seccion.get_grado_display }} - Sección "{{ solicitud.grado_seccion.seccion }}"</td>
+                                <td>{{ solicitud.responsable.nombre }} {{ solicitud.responsable.apellido }}</td>
+                                <td>{{ solicitud.fecha_envio|date:"d/m/Y" }}</td>
+                                <td>
+                                    <span class="estado-solicitud {% if solicitud.estado == 'APROBADA' %}aprobada{% elif solicitud.estado == 'RECHAZADA' %}subsanar{% endif %}">
+                                        {% if solicitud.estado == 'RECHAZADA' %}Debe ser subsanada{% else %}{{ solicitud.get_estado_display }}{% endif %}
+                                    </span>
+                                </td>
+                                <td><a href="{% url 'solicitud_matricula_detalle' solicitud.id %}" class="btn-ver-solicitud">Ver solicitud completa</a></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="tabla-vacia" style="text-align: center; padding: 30px; color: #64748b;">
+                                    No hay solicitudes de matrícula para tus grados y secciones asignados.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="container-titulo-alumno encabezado-con-historial">
+                    <h1 class="titulo-alumno">Alumnos Registrados</h1>
+                    <div class="acciones-encabezado">
+                        {% include 'acceso_historial.html' %}
+                        {% if periodo.fase_actual == 'MATRICULA' %}<a href="{% url 'registro_alumnos' %}">
+                            <button type="button" class="btnRegistrarAlumno">+ Registrar Alumno</button>
+                        </a>{% endif %}
+                    </div>
                 </div>
                 
                 <div class="FiltroContainer">
@@ -165,7 +305,7 @@
                                     <td>
                                         <div style="display: flex; gap: 8px;">
                                             <a href="{% url 'registro_demeritos_view' alumno.NIE %}" class="btn-registrar">Ver Expediente</a>
-                                            <a href="{% url 'editar_alumno' alumno.NIE %}" class="btn-editar">Editar</a>
+                                            {% if periodo.fase_actual == 'MATRICULA' %}<a href="{% url 'editar_alumno' alumno.NIE %}" class="btn-editar">Editar</a>{% endif %}
                                         </div>
                                     </td>
                                 </tr>
@@ -196,12 +336,14 @@
                         <button type="button" id="btnSiguiente" class="btn-pagina">Siguiente</button>
                     </div>
                 </div>
+                {% endif %}
         </section>
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const selectFiltro = document.getElementById('filtoAula');
+            if (!selectFiltro) return;
             const inputBuscar = document.getElementById('inputBuscar');
             const filas = document.querySelectorAll('.fila-alumno');
             const filaNoResultados = document.getElementById('filaNoResultados');

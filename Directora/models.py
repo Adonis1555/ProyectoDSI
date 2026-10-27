@@ -219,3 +219,16 @@ class ConfiguracionPeriodo(models.Model):
 
     class Meta:
         verbose_name = "Configuración del Periodo"
+
+
+class CierrePeriodo(models.Model):
+    anio_lectivo = models.PositiveIntegerField()
+    fase_cerrada = models.CharField(max_length=20, choices=ConfiguracionPeriodo.FASES)
+    fase_abierta = models.CharField(max_length=20, choices=ConfiguracionPeriodo.FASES)
+    realizado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    fecha = models.DateTimeField(auto_now_add=True)
+    resumen = models.JSONField(default=dict)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['anio_lectivo', 'fase_cerrada'], name='cierre_unico_anio_fase')]
+        ordering = ['-fecha']

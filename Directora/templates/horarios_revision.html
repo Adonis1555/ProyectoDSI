@@ -130,7 +130,9 @@
                     </div>
 
                     <!-- Panel de Acciones de Dirección -->
-                    {% if horario_seleccionado.puede_resolverse %}
+                    {% if periodo.fase_actual == 'CLASES' %}
+                    <div class="resolucion-completada">Periodo de clases: horario de solo lectura.</div>
+                    {% elif horario_seleccionado.puede_resolverse %}
                     <div class="acciones-revision">
                         <p><i class="ti ti-info-circle"></i> Revisa todas las clases antes de emitir una resolución.</p>
                         <div>
@@ -251,5 +253,6 @@
         });
     </script>
     {% endif %}
+{% include 'planificacion_cerrada.html' %}
 </body>
 </html>

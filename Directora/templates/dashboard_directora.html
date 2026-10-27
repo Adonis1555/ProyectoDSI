@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'estilos/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'estilos/acceso_historial.css' %}">
     <title>Consola de Dirección - Dashboard</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -50,7 +51,7 @@
             border-radius: 30px;
             font-size: 13px;
             font-weight: 700;
-            cursor: pointer;
+            cursor: default;
             border: 1.5px solid transparent;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             outline: none;
@@ -205,6 +206,51 @@
             font-weight: 600;
             font-size: 12px;
         }
+        .cierre-periodo-section {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 25px;
+        }
+        .cierre-periodo-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 22px 24px;
+            background: #fff7f7;
+            border: 1px solid #fecaca;
+            border-left: 5px solid #dc2626;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .cierre-periodo-texto h2 {
+            margin: 0 0 6px;
+            color: #991b1b;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .cierre-periodo-texto p {
+            margin: 0;
+            color: #7f1d1d;
+            font-size: 13px;
+        }
+        .cierre-periodo-etiqueta {
+            flex-shrink: 0;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #fee2e2;
+            color: #991b1b;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .btn-cerrar-matricula {
+            background: #C0392B; color: white; border: none; border-radius: 8px;
+            padding: 11px 16px; font: inherit; font-size: 13px; font-weight: 600;
+            cursor: pointer; margin-top: 14px;
+        }
+        .btn-cerrar-matricula:disabled { opacity: .6; cursor: wait; }
+        .revision-requisito { padding: 12px 0; border-bottom: 1px solid #e2e8f0; }
+        .revision-requisito ul { margin: 8px 0 8px 20px; font-size: 13px; }
+        .revision-requisito a { color: #2E5299; font-size: 13px; }
         @media (max-width: 768px) {
             .header-dashboard-flex {
                 flex-direction: column;
@@ -212,6 +258,10 @@
             }
             .widgets-grid, .charts-grid, .tops-grid {
                 grid-template-columns: 1fr;
+            }
+            .cierre-periodo-card {
+                align-items: flex-start;
+                flex-direction: column;
             }
         }
     </style>
@@ -265,26 +315,28 @@
                     <h1 class="titulo-maestro">Dashboard General de Dirección</h1>
                 </div>
 
-                <!-- SWITCH / BADGE DE PERIODO -->
-                <div class="periodo-control-wrapper">
-                    <span class="periodo-tag-label">Periodo Activo:</span>
-                    <button type="button" 
-                            id="btn_toggle_periodo" 
-                            class="btn-switch-periodo {% if periodo.fase_actual == 'MATRICULA' %}fase-matricula{% else %}fase-clases{% endif %}"
-                            data-fase="{{ periodo.fase_actual }}"
-                            title="Hacer clic para alternar fase escolar">
-                        <span id="icono_fase">
-                            {% if periodo.fase_actual == 'MATRICULA' %}📝{% else %}📚{% endif %}
+                <div class="acciones-encabezado acciones-encabezado--direccion">
+                    {% include 'acceso_historial.html' %}
+                    <!-- SWITCH / BADGE DE PERIODO -->
+                    <div class="periodo-control-wrapper">
+                        <span class="periodo-tag-label">Periodo Activo:</span>
+                        <span
+                                class="btn-switch-periodo {% if periodo.fase_actual == 'MATRICULA' %}fase-matricula{% else %}fase-clases{% endif %}"
+                                data-fase="{{ periodo.fase_actual }}"
+                                aria-label="Periodo escolar activo">
+                            <span id="icono_fase">
+                                {% if periodo.fase_actual == 'MATRICULA' %}📝{% else %}📚{% endif %}
+                            </span>
+                            <span id="texto_fase">
+                                {% if periodo.fase_actual == 'MATRICULA' %}
+                                    Periodo de Matrícula ({{ periodo.anio_activo }})
+                                {% else %}
+                                    Periodo de Clases ({{ periodo.anio_activo }})
+                                {% endif %}
+                            </span>
+                            <span class="switch-punto-activo"></span>
                         </span>
-                        <span id="texto_fase">
-                            {% if periodo.fase_actual == 'MATRICULA' %}
-                                Periodo de Matrícula ({{ periodo.anio_activo }})
-                            {% else %}
-                                Periodo de Clases ({{ periodo.anio_activo }})
-                            {% endif %}
-                        </span>
-                        <span class="switch-punto-activo"></span>
-                    </button>
+                    </div>
                 </div>
             </div>
 
@@ -386,76 +438,94 @@
                     </table>
                 </div>
             </div>
+
+            <section class="cierre-periodo-section" aria-labelledby="titulo-cierre-periodo">
+                <div class="cierre-periodo-card">
+                    <div class="cierre-periodo-texto">
+                        <h2 id="titulo-cierre-periodo">⚠ Cierre de {{ periodo.get_fase_actual_display }}</h2>
+                        <p>Este apartado corresponde al cierre del periodo activo del año lectivo {{ periodo.anio_activo }}. Procede con precaución.</p>
+                        {% if periodo.fase_actual == 'MATRICULA' %}
+                        <button type="button" class="btn-cerrar-matricula" id="btnRevisarCierre">Revisar y cerrar matrícula</button>
+                        {% else %}
+                        <button type="button" class="btn-cerrar-matricula" id="btnRevisarCierreClases">Revisar y cerrar clases</button>
+                        {% endif %}
+                    </div>
+                    <span class="cierre-periodo-etiqueta">{{ periodo.get_fase_actual_display }}</span>
+                </div>
+            </section>
         </section>
     </main>
 
     <!-- Script de Inicialización de Chart.js y Toggle de Periodo con SweetAlert2 -->
     <script>
-        // 1. LÓGICA DEL SWITCH DE PERIODO
+        // Revisión y confirmación del cierre de matrícula.
         document.addEventListener("DOMContentLoaded", function() {
-            const btnToggle = document.getElementById('btn_toggle_periodo');
-            if (btnToggle) {
-                btnToggle.addEventListener('click', function() {
-                    const faseActual = this.getAttribute('data-fase');
-                    const esMatricula = (faseActual === 'MATRICULA');
-
-                    const nuevaFaseNombre = esMatricula ? 'Periodo de Clases' : 'Periodo de Matrícula';
-                    const confirmColor = esMatricula ? '#2563eb' : '#f59e0b';
-                    const mensajeExplicativo = esMatricula 
-                        ? '¿Deseas activar el Periodo de Clases? Se cerrará la recepción de nuevas fichas de matrícula y se activará el registro de asistencias, notas y conducta.' 
-                        : '¿Deseas activar el Periodo de Matrícula? Se habilitará el formulario de inscripciones para los responsables del centro escolar.';
-
-                    Swal.fire({
-                        title: `Cambiar a ${nuevaFaseNombre}`,
-                        text: mensajeExplicativo,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: confirmColor,
-                        cancelButtonColor: '#64748b',
-                        confirmButtonText: 'Sí, cambiar fase',
-                        cancelButtonText: 'Cancelar'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            fetch("{% url 'alternar_periodo' %}", {
-                                method: 'POST',
-                                headers: {
-                                    'X-CSRFToken': '{{ csrf_token }}',
-                                    'X-Requested-With': 'XMLHttpRequest'
-                                }
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.ok) {
-                                    Swal.fire({
-                                        title: '¡Fase Actualizada!',
-                                        text: data.mensaje,
-                                        icon: 'success',
-                                        confirmButtonColor: '#2563eb',
-                                        confirmButtonText: 'Aceptar'
-                                    }).then(() => {
-                                        window.location.reload();
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        title: 'Error',
-                                        text: data.error || 'No se pudo alternar el periodo escolar.',
-                                        icon: 'error',
-                                        confirmButtonColor: '#dc2626'
-                                    });
-                                }
-                            })
-                            .catch(err => {
-                                Swal.fire({
-                                    title: 'Error de Red',
-                                    text: 'Hubo un inconveniente conectando con el servidor.',
-                                    icon: 'error',
-                                    confirmButtonColor: '#dc2626'
-                                });
+            const boton = document.getElementById('btnRevisarCierre') || document.getElementById('btnRevisarCierreClases');
+            if (!boton) return;
+            const cerrarClases = boton.id === 'btnRevisarCierreClases';
+            const urlRevision = cerrarClases ? "{% url 'revision_cierre_clases' %}" : "{% url 'revision_cierre_matricula' %}";
+            const urlCierre = cerrarClases ? "{% url 'cerrar_clases' %}" : "{% url 'cerrar_matricula' %}";
+            boton.addEventListener('click', async () => {
+                boton.disabled = true;
+                try {
+                    const respuesta = await fetch(urlRevision);
+                    const revision = await respuesta.json();
+                    if (!respuesta.ok || !revision.ok) throw new Error(revision.error || 'No se pudo revisar el cierre.');
+                    const contenido = document.createElement('div');
+                    contenido.style.textAlign = 'left';
+                    revision.requisitos.forEach(requisito => {
+                        const bloque = document.createElement('div');
+                        bloque.className = 'revision-requisito';
+                        const titulo = document.createElement('strong');
+                        titulo.textContent = `${requisito.cumplido ? '✓' : '⚠'} ${requisito.titulo}`;
+                        titulo.style.color = requisito.cumplido ? '#166534' : '#991b1b';
+                        bloque.appendChild(titulo);
+                        if (requisito.problemas.length) {
+                            const lista = document.createElement('ul');
+                            requisito.problemas.forEach(problema => {
+                                const item = document.createElement('li');
+                                item.textContent = problema;
+                                lista.appendChild(item);
                             });
+                            bloque.appendChild(lista);
+                            const enlace = document.createElement('a');
+                            enlace.href = requisito.url;
+                            enlace.textContent = 'Ir a revisar';
+                            bloque.appendChild(enlace);
                         }
+                        contenido.appendChild(bloque);
                     });
-                });
-            }
+                    const resultado = await Swal.fire({
+                        title: `Revisión de ${cerrarClases ? 'clases' : 'matrícula'} ${revision.anio_activo}`,
+                        html: contenido, width: 720,
+                        showCancelButton: true,
+                        showConfirmButton: revision.puede_cerrar,
+                        confirmButtonText: 'Continuar al cierre',
+                        cancelButtonText: 'Volver', confirmButtonColor: '#C0392B',
+                    });
+                    if (!resultado.isConfirmed) return;
+                    const confirmacion = await Swal.fire({
+                        title: cerrarClases ? `Cerrar clases ${revision.anio_activo} y abrir matrícula ${revision.anio_siguiente}` : `Cerrar matrícula e iniciar clases ${revision.anio_activo}`,
+                        text: cerrarClases ? 'Se conservará el historial del año y se liberarán los encargados de sección para una nueva planificación. Los bloques anteriores quedarán desactivados. No se promoverán ni matricularán estudiantes automáticamente.' : 'Se cerrarán los envíos, correcciones y decisiones de matrícula y la planificación académica. Se habilitará el registro de conducta para los alumnos matriculados.',
+                        icon: 'warning', showCancelButton: true,
+                        confirmButtonText: 'Confirmar cierre', cancelButtonText: 'Cancelar', confirmButtonColor: '#C0392B',
+                    });
+                    if (!confirmacion.isConfirmed) return;
+                    const datos = new URLSearchParams({anio_activo: revision.anio_activo, confirmacion: cerrarClases ? 'CERRAR CLASES' : 'CERRAR MATRICULA'});
+                    const cierre = await fetch(urlCierre, {
+                        method: 'POST', body: datos,
+                        headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                    });
+                    const resultadoCierre = await cierre.json();
+                    if (!cierre.ok || !resultadoCierre.ok) throw new Error(resultadoCierre.error || 'No se pudo cerrar el periodo. Vuelve a revisar los requisitos.');
+                    await Swal.fire({title: cerrarClases ? 'Año archivado' : 'Matrícula cerrada', text: resultadoCierre.mensaje, icon: 'success'});
+                    window.location.reload();
+                } catch (error) {
+                    await Swal.fire({title: 'No se realizó el cierre', text: error.message, icon: 'error'});
+                } finally {
+                    boton.disabled = false;
+                }
+            });
         });
 
         // 2. CONFIGURACIÓN DE GRÁFICOS CHART.JS

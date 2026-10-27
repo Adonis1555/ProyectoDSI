@@ -1,0 +1,10 @@
+<ul>
+    {% if request.user.es_directora %}
+    <a href="{% url 'dashboard_directora' %}" style="text-decoration: none;"><li class="item-menu">Dashboard</li></a>
+    {% elif request.user.es_maestro %}
+    <a href="{% url 'control_alumnos' %}" style="text-decoration: none;"><li class="item-menu">Alumnos</li></a>
+    {% else %}
+    <a href="{% url 'dashboard_responsable' %}" style="text-decoration: none;"><li class="item-menu">Mis alumnos</li></a>
+    {% endif %}
+    <a href="{% url 'historial_anual' %}" style="text-decoration: none;"><li class="item-menu activo">Historial anual</li></a>
+</ul>

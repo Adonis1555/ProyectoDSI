@@ -1,0 +1,48 @@
+{% extends 'historial_base.html' %}
+{% block contenido %}
+<div class="container-titulo-alumno">
+    <h1 class="titulo-alumno">Historial del año {{ anio_archivado }}</h1>
+    <a class="btn-historial" href="{% url 'historial_anual' %}">Volver a años cerrados</a>
+</div>
+<p class="aviso-historial">Datos conservados al cierre del {{ cierre.fecha|date:"d/m/Y h:i A" }}. La apertura del siguiente ciclo no modifica esta información. El cierre no asigna promociones ni resultados académicos.</p>
+
+<section class="panel-historial">
+    <h2>Secciones y docentes encargados</h2>
+    <div class="containerTabla"><table class="tabla-alumno">
+        <thead><tr><th>Grado y sección</th><th>Turno</th><th>Docente encargado al cierre</th></tr></thead>
+        <tbody>{% for seccion in secciones %}<tr><td>{{ seccion }}</td><td>{{ seccion.turno }}</td><td>{{ seccion.docente_nombre }}</td></tr>{% empty %}<tr><td colspan="3">Sin secciones para consultar.</td></tr>{% endfor %}</tbody>
+    </table></div>
+</section>
+
+<section class="panel-historial">
+    <h2>Estudiantes y matrículas del ciclo</h2>
+    <div class="containerTabla"><table class="tabla-alumno">
+        <thead><tr><th>NIE</th><th>Estudiante</th><th>Grado y sección del año</th><th>Estado de matrícula al cierre</th></tr></thead>
+        <tbody>{% for matricula in matriculas %}<tr><td>{{ matricula.alumno_id }}</td><td>{{ matricula.nombre }}</td><td>{{ matricula.seccion }}</td><td>{{ matricula.estado_nombre }}</td></tr>{% empty %}<tr><td colspan="4">Sin matrículas para consultar.</td></tr>{% endfor %}</tbody>
+    </table></div>
+</section>
+
+<section class="panel-historial">
+    <h2>Fichas de matrícula</h2>
+    <div class="containerTabla"><table class="tabla-alumno">
+        <thead><tr><th>Estudiante</th><th>Grado y sección</th><th>Acciones</th></tr></thead>
+        <tbody>{% for ficha in fichas %}<tr><td>{{ ficha.nombres }} {{ ficha.apellidos }}</td><td>{{ ficha.seccion }}</td><td><a class="btn-historial" href="{% url 'ficha_archivada' anio_archivado ficha.id %}">Ver ficha completa</a></td></tr>{% empty %}<tr><td colspan="3">Sin fichas para consultar.</td></tr>{% endfor %}</tbody>
+    </table></div>
+</section>
+
+<section class="panel-historial">
+    <h2>Horario conservado</h2>
+    <div class="containerTabla"><table class="tabla-alumno">
+        <thead><tr><th>Grado y sección</th><th>Materia</th><th>Docente</th><th>Día / bloque</th><th>Estado al cierre</th></tr></thead>
+        <tbody>{% for clase in horarios %}<tr><td>{{ clase.seccion }}</td><td>{{ clase.materia }}</td><td>{{ clase.docente }}</td><td>{{ clase.dia_nombre }} / {{ clase.bloque }}</td><td>{{ clase.estado_nombre }}</td></tr>{% empty %}<tr><td colspan="5">Sin clases para consultar.</td></tr>{% endfor %}</tbody>
+    </table></div>
+</section>
+
+<section class="panel-historial">
+    <h2>Conducta del año</h2>
+    <div class="containerTabla"><table class="tabla-alumno">
+        <thead><tr><th>Fecha</th><th>Estudiante</th><th>Tipo</th><th>Escala</th></tr></thead>
+        <tbody>{% for registro in conducta %}<tr><td>{{ registro.fecha|date:"d/m/Y" }}</td><td>{{ registro.nombre }}</td><td>{{ registro.tipo_nombre }}</td><td>{{ registro.sub_letra }}</td></tr>{% empty %}<tr><td colspan="4">Sin incidencias para consultar.</td></tr>{% endfor %}</tbody>
+    </table></div>
+</section>
+{% endblock %}

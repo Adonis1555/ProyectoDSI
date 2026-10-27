@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from Login.decorators import directora_required, maestro_required, responsable_required,roles_permitidos
 from datetime import date,datetime
 from Login.models import Usuario  
-from Directora.models import Maestro,GradoSeccion,Materia,AsignacionMateria,AsignacionBloqueMaestro,especialidad_coincide_con_materia,normalizar_turno,ConfiguracionPeriodo
+from Directora.models import Maestro,GradoSeccion,Materia,AsignacionMateria,AsignacionBloqueMaestro,normalizar_turno,ConfiguracionPeriodo
 from django.http import JsonResponse
 from django.db import transaction
 from django.core.paginator import Paginator,PageNotAnInteger
@@ -26,6 +26,9 @@ import json
 import unicodedata
 from django.db.models import Sum,Q
 from Responsable.models import Matricula
+from .models import CierrePeriodo
+from .periodos import periodo_requerido, revisar_cierre_matricula, revisar_cierre_clases
+from .archivos import alumnos_del_anio, cierre_anual, matriz_conducta_archivada
 
 @login_required
 @directora_required
@@ -64,6 +67,7 @@ def directora_view(request):
 @login_required
 @directora_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def toggle_maestro_activo(request, dui):
     try:
         maestro = get_object_or_404(Maestro, dui=dui)
@@ -83,6 +87,7 @@ def toggle_maestro_activo(request, dui):
 @login_required
 @directora_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def asignar_grado_maestro(request):
     try:
         import json
@@ -286,6 +291,7 @@ def grado_seccion_control(request):
 @login_required
 @directora_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def toggle_grado_activo(request, pk):
     try:
         gs = get_object_or_404(GradoSeccion, id=pk)
@@ -335,9 +341,14 @@ def toggle_grado_activo(request, pk):
 @login_required
 @directora_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def eliminar_grado_seccion(request, pk):
     try:
         grado_seccion = get_object_or_404(GradoSeccion, id=pk)
+        if (grado_seccion.matriculas_seccion.exists() or grado_seccion.fichas_matricula.exists()
+                or HorarioClase.objects.filter(grado_seccion=grado_seccion).exists()
+                or grado_seccion.materias_distribuidas.exists()):
+            return JsonResponse({'ok': False, 'error': 'La sección tiene registros académicos asociados. Puedes desactivarla, pero debe conservarse su historial.'}, status=400)
         
         conteo_alumnos = grado_seccion.alumnos.count() 
         
@@ -366,7 +377,10 @@ def eliminar_grado_seccion(request, pk):
 
 @login_required
 @directora_required
+@periodo_requerido('MATRICULA')
 def registrar_grado_seccion(request):
+    if request.method == 'GET' and ConfiguracionPeriodo.get_solo().fase_actual != 'MATRICULA':
+        return redirect('grado_seccion_control')
     if request.method == 'POST':
         grado_codigo = request.POST.get('grado')
         seccion_texto = request.POST.get('seccion')
@@ -507,7 +521,8 @@ def control_demeritos(request):
     anios_totales.add(anio_actual)
     anios_disponibles = sorted(list(anios_totales), reverse=True)
 
-    secciones = GradoSeccion.objects.filter(activo=True).order_by('grado', 'seccion')
+    cierre = cierre_anual(anio_actual)
+    secciones = [] if cierre else GradoSeccion.objects.filter(activo=True).order_by('grado', 'seccion')
     matriz_grados = []
 
     totales_globales = {
@@ -598,6 +613,8 @@ def control_demeritos(request):
         totales_globales['rc_h'] += rc_h
         totales_globales['rc_total'] += rc_total
 
+    if cierre:
+        matriz_grados, totales_globales = matriz_conducta_archivada(cierre.resumen['archivo'], mes_actual)
     context = {
         'periodo': periodo,
         'matriz_grados': matriz_grados,
@@ -620,7 +637,7 @@ def exportar_excel_conducta(request):
 
     hoy = date.today()
     mes_actual = int(request.GET.get('mes', hoy.month))
-    anio_actual = int(request.GET.get('anio', hoy.year))
+    anio_actual = int(request.GET.get('anio', ConfiguracionPeriodo.get_solo().anio_activo))
 
     meses_nombres = {
         1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio',
@@ -628,7 +645,8 @@ def exportar_excel_conducta(request):
     }
     nombre_mes = meses_nombres.get(mes_actual, '')
 
-    secciones = GradoSeccion.objects.filter(activo=True).order_by('grado', 'seccion')
+    cierre = cierre_anual(anio_actual)
+    secciones = [] if cierre else GradoSeccion.objects.filter(activo=True).order_by('grado', 'seccion')
     matriz_grados = []
     totales_globales = {
         'mat_m': 0, 'mat_h': 0, 'mat_total': 0,
@@ -640,7 +658,7 @@ def exportar_excel_conducta(request):
     }
 
     for seccion in secciones:
-        alumnos = Alumno.objects.filter(grado_seccion=seccion, activo=True)
+        alumnos = alumnos_del_anio(seccion, anio_actual)
         mat_m = alumnos.filter(sexo='F').count()
         mat_h = alumnos.filter(sexo='M').count()
         mat_total = mat_m + mat_h
@@ -712,6 +730,8 @@ def exportar_excel_conducta(request):
         totales_globales['rc_h'] += rc_h
         totales_globales['rc_total'] += rc_total
 
+    if cierre:
+        matriz_grados, totales_globales = matriz_conducta_archivada(cierre.resumen['archivo'], mes_actual)
     logo_path = os.path.join(settings.BASE_DIR, 'Directora', 'static', 'logo.jpg')
     logo_base64 = ""
     if os.path.exists(logo_path):
@@ -925,6 +945,7 @@ def get_maestro_grados(request, dui):
 @login_required
 @directora_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def desasignar_grado_maestro(request):
     try:
         import json
@@ -954,7 +975,10 @@ def directora_dashboard(request):
     anio_activo = periodo.anio_activo
 
     # 2. Métricas de conteo de entidades activas
-    total_alumnos = Alumno.objects.filter(activo=True).count()
+    if CierrePeriodo.objects.filter(fase_cerrada='CLASES', anio_lectivo__lt=anio_activo).exists():
+        total_alumnos = Matricula.objects.filter(anio_lectivo=anio_activo, estado='ACTIVO', alumno__activo=True).count()
+    else:
+        total_alumnos = Alumno.objects.filter(activo=True).count()
     total_maestros = Maestro.objects.filter(activo=True).count()
     total_secciones = GradoSeccion.objects.filter(activo=True).count()
 
@@ -1139,6 +1163,7 @@ def directora_materia(request):
 
     contexto = {
         'materias': materias,
+        'periodo': periodo,
         'materias_tercer_ciclo': materias_tercer_ciclo,
         'secciones_basica': secciones_basica,
         'matriz_tercer_ciclo': matriz_tercer_ciclo,
@@ -1153,7 +1178,7 @@ def directora_materia(request):
 @login_required
 @directora_required
 def obtener_bloques_maestro(request, dui):
-    anio = request.GET.get('anio', datetime.now().year)
+    anio = request.GET.get('anio', ConfiguracionPeriodo.get_solo().anio_activo)
     turno = normalizar_turno(request.GET.get('turno', 'Mañana'))
     try:
         anio = int(anio)
@@ -1179,11 +1204,12 @@ def obtener_bloques_maestro(request, dui):
 @login_required
 @directora_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def guardar_bloques_maestro(request):
     try:
         data = json.loads(request.body.decode('utf-8'))
         dui = data.get('dui_maestro')
-        anio = int(data.get('anio_lectivo', datetime.now().year))
+        anio = request.periodo.anio_activo
         turno = normalizar_turno(data.get('turno', 'Mañana'))
         bloques_recibidos = data.get('bloques', [])
 
@@ -1398,6 +1424,7 @@ def horarios_revision(request):
 
     contexto = {
         'horarios': horarios,
+        'periodo': periodo,
         'horario_seleccionado': horario_seleccionado,
         'dui_seleccionado': dui_seleccionado,
         'turno_seleccionado': turno_seleccionado,
@@ -1414,6 +1441,7 @@ def horarios_revision(request):
 @login_required
 @directora_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def resolver_horario_tercer_ciclo(request):
     from Maestros.models import HorarioClase
 
@@ -1422,7 +1450,7 @@ def resolver_horario_tercer_ciclo(request):
         dui = data.get('dui_maestro')
         accion = data.get('accion')
         observaciones = data.get('observaciones', '').strip()
-        anio = int(data.get('anio_lectivo', datetime.now().year))
+        anio = request.periodo.anio_activo
         turno = normalizar_turno(data.get('turno', 'Mañana'))
 
         if accion not in {'aprobar', 'rechazar'}:
@@ -1470,6 +1498,7 @@ def resolver_horario_tercer_ciclo(request):
 @login_required
 @directora_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def resolver_horario_niveles_basicos(request):
     from Maestros.models import HorarioClase
 
@@ -1478,7 +1507,7 @@ def resolver_horario_niveles_basicos(request):
         dui = data.get('dui_maestro')
         accion = data.get('accion')
         observaciones = data.get('observaciones', '').strip()
-        anio = int(data.get('anio_lectivo', datetime.now().year))
+        anio = request.periodo.anio_activo
         turno = normalizar_turno(data.get('turno', 'Mañana'))
 
         if accion not in {'aprobar', 'rechazar'}:
@@ -1490,7 +1519,7 @@ def resolver_horario_niveles_basicos(request):
         clases = HorarioClase.objects.filter(
             docente=maestro,
             anio_lectivo=anio,
-            grado_seccion__grado__in=['PK', '1G', '2G', '3G', '4G', '5G', '6G'],
+            grado_seccion__grado__in=['PK', 'PK5', 'PK6', '1G', '2G', '3G', '4G', '5G', '6G'],
             estado='ENVIADO',
             turno=turno,
         )
@@ -1526,6 +1555,7 @@ def resolver_horario_niveles_basicos(request):
 @login_required
 @directora_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def publicar_horario(request):
     from Maestros.models import HorarioClase
 
@@ -1533,13 +1563,13 @@ def publicar_horario(request):
         data = json.loads(request.body.decode('utf-8'))
         dui = data.get('dui_maestro')
         nivel = data.get('nivel')
-        anio = int(data.get('anio_lectivo', datetime.now().year))
+        anio = request.periodo.anio_activo
         turno = normalizar_turno(data.get('turno', 'Mañana'))
 
         if nivel == 'tercer':
             grados = ['7G', '8G', '9G']
         elif nivel == 'basica':
-            grados = ['PK', '1G', '2G', '3G', '4G', '5G', '6G']
+            grados = ['PK', 'PK5', 'PK6', '1G', '2G', '3G', '4G', '5G', '6G']
         else:
             return JsonResponse({'success': False, 'error': 'El nivel educativo no es válido.'}, status=400)
 
@@ -1579,6 +1609,7 @@ def publicar_horario(request):
 @login_required
 @directora_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def guardar_materia(request):
     try:
         data = json.loads(request.body.decode('utf-8'))
@@ -1687,6 +1718,7 @@ def guardar_materia(request):
 @require_POST
 @login_required
 @directora_required
+@periodo_requerido('MATRICULA')
 def asignar_materia_docente(request):
     try:
         data = json.loads(request.body)
@@ -1750,6 +1782,7 @@ def asignar_materia_docente(request):
 @login_required
 @directora_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def eliminar_materia(request):
     try:
         data = json.loads(request.body.decode('utf-8'))
@@ -1799,6 +1832,7 @@ def eliminar_materia(request):
 @login_required
 @directora_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def actualizar_materia(request):
     try:
         data = json.loads(request.body.decode('utf-8'))
@@ -1864,93 +1898,122 @@ def actualizar_materia(request):
 @directora_required
 @require_POST
 def alternar_periodo_ajax(request):
-    try:
-        config = ConfiguracionPeriodo.get_solo()
+    return cerrar_matricula(request)
 
-        # 1. Validar existencia de grados activos
-        grados_activos = GradoSeccion.objects.filter(activo=True)
 
-        if not grados_activos.exists():
-            return JsonResponse({
-                'ok': False,
-                'error': 'Operación denegada: No existe ningún grado activo en la institución. Registra y activa al menos una sección antes de cambiar de periodo.'
-            }, status=400)
+@login_required
+@directora_required
+def revision_cierre_matricula(request):
+    if request.method != 'GET':
+        return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
+    periodo = ConfiguracionPeriodo.get_solo()
+    return JsonResponse({'ok': True, **revisar_cierre_matricula(periodo)})
 
-        # 2. Validar que no existan grados activos sin maestro encargado
-        grados_sin_docente = grados_activos.filter(maestro_encargado__isnull=True)
-        if grados_sin_docente.exists():
-            nombres_pendientes = [
-                f"{g.get_grado_display()} \"{g.seccion}\" ({g.turno.lower()})" 
-                for g in grados_sin_docente
-            ]
-            lista_formateada = ", ".join(nombres_pendientes)
-            return JsonResponse({
-                'ok': False,
-                'error': (
-                    f"Imposible cambiar de periodo: Existen {grados_sin_docente.count()} grado(s) activo(s) "
-                    f"sin maestro asignado ({lista_formateada}). Todos los grados activos deben contar con un docente orientador."
-                )
-            }, status=400)
-
-        # =========================================================================
-        # CASO 1: TRANSICIÓN DE MATRÍCULA A CLASES (Mismo año lectivo)
-        # =========================================================================
-        if config.fase_actual == 'MATRICULA':
-            config.fase_actual = 'CLASES'
-            config.save()
-
-            return JsonResponse({
-                'ok': True,
-                'nueva_fase': config.fase_actual,
-                'fase_display': config.get_fase_actual_display(),
-                'anio_activo': config.anio_activo,
-                'mensaje': f"Se ha iniciado el Periodo de Clases para el año lectivo {config.anio_activo}. Las inscripciones se encuentran cerradas."
-            })
-
-        # =========================================================================
-        # CASO 2: TRANSICIÓN DE CLASES A MATRÍCULA (Apertura de nuevo año lectivo)
-        # =========================================================================
-        else:
-            anio_que_cierra = config.anio_activo
-            nuevo_anio = anio_que_cierra + 1
-
-            with transaction.atomic():
-                # 1. Avanzar periodo y año lectivo
-                config.anio_activo = nuevo_anio
-                config.fase_actual = 'MATRICULA'
-                config.save()
-
-                # 2. Desasignar orientadores para la nueva distribución del nuevo año
-                GradoSeccion.objects.filter(activo=True).update(maestro_encargado=None)
-
-                # 3. Desactivar bloques de horario del año saliente
-                AsignacionBloqueMaestro.objects.filter(
-                    anio_lectivo=anio_que_cierra,
-                    activo=True
-                ).update(activo=False)
-
-                # 4. RESETEO DE MATERIAS DE TERCER CICLO:
-                AsignacionMateria.objects.filter(anio_lectivo=nuevo_anio).delete()
-                HorarioClase.objects.filter(anio_lectivo=nuevo_anio).delete()
-
-            return JsonResponse({
-                'ok': True,
-                'nueva_fase': config.fase_actual,
-                'fase_display': config.get_fase_actual_display(),
-                'anio_activo': config.anio_activo,
-                'mensaje': (
-                    f"¡Año lectivo {anio_que_cierra} finalizado con éxito! "
-                    f"Se ha aperturado el ciclo {nuevo_anio} en Fase de Matrículas. "
-                    f"Grados, materias y horarios oficiales han quedado reiniciados para la nueva planificación."
-                )
-            })
-
-    except Exception as e:
-        return JsonResponse({'ok': False, 'error': f"Error al alternar periodo: {str(e)}"}, status=500)
 
 @login_required
 @directora_required
 @require_POST
+def cerrar_matricula(request):
+    ConfiguracionPeriodo.get_solo()
+    with transaction.atomic():
+        periodo = ConfiguracionPeriodo.objects.select_for_update().get(pk=1)
+        if periodo.fase_actual != 'MATRICULA':
+            return JsonResponse({'ok': False, 'error': 'La matrícula ya está cerrada. Actualiza la pantalla.'}, status=409)
+        if request.POST.get('confirmacion') != 'CERRAR MATRICULA' or request.POST.get('anio_activo') != str(periodo.anio_activo):
+            return JsonResponse({'ok': False, 'error': 'Debes revisar y confirmar el cierre del año activo.'}, status=400)
+        revision = revisar_cierre_matricula(periodo)
+        if not revision['puede_cerrar']:
+            return JsonResponse({'ok': False, 'error': 'Hay requisitos pendientes que impiden cerrar matrícula.', **revision}, status=409)
+        if CierrePeriodo.objects.filter(anio_lectivo=periodo.anio_activo, fase_cerrada='MATRICULA').exists():
+            return JsonResponse({'ok': False, 'error': 'Este cierre ya fue registrado.'}, status=409)
+        CierrePeriodo.objects.create(
+            anio_lectivo=periodo.anio_activo, fase_cerrada='MATRICULA',
+            fase_abierta='CLASES', realizado_por=request.user, resumen=revision,
+        )
+        periodo.fase_actual = 'CLASES'
+        periodo.save(update_fields=['fase_actual', 'actualizado_el'])
+    return JsonResponse({'ok': True, 'mensaje': f'Matrícula cerrada. Se inició el periodo de clases del año {periodo.anio_activo}.'})
+
+
+@login_required
+@directora_required
+def revision_cierre_clases(request):
+    if request.method != 'GET':
+        return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
+    return JsonResponse({'ok': True, **revisar_cierre_clases(ConfiguracionPeriodo.get_solo())})
+
+
+@login_required
+@directora_required
+@require_POST
+def cerrar_clases(request):
+    from .archivos import construir_archivo_anual
+
+    ConfiguracionPeriodo.get_solo()
+    with transaction.atomic():
+        periodo = ConfiguracionPeriodo.objects.select_for_update().get(pk=1)
+        if periodo.fase_actual != 'CLASES':
+            return JsonResponse({'ok': False, 'error': 'El periodo de clases ya no está activo. Actualiza la pantalla.'}, status=409)
+        if request.POST.get('confirmacion') != 'CERRAR CLASES' or request.POST.get('anio_activo') != str(periodo.anio_activo):
+            return JsonResponse({'ok': False, 'error': 'Debes revisar y confirmar el cierre del año activo.'}, status=400)
+        revision = revisar_cierre_clases(periodo)
+        if not revision['puede_cerrar']:
+            return JsonResponse({'ok': False, 'error': 'Hay requisitos pendientes que impiden cerrar clases.', **revision}, status=409)
+        anio = periodo.anio_activo
+        revision['archivo'] = construir_archivo_anual(anio)
+        CierrePeriodo.objects.create(
+            anio_lectivo=anio, fase_cerrada='CLASES', fase_abierta='MATRICULA',
+            realizado_por=request.user, resumen=revision,
+        )
+        GradoSeccion.objects.update(maestro_encargado=None)
+        AsignacionBloqueMaestro.objects.filter(anio_lectivo=anio, activo=True).update(activo=False)
+        periodo.anio_activo = anio + 1
+        periodo.fase_actual = 'MATRICULA'
+        periodo.save(update_fields=['anio_activo', 'fase_actual', 'actualizado_el'])
+    return JsonResponse({'ok': True, 'mensaje': f'El año {anio} quedó archivado. Se abrió matrícula {periodo.anio_activo} para una nueva planificación. No se asignaron promociones ni resultados académicos.'})
+
+
+@login_required
+@roles_permitidos(['directora', 'maestro', 'responsable'])
+def historial_anual(request):
+    if request.method != 'GET':
+        return JsonResponse({'ok': False, 'error': 'El historial es de solo lectura.'}, status=405)
+    from .archivos import archivos_accesibles
+    return render(request, 'historial_anual.html', {
+        'cierres': archivos_accesibles(request.user), 'periodo': ConfiguracionPeriodo.get_solo(),
+    })
+
+
+@login_required
+@roles_permitidos(['directora', 'maestro', 'responsable'])
+def archivo_anual(request, anio):
+    if request.method != 'GET':
+        return JsonResponse({'ok': False, 'error': 'El historial es de solo lectura.'}, status=405)
+    from .archivos import contexto_archivo, filtrar_archivo
+    cierre = get_object_or_404(CierrePeriodo, anio_lectivo=anio, fase_cerrada='CLASES')
+    archivo = filtrar_archivo(cierre.resumen['archivo'], request.user)
+    return render(request, 'archivo_anual.html', {
+        'cierre': cierre, 'anio_archivado': anio, **contexto_archivo(archivo),
+    })
+
+
+@login_required
+@roles_permitidos(['directora', 'maestro', 'responsable'])
+def ficha_archivada(request, anio, ficha_id):
+    if request.method != 'GET':
+        return JsonResponse({'ok': False, 'error': 'El historial es de solo lectura.'}, status=405)
+    from .archivos import ficha_desde_archivo, filtrar_archivo
+    cierre = get_object_or_404(CierrePeriodo, anio_lectivo=anio, fase_cerrada='CLASES')
+    archivo = filtrar_archivo(cierre.resumen['archivo'], request.user)
+    return render(request, 'solicitud_matricula_detalle.html', {
+        'ficha': ficha_desde_archivo(archivo, ficha_id), 'puede_revisar': False,
+        'anio_archivado': anio, 'archivo_historico': True,
+    })
+
+@login_required
+@directora_required
+@require_POST
+@periodo_requerido('MATRICULA')
 def editar_grado_seccion_ajax(request, pk):
     try:
         data = json.loads(request.body.decode('utf-8'))

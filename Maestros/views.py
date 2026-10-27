@@ -3,15 +3,19 @@ import json
 import re
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.contrib import messages
+from django.http import Http404, JsonResponse
 from django.db import transaction
 from django.db.models import Count, Q
 from Login.decorators import maestro_required, roles_permitidos
 from Directora.models import AsignacionBloqueMaestro,GradoSeccion,Maestro,Materia,normalizar_turno,AsignacionMateria,ConfiguracionPeriodo
 from Maestros.models import Alumno, RegistroTarjeta
+from Responsable.models import FichaMatricula, Matricula
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
 from .models import obtener_materias_docente,HorarioClase
+from Directora.periodos import periodo_requerido
+from Directora.archivos import alumnos_del_anio, cierre_anual, filtrar_archivo
 
 @login_required
 @maestro_required
@@ -37,7 +41,7 @@ def maestro_view(request):
 
     # 3. Datos de Matrícula de la sección por sexo
     # Nota: Asegúrate de que los valores guardados en el campo 'sexo' coincidan con 'M' y 'F' (o 'H'/'M')
-    alumnos_seccion = Alumno.objects.filter(grado_seccion=seccion_actual)
+    alumnos_seccion = alumnos_del_anio(seccion_actual, ConfiguracionPeriodo.get_solo().anio_activo)
     total_m = alumnos_seccion.filter(sexo='M').count() # Masculino según las cabeceras de tu tabla
     total_f = alumnos_seccion.filter(sexo='F').count() # Femenino
     
@@ -67,7 +71,7 @@ def maestro_view(request):
     # Filtrar registros que pertenecen únicamente a los alumnos de esta sección en el año en curso
     registros_año = RegistroTarjeta.objects.filter(
         alumno__grado_seccion=seccion_actual,
-        fecha__year=2026 # Cambiar dinámicamente si se requiere
+        fecha__year=ConfiguracionPeriodo.get_solo().anio_activo
     )
 
     for mes_num in range(1, 13):
@@ -155,15 +159,18 @@ def maestro_view(request):
 def control_alumnos(request):
     hoy = date.today()
     secciones_con_alumnos = {}
+    vista_actual = request.GET.get('vista', 'solicitudes')
+    periodo = ConfiguracionPeriodo.get_solo()
+    if vista_actual not in ('solicitudes', 'registrados'):
+        vista_actual = 'solicitudes'
 
-    if request.user.rol == 'maestro':
-        maestro = get_object_or_404(Maestro, id_usuario=request.user)
-        secciones = GradoSeccion.objects.filter(maestro_encargado=maestro).order_by('grado', 'seccion')
-    else:
-        secciones = GradoSeccion.objects.all().order_by('grado', 'seccion')
+    maestro = get_object_or_404(Maestro, id_usuario=request.user)
+    secciones = GradoSeccion.objects.filter(
+        maestro_encargado=maestro
+    ).order_by('grado', 'seccion')
 
     for seccion in secciones:
-        alumnos = Alumno.objects.filter(grado_seccion=seccion, activo=True).order_by('apellido', 'nombre')
+        alumnos = alumnos_del_anio(seccion, periodo.anio_activo).order_by('apellido', 'nombre')
         for a in alumnos:
             if a.fecha_nac:
                 f_nac = a.fecha_nac.date() if hasattr(a.fecha_nac, 'date') else a.fecha_nac
@@ -172,22 +179,143 @@ def control_alumnos(request):
                 a.edad = "N/A"
         secciones_con_alumnos[seccion] = alumnos
 
-    return render(request, "control_alumnos.html", {'secciones_con_alumnos': secciones_con_alumnos})
+    solicitudes_matricula = FichaMatricula.objects.filter(
+        grado_seccion__in=secciones, anio_lectivo=periodo.anio_activo
+    ).select_related('grado_seccion', 'responsable').order_by('-fecha_envio')
+
+    return render(request, "control_alumnos.html", {
+        'secciones_con_alumnos': secciones_con_alumnos,
+        'solicitudes_matricula': solicitudes_matricula,
+        'vista_actual': vista_actual,
+        'periodo': ConfiguracionPeriodo.get_solo(),
+    })
+
+
+@login_required
+@maestro_required
+def solicitud_matricula_detalle(request, ficha_id):
+    maestro = get_object_or_404(Maestro, id_usuario=request.user)
+    ficha = get_object_or_404(
+        FichaMatricula.objects.select_related('grado_seccion', 'responsable', 'responsable__id_usuario'),
+        id=ficha_id,
+    )
+    cierre = cierre_anual(ficha.anio_lectivo)
+    if cierre:
+        archivo = filtrar_archivo(cierre.resumen['archivo'], request.user)
+        if not any(f['id'] == ficha.id for f in archivo['fichas']):
+            raise Http404
+        return redirect('ficha_archivada', anio=ficha.anio_lectivo, ficha_id=ficha.id)
+    if ficha.grado_seccion.maestro_encargado_id != maestro.pk:
+        raise Http404
+    periodo = ConfiguracionPeriodo.get_solo()
+    return render(request, 'solicitud_matricula_detalle.html', {
+        'ficha': ficha,
+        'puede_revisar': periodo.fase_actual == 'MATRICULA' and ficha.anio_lectivo == periodo.anio_activo,
+    })
+
+
+@login_required
+@maestro_required
+@require_POST
+@periodo_requerido('MATRICULA')
+def resolver_solicitud_matricula(request, ficha_id):
+    maestro = get_object_or_404(Maestro, id_usuario=request.user)
+    ficha = get_object_or_404(
+        FichaMatricula.objects.select_related('grado_seccion'),
+        id=ficha_id,
+        grado_seccion__maestro_encargado=maestro,
+    )
+    accion = request.POST.get('accion', '').strip().lower()
+    observaciones = request.POST.get('observaciones', '').strip()
+
+    if ficha.anio_lectivo != request.periodo.anio_activo:
+        return JsonResponse({'ok': False, 'error': 'Esta solicitud pertenece a otro año lectivo.'}, status=409)
+
+    if ficha.estado != 'PENDIENTE':
+        messages.error(request, 'Esta solicitud ya fue revisada.')
+        return redirect('solicitud_matricula_detalle', ficha_id=ficha.id)
+
+    if accion == 'subsanar':
+        if not observaciones:
+            messages.error(request, 'Debes indicar qué información necesita ser subsanada.')
+            return redirect('solicitud_matricula_detalle', ficha_id=ficha.id)
+        from Responsable.models import RevisionFicha
+        RevisionFicha.registrar(ficha, request.user, 'SUBSANAR', observaciones)
+        ficha.estado = 'RECHAZADA'
+        ficha.observaciones = observaciones
+        ficha.save(update_fields=['estado', 'observaciones'])
+        messages.success(request, 'La solicitud fue devuelta al responsable para subsanación.')
+        return redirect('solicitud_matricula_detalle', ficha_id=ficha.id)
+
+    if accion != 'aceptar':
+        messages.error(request, 'La acción indicada no es válida.')
+        return redirect('solicitud_matricula_detalle', ficha_id=ficha.id)
+
+    with transaction.atomic():
+        aula = GradoSeccion.objects.select_for_update().get(pk=ficha.grado_seccion_id)
+        if not aula.activo:
+            messages.error(request, 'La sección ya no está activa.')
+            return redirect('solicitud_matricula_detalle', ficha_id=ficha.id)
+        if Matricula.objects.filter(alumno_id=ficha.nie, anio_lectivo=ficha.anio_lectivo).exists():
+            messages.error(request, 'El estudiante ya tiene una matrícula para este año.')
+            return redirect('solicitud_matricula_detalle', ficha_id=ficha.id)
+        if Matricula.objects.filter(grado_seccion=aula, anio_lectivo=ficha.anio_lectivo, estado='ACTIVO').count() >= aula.cupo_maximo:
+            messages.error(request, 'La sección no tiene cupos disponibles.')
+            return redirect('solicitud_matricula_detalle', ficha_id=ficha.id)
+        alumno, creado = Alumno.objects.get_or_create(
+            NIE=ficha.nie,
+            defaults={
+                'nombre': ficha.nombres,
+                'apellido': ficha.apellidos,
+                'fecha_nac': ficha.fecha_nacimiento,
+                'sexo': ficha.genero,
+                'turno': normalizar_turno(ficha.grado_seccion.turno),
+                'grado_seccion': ficha.grado_seccion,
+                'activo': True,
+            },
+        )
+        if not creado:
+            alumno.nombre = ficha.nombres
+            alumno.apellido = ficha.apellidos
+            alumno.fecha_nac = ficha.fecha_nacimiento
+            alumno.sexo = ficha.genero
+            alumno.turno = normalizar_turno(ficha.grado_seccion.turno)
+            alumno.grado_seccion = ficha.grado_seccion
+            alumno.activo = True
+            alumno.save()
+
+        Matricula.objects.update_or_create(
+            alumno=alumno,
+            anio_lectivo=ficha.anio_lectivo,
+            defaults={
+                'grado_seccion': ficha.grado_seccion,
+                'estado': 'ACTIVO',
+            },
+        )
+        from Responsable.models import RevisionFicha
+        RevisionFicha.registrar(ficha, request.user, 'ACEPTAR', '')
+        ficha.estado = 'APROBADA'
+        ficha.observaciones = ''
+        ficha.save(update_fields=['estado', 'observaciones'])
+
+    messages.success(request, 'La solicitud fue aceptada y el estudiante quedó matriculado.')
+    return redirect('solicitud_matricula_detalle', ficha_id=ficha.id)
 
 @login_required
 @maestro_required
 def control_demeritos(request):
     hoy = date.today()
+    anio_activo = ConfiguracionPeriodo.get_solo().anio_activo
     secciones_con_alumnos = {}
 
     maestro = get_object_or_404(Maestro, id_usuario=request.user)
     secciones = GradoSeccion.objects.filter(maestro_encargado=maestro).order_by('grado', 'seccion')
 
     for seccion in secciones:
-        alumnos = Alumno.objects.filter(grado_seccion=seccion, activo=True).annotate(
-            m_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='R')),
-            d_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='D')),
-            rc_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='RC'))
+        alumnos = alumnos_del_anio(seccion, anio_activo).annotate(
+            m_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='R', registros_tarjeta__fecha__year=anio_activo)),
+            d_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='D', registros_tarjeta__fecha__year=anio_activo)),
+            rc_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='RC', registros_tarjeta__fecha__year=anio_activo))
         ).order_by('apellido', 'nombre')
 
         for a in alumnos:
@@ -206,9 +334,13 @@ def control_demeritos(request):
 
 @login_required
 @maestro_required
+@periodo_requerido('MATRICULA')
 def registrar_alumno(request):
     maestro = get_object_or_404(Maestro, id_usuario=request.user)
-    secciones_docente = GradoSeccion.objects.filter(maestro_encargado=maestro)
+    secciones_docente = GradoSeccion.objects.filter(maestro_encargado=maestro, activo=True)
+    if request.method == 'GET' and ConfiguracionPeriodo.get_solo().fase_actual != 'MATRICULA':
+        messages.error(request, 'El registro de alumnos está cerrado durante clases.')
+        return redirect('control_alumnos')
 
     if request.method == 'POST':
         nie = request.POST.get('nie')
@@ -236,7 +368,9 @@ def registrar_alumno(request):
         if aula not in secciones_docente:
             return JsonResponse({'ok': False, 'error': 'No tiene autorización para registrar alumnos en este grado/sección.'})
 
-        alumnos_matriculados = aula.alumnos.filter(activo=True).count()
+        alumnos_matriculados = Matricula.objects.filter(
+            grado_seccion=aula, anio_lectivo=request.periodo.anio_activo, estado='ACTIVO'
+        ).count()
         if alumnos_matriculados >= aula.cupo_maximo:
             return JsonResponse({
                 'ok': False, 
@@ -261,13 +395,17 @@ def registrar_alumno(request):
 
         try:
             with transaction.atomic():
-                Alumno.objects.create(
+                alumno = Alumno.objects.create(
                     nombre=nombre,
                     apellido=apellido,
                     fecha_nac=fecha_nac,
                     NIE=nie,
                     sexo=sexo,
-                    grado_seccion=aula
+                    grado_seccion=aula,
+                    turno=normalizar_turno(aula.turno),
+                )
+                Matricula.objects.create(
+                    alumno=alumno, grado_seccion=aula, anio_lectivo=request.periodo.anio_activo,
                 )
             return JsonResponse({'ok': True})
         except Exception as e:
@@ -291,6 +429,7 @@ def registrar_alumno(request):
 
     context = {
         'grados_existentes': grados_mapeados,
+        'periodo': ConfiguracionPeriodo.get_solo(),
         'secciones_json': json.dumps(secciones_por_grado)
     }
     return render(request, "registro_alumnos.html", context)
@@ -299,6 +438,8 @@ def registrar_alumno(request):
 @maestro_required
 def registro_demeritos_view(request, nie):
     alumno = get_object_or_404(Alumno.objects.select_related('grado_seccion'), NIE=nie)
+    if not alumnos_del_anio(alumno.grado_seccion, ConfiguracionPeriodo.get_solo().anio_activo).filter(pk=alumno.pk).exists():
+        return redirect('historial_anual')
     
     if request.user.rol == 'maestro':
         maestro = get_object_or_404(Maestro, id_usuario=request.user)
@@ -328,35 +469,47 @@ def registro_demeritos_view(request, nie):
     context = {
         'alumno': alumno,
         'historial': historial_paginado,  
-        'totales': totales
+        'totales': totales,
+        'puede_registrar_conducta': ConfiguracionPeriodo.get_solo().fase_actual == 'CLASES' and Matricula.objects.filter(
+            alumno=alumno, anio_lectivo=ConfiguracionPeriodo.get_solo().anio_activo,
+            grado_seccion=alumno.grado_seccion, estado='ACTIVO',
+        ).exists(),
     }
     return render(request, "registrar_demeritos.html", context)
 
 @login_required
 @maestro_required
+@periodo_requerido('CLASES')
 def registrar_demerito(request, nie):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            print("DATA RECIBIDA:", data)
             tipo_registro = data.get('tipo_registro')
             escala = data.get('escala')
             fecha_str = data.get('fecha')
-            print("FECHA STR:", fecha_str, type(fecha_str))
 
             if not tipo_registro or not escala:
                 return JsonResponse({'ok': False, 'error': 'Todos los campos del reporte son obligatorios.'})
+            if tipo_registro not in dict(RegistroTarjeta.TIPO_CASO_CHOICES) or escala not in dict(RegistroTarjeta.SUB_LETRA_CHOICES):
+                return JsonResponse({'ok': False, 'error': 'El tipo de registro o la escala no son válidos.'}, status=400)
             
 
             if fecha_str and fecha_str.strip():
                 try:
                     fecha_final = datetime.strptime(fecha_str, '%Y-%m-%d').date()
                 except ValueError:
-                    fecha_final = date.today() 
+                    return JsonResponse({'ok': False, 'error': 'La fecha no es válida.'}, status=400)
             else:
                 fecha_final = date.today()
 
             alumno = get_object_or_404(Alumno, NIE=nie)
+            if fecha_final.year != request.periodo.anio_activo:
+                return JsonResponse({'ok': False, 'error': 'La fecha debe pertenecer al año lectivo activo.'}, status=400)
+            if not alumno.activo or not Matricula.objects.filter(
+                alumno=alumno, grado_seccion=alumno.grado_seccion,
+                anio_lectivo=request.periodo.anio_activo, estado='ACTIVO',
+            ).exists():
+                return JsonResponse({'ok': False, 'error': 'El alumno no tiene matrícula activa en este año.'}, status=400)
             
             maestro = get_object_or_404(Maestro, id_usuario=request.user)
             secciones_asignadas = GradoSeccion.objects.filter(maestro_encargado=maestro)
@@ -382,7 +535,10 @@ def registrar_demerito(request, nie):
 
 @login_required
 @roles_permitidos(['maestro'])
+@periodo_requerido('MATRICULA')
 def editar_alumno(request, nie):
+    if request.method == 'GET' and ConfiguracionPeriodo.get_solo().fase_actual != 'MATRICULA':
+        return redirect('control_alumnos')
     alumno = get_object_or_404(Alumno, NIE=nie)
     
     if request.user.rol == 'maestro':
@@ -469,6 +625,7 @@ def editar_alumno(request, nie):
     context = {
         'alumno': alumno,
         'grados_existentes': grados_mapeados,
+        'periodo': ConfiguracionPeriodo.get_solo(),
         'secciones_json': json.dumps(secciones_por_grado)
     }
     return render(request, "editar_alumno.html", context)
@@ -528,19 +685,13 @@ def horario_maestro(request):
     materias_disponibles = []
 
     if nivel_actual == 'tercer':
-        asigs_tercer = AsignacionMateria.objects.filter(
-            docente=maestro,
-            anio_lectivo=anio_actual,
-            grado_seccion__activo=True,
-            grado_seccion__grado__in=grados_tercer,
-            grado_seccion__turno__iexact=turno_actual
-        ).select_related('grado_seccion', 'materia').order_by('grado_seccion__grado', 'materia__nombre')
-
-        for a in asigs_tercer:
-            materias_disponibles.append({
-                'materia': a.materia,
-                'grado_seccion': a.grado_seccion
-            })
+        for asignacion in obtener_materias_docente(maestro, anio_actual):
+            seccion = asignacion['grado_seccion']
+            if seccion.es_tercer_ciclo and normalizar_turno(seccion.turno) == turno_actual:
+                materias_disponibles.append({
+                    'materia': asignacion['materia'],
+                    'grado_seccion': seccion,
+                })
     else:
         # En básica/parvularia: Si es orientador titular en este año y turno
         seccion_titular = maestro.grados_a_cargo.filter(
@@ -680,6 +831,7 @@ def horario_maestro(request):
 
 @login_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def guardar_bloque_horario(request):
     try:
         data = json.loads(request.body.decode('utf-8'))
@@ -714,12 +866,10 @@ def guardar_bloque_horario(request):
         # Validación de pertenencia de carga académica en el año activo
         es_tercer = grado_seccion.grado in ['7G', '8G', '9G']
         if es_tercer:
-            tiene_asignacion = AsignacionMateria.objects.filter(
-                docente=maestro,
-                grado_seccion=grado_seccion,
-                materia=materia,
-                anio_lectivo=anio
-            ).exists()
+            tiene_asignacion = any(
+                asignacion['grado_seccion'].pk == grado_seccion.pk and asignacion['materia'].pk == materia.pk
+                for asignacion in obtener_materias_docente(maestro, anio)
+            )
             if not tiene_asignacion:
                 return JsonResponse({
                     'success': False,
@@ -790,6 +940,7 @@ def guardar_bloque_horario(request):
 
 @login_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def eliminar_bloque_horario(request):
     try:
         data = json.loads(request.body.decode('utf-8'))
@@ -826,6 +977,7 @@ def eliminar_bloque_horario(request):
 
 @login_required
 @require_POST
+@periodo_requerido('MATRICULA')
 def enviar_horario_revision(request):
     try:
         maestro = get_object_or_404(Maestro, id_usuario=request.user)

@@ -27,5 +27,12 @@ urlpatterns = [
         path('eliminar-materia/', views.eliminar_materia, name='eliminar_materia'),
         path('materias/actualizar/', views.actualizar_materia, name='actualizar_materia'),
         path('periodo/alternar/', views.alternar_periodo_ajax, name='alternar_periodo'),
+        path('periodo/revision-matricula/', views.revision_cierre_matricula, name='revision_cierre_matricula'),
+        path('periodo/cerrar-matricula/', views.cerrar_matricula, name='cerrar_matricula'),
+        path('periodo/revision-clases/', views.revision_cierre_clases, name='revision_cierre_clases'),
+        path('periodo/cerrar-clases/', views.cerrar_clases, name='cerrar_clases'),
+        path('historial/', views.historial_anual, name='historial_anual'),
+        path('historial/<int:anio>/', views.archivo_anual, name='archivo_anual'),
+        path('historial/<int:anio>/ficha/<int:ficha_id>/', views.ficha_archivada, name='ficha_archivada'),
         path('editar_grado_seccion_ajax/<int:pk>/', views.editar_grado_seccion_ajax, name='editar_grado_seccion_ajax'),
 ]

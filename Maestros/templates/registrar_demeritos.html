@@ -118,9 +118,11 @@
                 </div>
             </div>
             <div class="acciones-tarjeta">
+                {% if puede_registrar_conducta %}
                 <button type="button" id="btnAgregarIncidencia" class="btn-primario">
                     + Registrar Incidencia
                 </button>
+                {% else %}<p>El registro de conducta requiere periodo de clases y matrícula activa del año lectivo.</p>{% endif %}
             </div>
             <div class="contenedor-tabla">
                 <table>

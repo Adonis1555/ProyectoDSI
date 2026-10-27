@@ -3,6 +3,9 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from Login.models import Usuario
 from Directora.models import GradoSeccion
+from datetime import datetime
+from django.conf import settings
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 class Responsable(models.Model):
@@ -71,6 +74,7 @@ class FichaMatricula(models.Model):
         on_delete=models.PROTECT,
         related_name='fichas_enviadas'
     )
+    anio_lectivo = models.PositiveIntegerField(default=datetime.now().year)
 
     # 1. Identificación y Datos del Estudiante
     nie = models.CharField(max_length=15)
@@ -152,3 +156,24 @@ class Matricula(models.Model):
         # Un alumno solo puede tener una matrícula por año escolar
         unique_together = ('alumno', 'anio_lectivo')
         verbose_name = "Matrícula Anual"
+
+
+class RevisionFicha(models.Model):
+    ficha = models.ForeignKey(FichaMatricula, on_delete=models.PROTECT, related_name='revisiones')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    accion = models.CharField(max_length=12, choices=[
+        ('ACEPTAR', 'Aceptada'), ('SUBSANAR', 'Subsanación solicitada'), ('REENVIAR', 'Corrección reenviada'),
+    ])
+    motivo = models.TextField(blank=True)
+    datos_anteriores = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['fecha', 'pk']
+
+    @classmethod
+    def registrar(cls, ficha, usuario, accion, motivo):
+        return cls.objects.create(
+            ficha=ficha, usuario=usuario, accion=accion, motivo=motivo,
+            datos_anteriores={campo.name: campo.value_from_object(ficha) for campo in ficha._meta.concrete_fields},
+        )

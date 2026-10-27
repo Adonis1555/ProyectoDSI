@@ -377,17 +377,42 @@ class ReglasCargaAcademicaTests(TestCase):
             maestro=self.docente_mate, turno='Mañana', dia=1, bloque=1
         ).exists())
 
-    def test_distribucion_rechaza_especialidad_incompatible(self):
+    def test_distribucion_acepta_otra_especialidad_por_asignacion_de_direccion(self):
         self.client.force_login(self.directora)
         respuesta = self.asignar_materia(self.docente_info, self.matematica)
-        self.assertEqual(respuesta.status_code, 400)
-        self.assertFalse(AsignacionMateria.objects.exists())
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertTrue(AsignacionMateria.objects.filter(docente=self.docente_info, materia=self.matematica).exists())
 
     def test_distribucion_acepta_especialidad_compatible(self):
         self.client.force_login(self.directora)
         respuesta = self.asignar_materia(self.docente_mate, self.matematica)
         self.assertEqual(respuesta.status_code, 200)
         self.assertTrue(AsignacionMateria.objects.filter(docente=self.docente_mate).exists())
+
+    def test_otra_especialidad_asignada_se_muestra_y_permite_programar(self):
+        from Maestros.models import obtener_materias_docente
+
+        self.client.force_login(self.directora)
+        self.assertEqual(self.asignar_materia(self.docente_info, self.matematica).status_code, 200)
+        AsignacionBloqueMaestro.objects.create(
+            maestro=self.docente_info, dia=1, bloque=1, turno='Tarde', anio_lectivo=2026,
+        )
+        carga = obtener_materias_docente(self.docente_info, 2026)
+        self.assertTrue(any(item['materia'] == self.matematica and item['grado_seccion'] == self.tercer for item in carga))
+        self.client.force_login(self.docente_info.id_usuario)
+        respuesta = self.client.get(reverse('horarios'), {'nivel': 'tercer', 'turno': 'tarde'})
+        self.assertTrue(respuesta.context['tiene_carga'])
+        self.assertEqual(respuesta.context['materias_disponibles'][0]['materia'], self.matematica)
+        self.assertEqual(self.guardar_clase(self.tercer, self.matematica).status_code, 200)
+
+    def test_asignacion_explicita_no_permite_programar_tercer_ciclo_en_turno_de_basica(self):
+        tercer_manana = GradoSeccion.objects.create(grado='8G', seccion='C', turno='Mañana')
+        AsignacionMateria.objects.create(
+            grado_seccion=tercer_manana, materia=self.informatica,
+            docente=self.docente_mate, anio_lectivo=2026,
+        )
+        self.client.force_login(self.docente_mate.id_usuario)
+        self.assertEqual(self.guardar_clase(tercer_manana, self.informatica).status_code, 400)
 
     def test_titular_basica_puede_usar_todas_las_materias_solo_en_su_grado(self):
         self.client.force_login(self.docente_mate.id_usuario)
