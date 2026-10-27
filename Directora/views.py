@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from Login.decorators import directora_required, maestro_required, responsable_required,roles_permitidos
 from datetime import date,datetime
 from Login.models import Usuario  
-from Directora.models import Maestro,GradoSeccion,Materia,AsignacionMateria,AsignacionBloqueMaestro,especialidad_coincide_con_materia,normalizar_turno,ConfiguracionPeriodo
+from Directora.models import Maestro,GradoSeccion,Materia,AsignacionMateria,AsignacionBloqueMaestro,normalizar_turno,ConfiguracionPeriodo
 from django.http import JsonResponse
 from django.db import transaction
 from django.core.paginator import Paginator,PageNotAnInteger

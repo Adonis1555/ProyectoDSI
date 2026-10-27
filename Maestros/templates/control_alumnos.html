@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'styles/control_alumnos.css' %}">
+    <link rel="stylesheet" href="{% static 'estilos/acceso_historial.css' %}">
     <title>Alumnos</title>
     <style>
         .FiltroContainer {
@@ -209,11 +210,13 @@
                         <p>Consulta y administra los alumnos que ya se encuentran registrados.</p>
                     </a>
                 </div>
-                <a href="{% url 'historial_anual' %}" style="color: #2E5299; font-size: 14px;">Consultar historial de años cerrados</a>
 
                 {% if vista_actual == 'solicitudes' %}
-                <div class="container-titulo-alumno">
+                <div class="container-titulo-alumno encabezado-con-historial">
                     <h1 class="titulo-alumno">Solicitudes matrícula de estudiantes</h1>
+                    <div class="acciones-encabezado">
+                        {% include 'acceso_historial.html' %}
+                    </div>
                 </div>
 
                 <div class="containerTabla">
@@ -255,11 +258,14 @@
                     </table>
                 </div>
                 {% else %}
-                <div class="container-titulo-alumno">
+                <div class="container-titulo-alumno encabezado-con-historial">
                     <h1 class="titulo-alumno">Alumnos Registrados</h1>
-                    {% if periodo.fase_actual == 'MATRICULA' %}<a href="{% url 'registro_alumnos' %}">
-                        <button type="button" class="btnRegistrarAlumno">+ Registrar Alumno</button>
-                    </a>{% endif %}
+                    <div class="acciones-encabezado">
+                        {% include 'acceso_historial.html' %}
+                        {% if periodo.fase_actual == 'MATRICULA' %}<a href="{% url 'registro_alumnos' %}">
+                            <button type="button" class="btnRegistrarAlumno">+ Registrar Alumno</button>
+                        </a>{% endif %}
+                    </div>
                 </div>
                 
                 <div class="FiltroContainer">

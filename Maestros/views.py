@@ -685,19 +685,13 @@ def horario_maestro(request):
     materias_disponibles = []
 
     if nivel_actual == 'tercer':
-        asigs_tercer = AsignacionMateria.objects.filter(
-            docente=maestro,
-            anio_lectivo=anio_actual,
-            grado_seccion__activo=True,
-            grado_seccion__grado__in=grados_tercer,
-            grado_seccion__turno__iexact=turno_actual
-        ).select_related('grado_seccion', 'materia').order_by('grado_seccion__grado', 'materia__nombre')
-
-        for a in asigs_tercer:
-            materias_disponibles.append({
-                'materia': a.materia,
-                'grado_seccion': a.grado_seccion
-            })
+        for asignacion in obtener_materias_docente(maestro, anio_actual):
+            seccion = asignacion['grado_seccion']
+            if seccion.es_tercer_ciclo and normalizar_turno(seccion.turno) == turno_actual:
+                materias_disponibles.append({
+                    'materia': asignacion['materia'],
+                    'grado_seccion': seccion,
+                })
     else:
         # En básica/parvularia: Si es orientador titular en este año y turno
         seccion_titular = maestro.grados_a_cargo.filter(
@@ -872,12 +866,10 @@ def guardar_bloque_horario(request):
         # Validación de pertenencia de carga académica en el año activo
         es_tercer = grado_seccion.grado in ['7G', '8G', '9G']
         if es_tercer:
-            tiene_asignacion = AsignacionMateria.objects.filter(
-                docente=maestro,
-                grado_seccion=grado_seccion,
-                materia=materia,
-                anio_lectivo=anio
-            ).exists()
+            tiene_asignacion = any(
+                asignacion['grado_seccion'].pk == grado_seccion.pk and asignacion['materia'].pk == materia.pk
+                for asignacion in obtener_materias_docente(maestro, anio)
+            )
             if not tiene_asignacion:
                 return JsonResponse({
                     'success': False,

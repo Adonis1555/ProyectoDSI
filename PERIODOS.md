@@ -11,7 +11,9 @@ Se exige:
 - Fichas aprobadas con matrícula activa coincidente, sin duplicados ni exceso de cupo.
 - Alumnos activos de las secciones con matrícula del año activo.
 - Materias del nivel con distribución válida, bloques autorizados y el número de clases publicadas configurado para cada materia.
-- Especialidad compatible en tercer ciclo y ausencia de titularidad de básica en el mismo turno.
+- Asignación académica expresa en tercer ciclo y ausencia de titularidad de básica en el mismo turno.
+
+Por la disponibilidad de personal del centro escolar, Dirección puede asignar una materia a un docente de otra especialidad. La especialidad del perfil es informativa y no impide programar ni cerrar el periodo cuando la asignación y los demás requisitos son válidos. La pantalla de distribución conserva su confirmación para esas asignaciones.
 
 El cierre conserva el año lectivo, matrículas, encargados, horarios y bloques. Cambia la fase a clases y registra la fecha, la cuenta de Dirección y los requisitos verificados. Dos confirmaciones simultáneas no producen dos cierres.
 

@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'styles/dashboard_responsable.css' %}">
+    <link rel="stylesheet" href="{% static 'estilos/acceso_historial.css' %}">
     <title>Responsable</title>
 </head>
 <body>
@@ -38,15 +39,17 @@
         <section class="registro-alumno">
             
             <!-- HEADER DE SECCIÓN -->
-            <div class="container-titulo-alumno">
+            <div class="container-titulo-alumno encabezado-con-historial">
                 <div>
                     <h1 class="titulo-alumno">Alumnos Registrados</h1>
                     <p class="subtitulo-alumno">Portal de Gestión de Alumnos y Matrículas</p>
                 </div>
+                <div class="acciones-encabezado">
+                    {% include 'acceso_historial.html' %}
+                </div>
             </div>
 
             <!-- BLOQUE 1: TARJETAS DE ALUMNOS (Aprobados en el sistema) -->
-            <a href="{% url 'historial_anual' %}" style="color: #2E5299; font-size: 14px;">Consultar historial de años cerrados</a>
             <div class="contenedor-panel">
                 <h2 class="subtitulo-seccion">Mis Hijos / Alumnos Asociados</h2>
                 <div class="cards-grid">

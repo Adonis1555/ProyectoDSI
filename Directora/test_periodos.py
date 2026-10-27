@@ -123,7 +123,7 @@ class CierreMatriculaTests(EscenarioPeriodo, TestCase):
         self.bloque.save()
         self.assertEqual(self.cerrar().status_code, 409)
 
-    def test_tercer_ciclo_necesita_distribucion_especialidad_y_publicacion(self):
+    def test_tercer_ciclo_necesita_distribucion_y_publicacion_pero_admite_otra_especialidad(self):
         usuario = Usuario.objects.create_user(email='especialista@periodo.test', nombre='Julia', apellido='Docente', rol='maestro')
         especialista = Maestro.objects.create(dui='33333333-3', nombre='Julia', apellido='Docente', especialidad='Matemática', telefono='70000003', id_usuario=usuario)
         seccion = GradoSeccion.objects.create(grado='7G', seccion='B', turno='Tarde', cupo_maximo=20, maestro_encargado=especialista)
@@ -134,9 +134,6 @@ class CierreMatriculaTests(EscenarioPeriodo, TestCase):
         AsignacionBloqueMaestro.objects.create(maestro=especialista, dia=1, bloque=1, turno='Tarde', anio_lectivo=2028)
         HorarioClase.objects.create(docente=especialista, grado_seccion=seccion, materia=self.materia, dia=1, bloque=1, anio_lectivo=2028, estado='PUBLICADO')
         especialista.especialidad = 'Ciencias'
-        especialista.save()
-        self.assertEqual(self.cerrar().status_code, 409)
-        especialista.especialidad = 'Matemática'
         especialista.save()
         self.assertEqual(self.cerrar().status_code, 200)
 

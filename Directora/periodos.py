@@ -8,7 +8,7 @@ from django.urls import reverse
 
 from .models import (
     AsignacionBloqueMaestro, AsignacionMateria, ConfiguracionPeriodo,
-    GradoSeccion, Materia, especialidad_coincide_con_materia, normalizar_turno,
+    GradoSeccion, Materia, normalizar_turno,
 )
 
 
@@ -110,8 +110,6 @@ def revisar_cierre_matricula(periodo):
                     grado_seccion=seccion, materia=materia, anio_lectivo=anio,
                 ).select_related('docente__id_usuario').first()
                 docente = asignacion.docente if asignacion else None
-                if docente and not especialidad_coincide_con_materia(docente, materia):
-                    problemas.append(f'{seccion} / {materia.nombre}: especialidad incompatible.')
                 if docente and any(not s.es_tercer_ciclo and normalizar_turno(s.turno) == normalizar_turno(seccion.turno)
                                    for s in docente.grados_a_cargo.filter(activo=True)):
                     problemas.append(f'{seccion} / {materia.nombre}: el docente es titular de básica en el mismo turno.')

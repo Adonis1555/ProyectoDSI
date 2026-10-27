@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'estilos/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'estilos/acceso_historial.css' %}">
     <title>Consola de Dirección - Dashboard</title>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -314,25 +315,28 @@
                     <h1 class="titulo-maestro">Dashboard General de Dirección</h1>
                 </div>
 
-                <!-- SWITCH / BADGE DE PERIODO -->
-                <div class="periodo-control-wrapper">
-                    <span class="periodo-tag-label">Periodo Activo:</span>
-                    <span
-                            class="btn-switch-periodo {% if periodo.fase_actual == 'MATRICULA' %}fase-matricula{% else %}fase-clases{% endif %}"
-                            data-fase="{{ periodo.fase_actual }}"
-                            aria-label="Periodo escolar activo">
-                        <span id="icono_fase">
-                            {% if periodo.fase_actual == 'MATRICULA' %}📝{% else %}📚{% endif %}
+                <div class="acciones-encabezado acciones-encabezado--direccion">
+                    {% include 'acceso_historial.html' %}
+                    <!-- SWITCH / BADGE DE PERIODO -->
+                    <div class="periodo-control-wrapper">
+                        <span class="periodo-tag-label">Periodo Activo:</span>
+                        <span
+                                class="btn-switch-periodo {% if periodo.fase_actual == 'MATRICULA' %}fase-matricula{% else %}fase-clases{% endif %}"
+                                data-fase="{{ periodo.fase_actual }}"
+                                aria-label="Periodo escolar activo">
+                            <span id="icono_fase">
+                                {% if periodo.fase_actual == 'MATRICULA' %}📝{% else %}📚{% endif %}
+                            </span>
+                            <span id="texto_fase">
+                                {% if periodo.fase_actual == 'MATRICULA' %}
+                                    Periodo de Matrícula ({{ periodo.anio_activo }})
+                                {% else %}
+                                    Periodo de Clases ({{ periodo.anio_activo }})
+                                {% endif %}
+                            </span>
+                            <span class="switch-punto-activo"></span>
                         </span>
-                        <span id="texto_fase">
-                            {% if periodo.fase_actual == 'MATRICULA' %}
-                                Periodo de Matrícula ({{ periodo.anio_activo }})
-                            {% else %}
-                                Periodo de Clases ({{ periodo.anio_activo }})
-                            {% endif %}
-                        </span>
-                        <span class="switch-punto-activo"></span>
-                    </span>
+                    </div>
                 </div>
             </div>
 
@@ -445,7 +449,6 @@
                         {% else %}
                         <button type="button" class="btn-cerrar-matricula" id="btnRevisarCierreClases">Revisar y cerrar clases</button>
                         {% endif %}
-                        <p style="margin-top: 12px;"><a href="{% url 'historial_anual' %}" style="color: #991b1b;">Consultar historial de años cerrados</a></p>
                     </div>
                     <span class="cierre-periodo-etiqueta">{{ periodo.get_fase_actual_display }}</span>
                 </div>

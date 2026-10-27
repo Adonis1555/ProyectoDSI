@@ -302,7 +302,7 @@ class NavegacionHorarioTests(TestCase):
         clase.refresh_from_db()
         self.assertEqual(clase.estado, 'RECHAZADO')
 
-    def test_tercer_ciclo_exige_turno_opuesto_y_especialidad(self):
+    def test_tercer_ciclo_exige_turno_opuesto_y_admite_otra_especialidad_asignada(self):
         GradoSeccion.objects.create(
             grado='5G', seccion='C', turno='mañana', maestro_encargado=self.maestro
         )
@@ -314,13 +314,11 @@ class NavegacionHorarioTests(TestCase):
                 grado_seccion=seccion, materia=materia,
                 docente=self.maestro, anio_lectivo=datetime.now().year
             )
-        for turno in ('manana', 'tarde'):
-            respuesta = self.vista('tercer', turno)
-            self.assertFalse(respuesta.context['tiene_carga'])
-            self.assertContains(respuesta, 'No tienes carga académica asignada')
-        AsignacionMateria.objects.filter(grado_seccion=opuesto).update(materia=self.materia)
+        respuesta = self.vista('tercer', 'manana')
+        self.assertFalse(respuesta.context['tiene_carga'])
         respuesta = self.vista('tercer', 'tarde')
         self.assertTrue(respuesta.context['tiene_carga'])
+        self.assertEqual(respuesta.context['materias_disponibles'][0]['materia'], otra_materia)
 
 
 @override_settings(DEBUG=True)
