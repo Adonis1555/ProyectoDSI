@@ -87,7 +87,9 @@ def revisar_cierre_matricula(periodo):
         ocupados = sum(m.grado_seccion_id == seccion.id for m in matriculas)
         if ocupados > seccion.cupo_maximo:
             problemas.append(f'{seccion}: {ocupados} matrículas exceden el cupo de {seccion.cupo_maximo}.')
-        sin_matricula = seccion.alumnos.filter(activo=True).exclude(NIE__in=[m.alumno_id for m in matriculas])
+        sin_matricula = seccion.alumnos.filter(activo=True).exclude(
+            NIE__in=[m.alumno_id for m in matriculas]
+        ).exclude(matriculas__anio_lectivo__lt=anio)
         if sin_matricula.exists():
             problemas.append(f'{seccion}: {sin_matricula.count()} alumno(s) activo(s) sin matrícula del año {anio}.')
     agregar('matriculas', 'Matrículas, secciones y cupos', problemas, 'grado_seccion_control')
@@ -140,5 +142,61 @@ def revisar_cierre_matricula(periodo):
     return {
         'anio_activo': anio, 'fase_actual': periodo.fase_actual,
         'puede_cerrar': periodo.fase_actual == 'MATRICULA' and all(r['cumplido'] for r in requisitos),
+        'requisitos': requisitos,
+    }
+
+
+def revisar_cierre_clases(periodo):
+    from Maestros.models import HorarioClase, RegistroTarjeta
+    from Responsable.models import FichaMatricula, Matricula
+    from .models import CierrePeriodo
+
+    anio = periodo.anio_activo
+    siguiente = anio + 1
+    requisitos = []
+
+    def agregar(codigo, titulo, problemas, ruta):
+        requisitos.append({'codigo': codigo, 'titulo': titulo, 'cumplido': not problemas,
+                           'problemas': problemas, 'url': reverse(ruta)})
+
+    cierre_matricula = CierrePeriodo.objects.filter(anio_lectivo=anio, fase_cerrada='MATRICULA').exists()
+    agregar('ciclo', 'Inicio de clases y cierre anual único',
+            ([] if cierre_matricula else ['No se encuentra el cierre de matrícula que dio inicio a este periodo de clases.']) +
+            (['Este año ya tiene un cierre de clases registrado.'] if CierrePeriodo.objects.filter(anio_lectivo=anio, fase_cerrada='CLASES').exists() else []),
+            'dashboard_directora')
+
+    pendientes = FichaMatricula.objects.filter(anio_lectivo=anio, estado__in=['PENDIENTE', 'RECHAZADA']).count()
+    agregar('solicitudes', 'Solicitudes del año resueltas',
+            [f'Hay {pendientes} solicitud(es) pendiente(s) o por subsanar.'] if pendientes else [], 'grado_seccion_control')
+
+    problemas = []
+    matriculas = list(Matricula.objects.filter(anio_lectivo=anio).select_related('alumno', 'grado_seccion'))
+    for matricula in matriculas:
+        if matricula.estado == 'ACTIVO' and (not matricula.alumno.activo or matricula.alumno.grado_seccion_id != matricula.grado_seccion_id):
+            problemas.append(f'NIE {matricula.alumno_id}: la matrícula activa no coincide con la sección del estudiante.')
+    for ficha in FichaMatricula.objects.filter(anio_lectivo=anio, estado='APROBADA'):
+        if not any(m.alumno_id == ficha.nie and m.grado_seccion_id == ficha.grado_seccion_id for m in matriculas):
+            problemas.append(f'NIE {ficha.nie}: la ficha aprobada no tiene matrícula coincidente.')
+    agregar('matriculas', 'Matrículas consistentes para conservar el historial', problemas, 'grado_seccion_control')
+
+    problemas = []
+    if siguiente > 9999:
+        problemas.append('El siguiente año lectivo queda fuera del rango permitido.')
+    for nombre, consulta in (
+        ('matrículas', Matricula.objects.filter(anio_lectivo=siguiente)),
+        ('solicitudes', FichaMatricula.objects.filter(anio_lectivo=siguiente)),
+        ('asignaciones de materias', AsignacionMateria.objects.filter(anio_lectivo=siguiente)),
+        ('bloques docentes', AsignacionBloqueMaestro.objects.filter(anio_lectivo=siguiente)),
+        ('horarios', HorarioClase.objects.filter(anio_lectivo=siguiente)),
+        ('cierres', CierrePeriodo.objects.filter(anio_lectivo=siguiente)),
+        ('registros de conducta', RegistroTarjeta.objects.filter(fecha__year=siguiente) if siguiente <= 9999 else RegistroTarjeta.objects.none()),
+    ):
+        if consulta.exists():
+            problemas.append(f'El año {siguiente} ya contiene {nombre}. Deben revisarse antes de abrirlo; no se sobrescribirán.')
+    agregar('nuevo_anio', f'Apertura de matrícula {siguiente} sin sobrescribir datos', problemas, 'dashboard_directora')
+
+    return {
+        'anio_activo': anio, 'anio_siguiente': siguiente, 'fase_actual': periodo.fase_actual,
+        'puede_cerrar': periodo.fase_actual == 'CLASES' and all(r['cumplido'] for r in requisitos),
         'requisitos': requisitos,
     }

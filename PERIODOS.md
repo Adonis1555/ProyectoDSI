@@ -15,7 +15,31 @@ Se exige:
 
 El cierre conserva el año lectivo, matrículas, encargados, horarios y bloques. Cambia la fase a clases y registra la fecha, la cuenta de Dirección y los requisitos verificados. Dos confirmaciones simultáneas no producen dos cierres.
 
-El indicador superior del periodo es informativo. La ruta anterior de alternancia aplica las mismas comprobaciones y no permite iniciar otro año.
+El indicador superior del periodo es informativo. La ruta anterior de alternancia aplica las mismas comprobaciones del cierre de matrícula y no permite eludir la confirmación del cierre anual.
+
+## Cierre de clases y apertura del siguiente año
+
+Dirección utiliza «Revisar y cerrar clases» en el mismo apartado rojo. Se verifica que exista el cierre de matrícula que inició las clases, que no queden solicitudes por resolver, que las fichas aprobadas tengan matrícula coincidente y que el año siguiente no contenga registros previos que puedan sobrescribirse.
+
+Al confirmar el cierre:
+
+- Se guarda una copia del año completo dentro del registro de cierre: secciones y encargados, alumnos y matrículas, fichas y revisiones, distribución de materias, bloques, horarios y conducta.
+- Se conservan los registros originales y se desactivan los bloques del año saliente.
+- Se liberan los encargados actuales de las secciones para realizar una nueva distribución. La asignación anterior permanece en el archivo de su año.
+- Se incrementa el año en uno y se abre matrícula. Las nuevas matrículas, materias distribuidas, bloques y horarios se preparan expresamente para el nuevo año.
+- Los estudiantes anteriores no aparecen como inscritos en el año nuevo hasta que tengan matrícula de ese año.
+
+El cierre no asigna promociones, repeticiones, retiros ni graduaciones y no crea matrículas automáticamente. Las reglas para determinar el grado del siguiente año quedan pendientes de definición; la continuidad de un alumno existente requiere un resultado académico confirmado.
+
+El archivo y el cambio de año se realizan en una única transacción. Un error revierte todas las operaciones; una confirmación repetida no vuelve a incrementar el año.
+
+## Consulta del historial
+
+«Consultar historial de años cerrados» está disponible en el dashboard de Dirección y en los paneles de alumnos del maestro y del responsable. Las pantallas son de solo lectura y usan los valores conservados al cierre, aunque después se cambie el nombre de un estudiante, materia, docente o sección.
+
+Dirección consulta el año completo. El docente consulta las secciones que tenía a cargo y sus horarios de ese año. El responsable consulta sus fichas, estudiantes asociados y horarios correspondientes. Un nuevo encargado no hereda acceso a las fichas de años anteriores por recibir la misma sección.
+
+Las fichas archivadas permiten consultar todos sus datos e imprimirlos. Las decisiones de aceptación y subsanación permanecen cerradas para esos años.
 
 ## Operaciones por fase
 
@@ -38,6 +62,6 @@ El docente indica el motivo. El responsable accede a «Corregir solicitud» en s
 
 Aplicar `python manage.py migrate` para crear el historial de cierres y revisiones. No es necesario recargar datos demo. Los registros existentes no se eliminan ni se completan automáticamente para forzar un cierre.
 
-Ejecutar `python manage.py test Directora.test_periodos Maestros.tests.ControlAlumnosMatriculaTests Responsable.tests.FichaMatriculaResponsableTests`.
+Ejecutar `python manage.py test Directora.test_cierre_anual Directora.test_periodos Maestros.tests.ControlAlumnosMatriculaTests Responsable.tests.FichaMatriculaResponsableTests`.
 
-El cierre de clases, la apertura del siguiente año y las reglas de promoción o repetición corresponden a una segunda entrega. La progresión no se deduce de una matrícula sin resultado académico confirmado.
+La segunda entrega utiliza el campo de archivo del historial de cierres existente y no necesita nuevas tablas ni migraciones. No se ejecutan cierres ni se cambian datos demo al instalar el código.

@@ -78,6 +78,9 @@ def ficha_matricula_view(request, ficha_id=None, corregir=False):
     # 3. Modo comprobante (solo lectura)
     if ficha_id:
         ficha = get_object_or_404(FichaMatricula, id=ficha_id, responsable=responsable)
+        from Directora.archivos import cierre_anual
+        if not corregir and cierre_anual(ficha.anio_lectivo):
+            return redirect('ficha_archivada', anio=ficha.anio_lectivo, ficha_id=ficha.id)
         if corregir and (ficha.estado != 'RECHAZADA' or ficha.anio_lectivo != periodo.anio_activo or periodo.fase_actual != 'MATRICULA'):
             return JsonResponse({'ok': False, 'error': 'Esta ficha no está habilitada para corrección.'}, status=403)
         modo_lectura = not corregir

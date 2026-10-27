@@ -443,8 +443,9 @@
                         {% if periodo.fase_actual == 'MATRICULA' %}
                         <button type="button" class="btn-cerrar-matricula" id="btnRevisarCierre">Revisar y cerrar matrícula</button>
                         {% else %}
-                        <p style="margin-top: 10px;">El cierre del periodo de clases aún no está habilitado.</p>
+                        <button type="button" class="btn-cerrar-matricula" id="btnRevisarCierreClases">Revisar y cerrar clases</button>
                         {% endif %}
+                        <p style="margin-top: 12px;"><a href="{% url 'historial_anual' %}" style="color: #991b1b;">Consultar historial de años cerrados</a></p>
                     </div>
                     <span class="cierre-periodo-etiqueta">{{ periodo.get_fase_actual_display }}</span>
                 </div>
@@ -456,12 +457,15 @@
     <script>
         // Revisión y confirmación del cierre de matrícula.
         document.addEventListener("DOMContentLoaded", function() {
-            const boton = document.getElementById('btnRevisarCierre');
+            const boton = document.getElementById('btnRevisarCierre') || document.getElementById('btnRevisarCierreClases');
             if (!boton) return;
+            const cerrarClases = boton.id === 'btnRevisarCierreClases';
+            const urlRevision = cerrarClases ? "{% url 'revision_cierre_clases' %}" : "{% url 'revision_cierre_matricula' %}";
+            const urlCierre = cerrarClases ? "{% url 'cerrar_clases' %}" : "{% url 'cerrar_matricula' %}";
             boton.addEventListener('click', async () => {
                 boton.disabled = true;
                 try {
-                    const respuesta = await fetch("{% url 'revision_cierre_matricula' %}");
+                    const respuesta = await fetch(urlRevision);
                     const revision = await respuesta.json();
                     if (!respuesta.ok || !revision.ok) throw new Error(revision.error || 'No se pudo revisar el cierre.');
                     const contenido = document.createElement('div');
@@ -489,7 +493,7 @@
                         contenido.appendChild(bloque);
                     });
                     const resultado = await Swal.fire({
-                        title: `Revisión de matrícula ${revision.anio_activo}`,
+                        title: `Revisión de ${cerrarClases ? 'clases' : 'matrícula'} ${revision.anio_activo}`,
                         html: contenido, width: 720,
                         showCancelButton: true,
                         showConfirmButton: revision.puede_cerrar,
@@ -498,20 +502,20 @@
                     });
                     if (!resultado.isConfirmed) return;
                     const confirmacion = await Swal.fire({
-                        title: `Cerrar matrícula e iniciar clases ${revision.anio_activo}`,
-                        text: 'Se cerrarán los envíos, correcciones y decisiones de matrícula y la planificación académica. Se habilitará el registro de conducta para los alumnos matriculados.',
+                        title: cerrarClases ? `Cerrar clases ${revision.anio_activo} y abrir matrícula ${revision.anio_siguiente}` : `Cerrar matrícula e iniciar clases ${revision.anio_activo}`,
+                        text: cerrarClases ? 'Se conservará el historial del año y se liberarán los encargados de sección para una nueva planificación. Los bloques anteriores quedarán desactivados. No se promoverán ni matricularán estudiantes automáticamente.' : 'Se cerrarán los envíos, correcciones y decisiones de matrícula y la planificación académica. Se habilitará el registro de conducta para los alumnos matriculados.',
                         icon: 'warning', showCancelButton: true,
                         confirmButtonText: 'Confirmar cierre', cancelButtonText: 'Cancelar', confirmButtonColor: '#C0392B',
                     });
                     if (!confirmacion.isConfirmed) return;
-                    const datos = new URLSearchParams({anio_activo: revision.anio_activo, confirmacion: 'CERRAR MATRICULA'});
-                    const cierre = await fetch("{% url 'cerrar_matricula' %}", {
+                    const datos = new URLSearchParams({anio_activo: revision.anio_activo, confirmacion: cerrarClases ? 'CERRAR CLASES' : 'CERRAR MATRICULA'});
+                    const cierre = await fetch(urlCierre, {
                         method: 'POST', body: datos,
                         headers: {'X-CSRFToken': '{{ csrf_token }}'},
                     });
                     const resultadoCierre = await cierre.json();
-                    if (!cierre.ok || !resultadoCierre.ok) throw new Error(resultadoCierre.error || 'No se pudo cerrar matrícula. Vuelve a revisar los requisitos.');
-                    await Swal.fire({title: 'Matrícula cerrada', text: resultadoCierre.mensaje, icon: 'success'});
+                    if (!cierre.ok || !resultadoCierre.ok) throw new Error(resultadoCierre.error || 'No se pudo cerrar el periodo. Vuelve a revisar los requisitos.');
+                    await Swal.fire({title: cerrarClases ? 'Año archivado' : 'Matrícula cerrada', text: resultadoCierre.mensaje, icon: 'success'});
                     window.location.reload();
                 } catch (error) {
                     await Swal.fire({title: 'No se realizó el cierre', text: error.message, icon: 'error'});

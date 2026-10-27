@@ -27,7 +27,8 @@ import unicodedata
 from django.db.models import Sum,Q
 from Responsable.models import Matricula
 from .models import CierrePeriodo
-from .periodos import periodo_requerido, revisar_cierre_matricula
+from .periodos import periodo_requerido, revisar_cierre_matricula, revisar_cierre_clases
+from .archivos import alumnos_del_anio, cierre_anual, matriz_conducta_archivada
 
 @login_required
 @directora_required
@@ -344,6 +345,10 @@ def toggle_grado_activo(request, pk):
 def eliminar_grado_seccion(request, pk):
     try:
         grado_seccion = get_object_or_404(GradoSeccion, id=pk)
+        if (grado_seccion.matriculas_seccion.exists() or grado_seccion.fichas_matricula.exists()
+                or HorarioClase.objects.filter(grado_seccion=grado_seccion).exists()
+                or grado_seccion.materias_distribuidas.exists()):
+            return JsonResponse({'ok': False, 'error': 'La sección tiene registros académicos asociados. Puedes desactivarla, pero debe conservarse su historial.'}, status=400)
         
         conteo_alumnos = grado_seccion.alumnos.count() 
         
@@ -516,7 +521,8 @@ def control_demeritos(request):
     anios_totales.add(anio_actual)
     anios_disponibles = sorted(list(anios_totales), reverse=True)
 
-    secciones = GradoSeccion.objects.filter(activo=True).order_by('grado', 'seccion')
+    cierre = cierre_anual(anio_actual)
+    secciones = [] if cierre else GradoSeccion.objects.filter(activo=True).order_by('grado', 'seccion')
     matriz_grados = []
 
     totales_globales = {
@@ -607,6 +613,8 @@ def control_demeritos(request):
         totales_globales['rc_h'] += rc_h
         totales_globales['rc_total'] += rc_total
 
+    if cierre:
+        matriz_grados, totales_globales = matriz_conducta_archivada(cierre.resumen['archivo'], mes_actual)
     context = {
         'periodo': periodo,
         'matriz_grados': matriz_grados,
@@ -629,7 +637,7 @@ def exportar_excel_conducta(request):
 
     hoy = date.today()
     mes_actual = int(request.GET.get('mes', hoy.month))
-    anio_actual = int(request.GET.get('anio', hoy.year))
+    anio_actual = int(request.GET.get('anio', ConfiguracionPeriodo.get_solo().anio_activo))
 
     meses_nombres = {
         1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio',
@@ -637,7 +645,8 @@ def exportar_excel_conducta(request):
     }
     nombre_mes = meses_nombres.get(mes_actual, '')
 
-    secciones = GradoSeccion.objects.filter(activo=True).order_by('grado', 'seccion')
+    cierre = cierre_anual(anio_actual)
+    secciones = [] if cierre else GradoSeccion.objects.filter(activo=True).order_by('grado', 'seccion')
     matriz_grados = []
     totales_globales = {
         'mat_m': 0, 'mat_h': 0, 'mat_total': 0,
@@ -649,7 +658,7 @@ def exportar_excel_conducta(request):
     }
 
     for seccion in secciones:
-        alumnos = Alumno.objects.filter(grado_seccion=seccion, activo=True)
+        alumnos = alumnos_del_anio(seccion, anio_actual)
         mat_m = alumnos.filter(sexo='F').count()
         mat_h = alumnos.filter(sexo='M').count()
         mat_total = mat_m + mat_h
@@ -721,6 +730,8 @@ def exportar_excel_conducta(request):
         totales_globales['rc_h'] += rc_h
         totales_globales['rc_total'] += rc_total
 
+    if cierre:
+        matriz_grados, totales_globales = matriz_conducta_archivada(cierre.resumen['archivo'], mes_actual)
     logo_path = os.path.join(settings.BASE_DIR, 'Directora', 'static', 'logo.jpg')
     logo_base64 = ""
     if os.path.exists(logo_path):
@@ -964,7 +975,10 @@ def directora_dashboard(request):
     anio_activo = periodo.anio_activo
 
     # 2. Métricas de conteo de entidades activas
-    total_alumnos = Alumno.objects.filter(activo=True).count()
+    if CierrePeriodo.objects.filter(fase_cerrada='CLASES', anio_lectivo__lt=anio_activo).exists():
+        total_alumnos = Matricula.objects.filter(anio_lectivo=anio_activo, estado='ACTIVO', alumno__activo=True).count()
+    else:
+        total_alumnos = Alumno.objects.filter(activo=True).count()
     total_maestros = Maestro.objects.filter(activo=True).count()
     total_secciones = GradoSeccion.objects.filter(activo=True).count()
 
@@ -1919,6 +1933,82 @@ def cerrar_matricula(request):
         periodo.fase_actual = 'CLASES'
         periodo.save(update_fields=['fase_actual', 'actualizado_el'])
     return JsonResponse({'ok': True, 'mensaje': f'Matrícula cerrada. Se inició el periodo de clases del año {periodo.anio_activo}.'})
+
+
+@login_required
+@directora_required
+def revision_cierre_clases(request):
+    if request.method != 'GET':
+        return JsonResponse({'ok': False, 'error': 'Método no permitido.'}, status=405)
+    return JsonResponse({'ok': True, **revisar_cierre_clases(ConfiguracionPeriodo.get_solo())})
+
+
+@login_required
+@directora_required
+@require_POST
+def cerrar_clases(request):
+    from .archivos import construir_archivo_anual
+
+    ConfiguracionPeriodo.get_solo()
+    with transaction.atomic():
+        periodo = ConfiguracionPeriodo.objects.select_for_update().get(pk=1)
+        if periodo.fase_actual != 'CLASES':
+            return JsonResponse({'ok': False, 'error': 'El periodo de clases ya no está activo. Actualiza la pantalla.'}, status=409)
+        if request.POST.get('confirmacion') != 'CERRAR CLASES' or request.POST.get('anio_activo') != str(periodo.anio_activo):
+            return JsonResponse({'ok': False, 'error': 'Debes revisar y confirmar el cierre del año activo.'}, status=400)
+        revision = revisar_cierre_clases(periodo)
+        if not revision['puede_cerrar']:
+            return JsonResponse({'ok': False, 'error': 'Hay requisitos pendientes que impiden cerrar clases.', **revision}, status=409)
+        anio = periodo.anio_activo
+        revision['archivo'] = construir_archivo_anual(anio)
+        CierrePeriodo.objects.create(
+            anio_lectivo=anio, fase_cerrada='CLASES', fase_abierta='MATRICULA',
+            realizado_por=request.user, resumen=revision,
+        )
+        GradoSeccion.objects.update(maestro_encargado=None)
+        AsignacionBloqueMaestro.objects.filter(anio_lectivo=anio, activo=True).update(activo=False)
+        periodo.anio_activo = anio + 1
+        periodo.fase_actual = 'MATRICULA'
+        periodo.save(update_fields=['anio_activo', 'fase_actual', 'actualizado_el'])
+    return JsonResponse({'ok': True, 'mensaje': f'El año {anio} quedó archivado. Se abrió matrícula {periodo.anio_activo} para una nueva planificación. No se asignaron promociones ni resultados académicos.'})
+
+
+@login_required
+@roles_permitidos(['directora', 'maestro', 'responsable'])
+def historial_anual(request):
+    if request.method != 'GET':
+        return JsonResponse({'ok': False, 'error': 'El historial es de solo lectura.'}, status=405)
+    from .archivos import archivos_accesibles
+    return render(request, 'historial_anual.html', {
+        'cierres': archivos_accesibles(request.user), 'periodo': ConfiguracionPeriodo.get_solo(),
+    })
+
+
+@login_required
+@roles_permitidos(['directora', 'maestro', 'responsable'])
+def archivo_anual(request, anio):
+    if request.method != 'GET':
+        return JsonResponse({'ok': False, 'error': 'El historial es de solo lectura.'}, status=405)
+    from .archivos import contexto_archivo, filtrar_archivo
+    cierre = get_object_or_404(CierrePeriodo, anio_lectivo=anio, fase_cerrada='CLASES')
+    archivo = filtrar_archivo(cierre.resumen['archivo'], request.user)
+    return render(request, 'archivo_anual.html', {
+        'cierre': cierre, 'anio_archivado': anio, **contexto_archivo(archivo),
+    })
+
+
+@login_required
+@roles_permitidos(['directora', 'maestro', 'responsable'])
+def ficha_archivada(request, anio, ficha_id):
+    if request.method != 'GET':
+        return JsonResponse({'ok': False, 'error': 'El historial es de solo lectura.'}, status=405)
+    from .archivos import ficha_desde_archivo, filtrar_archivo
+    cierre = get_object_or_404(CierrePeriodo, anio_lectivo=anio, fase_cerrada='CLASES')
+    archivo = filtrar_archivo(cierre.resumen['archivo'], request.user)
+    return render(request, 'solicitud_matricula_detalle.html', {
+        'ficha': ficha_desde_archivo(archivo, ficha_id), 'puede_revisar': False,
+        'anio_archivado': anio, 'archivo_historico': True,
+    })
 
 @login_required
 @directora_required

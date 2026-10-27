@@ -4,7 +4,7 @@ import re
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.db import transaction
 from django.db.models import Count, Q
 from Login.decorators import maestro_required, roles_permitidos
@@ -15,6 +15,7 @@ from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
 from .models import obtener_materias_docente,HorarioClase
 from Directora.periodos import periodo_requerido
+from Directora.archivos import alumnos_del_anio, cierre_anual, filtrar_archivo
 
 @login_required
 @maestro_required
@@ -40,7 +41,7 @@ def maestro_view(request):
 
     # 3. Datos de Matrícula de la sección por sexo
     # Nota: Asegúrate de que los valores guardados en el campo 'sexo' coincidan con 'M' y 'F' (o 'H'/'M')
-    alumnos_seccion = Alumno.objects.filter(grado_seccion=seccion_actual)
+    alumnos_seccion = alumnos_del_anio(seccion_actual, ConfiguracionPeriodo.get_solo().anio_activo)
     total_m = alumnos_seccion.filter(sexo='M').count() # Masculino según las cabeceras de tu tabla
     total_f = alumnos_seccion.filter(sexo='F').count() # Femenino
     
@@ -159,6 +160,7 @@ def control_alumnos(request):
     hoy = date.today()
     secciones_con_alumnos = {}
     vista_actual = request.GET.get('vista', 'solicitudes')
+    periodo = ConfiguracionPeriodo.get_solo()
     if vista_actual not in ('solicitudes', 'registrados'):
         vista_actual = 'solicitudes'
 
@@ -168,7 +170,7 @@ def control_alumnos(request):
     ).order_by('grado', 'seccion')
 
     for seccion in secciones:
-        alumnos = Alumno.objects.filter(grado_seccion=seccion, activo=True).order_by('apellido', 'nombre')
+        alumnos = alumnos_del_anio(seccion, periodo.anio_activo).order_by('apellido', 'nombre')
         for a in alumnos:
             if a.fecha_nac:
                 f_nac = a.fecha_nac.date() if hasattr(a.fecha_nac, 'date') else a.fecha_nac
@@ -178,7 +180,7 @@ def control_alumnos(request):
         secciones_con_alumnos[seccion] = alumnos
 
     solicitudes_matricula = FichaMatricula.objects.filter(
-        grado_seccion__in=secciones
+        grado_seccion__in=secciones, anio_lectivo=periodo.anio_activo
     ).select_related('grado_seccion', 'responsable').order_by('-fecha_envio')
 
     return render(request, "control_alumnos.html", {
@@ -196,8 +198,15 @@ def solicitud_matricula_detalle(request, ficha_id):
     ficha = get_object_or_404(
         FichaMatricula.objects.select_related('grado_seccion', 'responsable', 'responsable__id_usuario'),
         id=ficha_id,
-        grado_seccion__maestro_encargado=maestro,
     )
+    cierre = cierre_anual(ficha.anio_lectivo)
+    if cierre:
+        archivo = filtrar_archivo(cierre.resumen['archivo'], request.user)
+        if not any(f['id'] == ficha.id for f in archivo['fichas']):
+            raise Http404
+        return redirect('ficha_archivada', anio=ficha.anio_lectivo, ficha_id=ficha.id)
+    if ficha.grado_seccion.maestro_encargado_id != maestro.pk:
+        raise Http404
     periodo = ConfiguracionPeriodo.get_solo()
     return render(request, 'solicitud_matricula_detalle.html', {
         'ficha': ficha,
@@ -296,16 +305,17 @@ def resolver_solicitud_matricula(request, ficha_id):
 @maestro_required
 def control_demeritos(request):
     hoy = date.today()
+    anio_activo = ConfiguracionPeriodo.get_solo().anio_activo
     secciones_con_alumnos = {}
 
     maestro = get_object_or_404(Maestro, id_usuario=request.user)
     secciones = GradoSeccion.objects.filter(maestro_encargado=maestro).order_by('grado', 'seccion')
 
     for seccion in secciones:
-        alumnos = Alumno.objects.filter(grado_seccion=seccion, activo=True).annotate(
-            m_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='R')),
-            d_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='D')),
-            rc_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='RC'))
+        alumnos = alumnos_del_anio(seccion, anio_activo).annotate(
+            m_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='R', registros_tarjeta__fecha__year=anio_activo)),
+            d_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='D', registros_tarjeta__fecha__year=anio_activo)),
+            rc_count=Count('registros_tarjeta', filter=Q(registros_tarjeta__tipo='RC', registros_tarjeta__fecha__year=anio_activo))
         ).order_by('apellido', 'nombre')
 
         for a in alumnos:
@@ -428,6 +438,8 @@ def registrar_alumno(request):
 @maestro_required
 def registro_demeritos_view(request, nie):
     alumno = get_object_or_404(Alumno.objects.select_related('grado_seccion'), NIE=nie)
+    if not alumnos_del_anio(alumno.grado_seccion, ConfiguracionPeriodo.get_solo().anio_activo).filter(pk=alumno.pk).exists():
+        return redirect('historial_anual')
     
     if request.user.rol == 'maestro':
         maestro = get_object_or_404(Maestro, id_usuario=request.user)

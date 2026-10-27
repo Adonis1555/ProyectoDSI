@@ -42,12 +42,16 @@
     <section class="menu-opciones">
         <div class="imgContainer"><img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo institucional"></div>
         <div class="opciones">
+            {% if archivo_historico %}
+            {% include 'menu_historial.html' %}
+            {% else %}
             <ul>
                 <a href="{% url 'control_demeritos' %}" style="text-decoration:none;"><li class="item-menu">Demeritos</li></a>
                 <a href="{% url 'control_alumnos' %}?vista=solicitudes" style="text-decoration:none;"><li class="item-menu activo">Alumnos</li></a>
                 <a href="{% url 'dashboard_maestro' %}" style="text-decoration:none;"><li class="item-menu">Control de demeritos</li></a>
                 <a href="{% url 'horarios' %}" style="text-decoration:none;"><li class="item-menu">Horarios</li></a>
             </ul>
+            {% endif %}
             <div class="cerrar-sesion-container"><form action="{% url 'logout' %}" method="post">{% csrf_token %}<button type="submit" class="btnCerrarSesion">cerrar sesión</button></form></div>
         </div>
     </section>
@@ -58,8 +62,13 @@
                 <p>{{ ficha.nombres }} {{ ficha.apellidos }} · {{ ficha.grado_seccion }}</p>
                 <span class="estado-ficha {% if ficha.estado == 'APROBADA' %}aprobada{% elif ficha.estado == 'RECHAZADA' %}subsanar{% endif %}">{% if ficha.estado == 'RECHAZADA' %}Debe ser subsanada{% else %}{{ ficha.get_estado_display }}{% endif %}</span>
             </div>
+            {% if archivo_historico %}
+            <a class="btn-volver" href="{% url 'archivo_anual' anio_archivado %}">Volver al año {{ anio_archivado }}</a>
+            {% else %}
             <a class="btn-volver" href="{% url 'control_alumnos' %}?vista=solicitudes">Volver a solicitudes</a>
+            {% endif %}
         </div>
+        {% if archivo_historico %}<div class="mensaje">Ficha conservada al cierre del año {{ anio_archivado }}. Solo lectura. <button type="button" class="btn-volver" onclick="window.print()">Imprimir ficha</button></div>{% endif %}
 
         {% for mensaje in messages %}<div class="mensaje">{{ mensaje }}</div>{% endfor %}
         {% if ficha.observaciones %}<div class="aviso-subsanacion"><strong>Motivo de subsanación:</strong> {{ ficha.observaciones }}</div>{% endif %}

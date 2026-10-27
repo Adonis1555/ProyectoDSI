@@ -1,0 +1,16 @@
+{% extends 'historial_base.html' %}
+{% block contenido %}
+<h1 class="titulo-alumno">Historial de años lectivos</h1>
+<p class="aviso-historial">Consulta los datos conservados al cerrar cada año. Este historial es de solo lectura y respeta las secciones y estudiantes que te correspondían en ese ciclo.</p>
+<div class="anios-historial">
+    {% for cierre in cierres %}
+    <article class="panel-historial">
+        <h2>Año lectivo {{ cierre.anio_lectivo }}</h2>
+        <p>Cerrado el {{ cierre.fecha|date:"d/m/Y h:i A" }}</p>
+        <a class="btn-historial" href="{% url 'archivo_anual' cierre.anio_lectivo %}">Consultar año</a>
+    </article>
+    {% empty %}
+    <p class="aviso-historial">Todavía no hay años cerrados disponibles para tu cuenta.</p>
+    {% endfor %}
+</div>
+{% endblock %}

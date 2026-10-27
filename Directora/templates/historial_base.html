@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/control_alumnos.css' %}">
+    <title>Historial anual</title>
+    <style>
+        .panel-historial { border: 1px solid #e2e8f0; background: white; padding: 20px; border-radius: 12px; }
+        .panel-historial h2 { font-size: 17px; color: #1e293b; margin-bottom: 14px; }
+        .aviso-historial { padding: 14px 16px; color: #334155; background: #f1f5f9; border-radius: 8px; font-size: 14px; line-height: 1.5; }
+        .btn-historial { display: inline-block; padding: 9px 14px; background: #2E5299; color: white; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 600; }
+        .anios-historial { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+        .anios-historial p { margin-bottom: 12px; color: #64748b; font-size: 14px; }
+        @media (max-width: 768px) { .anios-historial { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<main class="maestro-alumno">
+    <section class="menu-opciones">
+        <div class="imgContainer"><img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo institucional"></div>
+        <div class="opciones">
+            {% include 'menu_historial.html' %}
+            <div class="cerrar-sesion-container"><form action="{% url 'logout' %}" method="post">{% csrf_token %}<button class="btnCerrarSesion" type="submit">cerrar sesión</button></form></div>
+        </div>
+    </section>
+    <section class="registro-alumno">
+        {% block contenido %}{% endblock %}
+    </section>
+</main>
+</body>
+</html>
