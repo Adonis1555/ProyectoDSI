@@ -19,30 +19,52 @@ def periodo_requerido(fase):
         def protegida(request, *args, **kwargs):
             if request.method != 'POST':
                 return vista(request, *args, **kwargs)
+
             ConfiguracionPeriodo.get_solo()
             with transaction.atomic():
                 periodo = ConfiguracionPeriodo.objects.select_for_update().get(pk=1)
+                
+                # 1. Verificar fase requerida
                 if periodo.fase_actual != fase:
                     return JsonResponse({
                         'ok': False, 'success': False,
-                        'error': 'Esta operación no está disponible durante el periodo activo.',
+                        'error': f'Esta operación solo está disponible durante el periodo de {dict(ConfiguracionPeriodo.FASES).get(fase, fase)}.',
                     }, status=403)
+
+                # 2. Lectura y deserialización segura del payload
                 datos = request.POST
                 if request.content_type == 'application/json':
-                    try:
-                        datos = json.loads(request.body)
-                    except (ValueError, UnicodeDecodeError):
-                        return JsonResponse({'ok': False, 'success': False, 'error': 'Solicitud inválida.'}, status=400)
+                    # Si el cuerpo de la petición viene vacío, asumimos {}
+                    cuerpo = request.body.decode('utf-8').strip() if request.body else ''
+                    if not cuerpo:
+                        datos = {}
+                    else:
+                        try:
+                            datos = json.loads(cuerpo)
+                        except (ValueError, UnicodeDecodeError):
+                            return JsonResponse({
+                                'ok': False, 'success': False, 
+                                'error': 'Formato JSON inválido.'
+                            }, status=400)
+
                     if not isinstance(datos, dict):
-                        return JsonResponse({'ok': False, 'success': False, 'error': 'Solicitud inválida.'}, status=400)
+                        return JsonResponse({
+                            'ok': False, 'success': False, 
+                            'error': 'El payload JSON debe ser un objeto.'
+                        }, status=400)
+
+                # 3. Validación de consistencia de año lectivo
                 for campo in ('anio_lectivo', 'anio_activo'):
                     if campo in datos and str(datos[campo]) != str(periodo.anio_activo):
                         return JsonResponse({
                             'ok': False, 'success': False,
                             'error': 'El año lectivo cambió. Actualiza la pantalla antes de continuar.',
                         }, status=409)
+
+                # Inyectar el periodo bloqueado y validado en el request
                 request.periodo = periodo
                 return vista(request, *args, **kwargs)
+
         return protegida
     return decorador
 

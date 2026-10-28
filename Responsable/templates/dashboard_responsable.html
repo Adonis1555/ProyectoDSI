@@ -42,25 +42,61 @@
             <div class="container-titulo-alumno encabezado-con-historial">
                 <div>
                     <h1 class="titulo-alumno">Alumnos Registrados</h1>
-                    <p class="subtitulo-alumno">Portal de Gestión de Alumnos y Matrículas</p>
+                    <p class="subtitulo-alumno">Portal de Gestión de Alumnos y Matrículas — Ciclo Activo {{ anio_activo }}</p>
                 </div>
                 <div class="acciones-encabezado">
                     {% include 'acceso_historial.html' %}
                 </div>
             </div>
 
-            <!-- BLOQUE 1: TARJETAS DE ALUMNOS (Aprobados en el sistema) -->
+            <!-- BLOQUE 1: TARJETAS DE ALUMNOS (Históricos y Activos) -->
             <div class="contenedor-panel">
                 <h2 class="subtitulo-seccion">Mis Hijos / Alumnos Asociados</h2>
                 <div class="cards-grid">
-                    {% for alumno in alumnos %}
+                    {% for item in alumnos %}
                         <div class="student-card">
                             <div class="student-details">
-                                <h3 class="student-name">{{ alumno.nombre }} {{ alumno.apellido }}</h3>
-                                <p class="student-nie">NIE: {{ alumno.NIE }}</p>
-                                <span class="student-grade">{{ alumno.grado_seccion|default:"Sin grado asignado" }}</span>
+                                <h3 class="student-name">{{ item.alumno.nombre }} {{ item.alumno.apellido }}</h3>
+                                <p class="student-nie">NIE: {{ item.alumno.NIE }}</p>
+                                
+                                <span class="student-grade">
+                                    {% if item.matriculado_actual %}
+                                        Matriculado en {{ item.matriculado_actual.grado_seccion.get_grado_display }} (Ciclo {{ anio_activo }})
+                                    {% elif item.ultima_matricula %}
+                                        Último cursado: {{ item.ultima_matricula.grado_seccion.get_grado_display }} ({{ item.ultima_matricula.anio_lectivo }})
+                                    {% else %}
+                                        {{ item.alumno.grado_seccion|default:"Sin grado asignado" }}
+                                    {% endif %}
+                                </span>
+
+                                <div style="margin-top: 8px;">
+                                    {% if item.matriculado_actual %}
+                                        <span class="badge badge-aprobada" style="font-size: 11px;">Matriculado {{ anio_activo }}</span>
+                                    {% elif item.ficha_actual %}
+                                        {% if item.ficha_actual.estado == 'PENDIENTE' %}
+                                            <span class="badge badge-pendiente" style="font-size: 11px;">Ficha enviada (En revisión)</span>
+                                        {% elif item.ficha_actual.estado == 'RECHAZADA' %}
+                                            <span class="badge badge-rechazada" style="font-size: 11px;">Ficha observada</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 11px;">Pendiente de matricular {{ anio_activo }}</span>
+                                    {% endif %}
+                                </div>
                             </div>
-                            <a href="#" class="btn-card-action">Ver Expediente</a>
+
+                            <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                                {% if item.puede_matricular_siguiente %}
+                                    <a href="{% url 'ficha_matricula' %}?nie={{ item.alumno.NIE }}" class="btn-card-action" style="background: #2E5299; color: #fff;">
+                                        Matricular para {{ anio_activo }}
+                                    </a>
+                                {% elif item.ficha_actual %}
+                                    <a href="{% url 'comprobante_ficha' item.ficha_actual.id %}" class="btn-card-action">
+                                        Ver Ficha {{ anio_activo }}
+                                    </a>
+                                {% else %}
+                                    <span class="btn-card-action" style="opacity: 0.6; cursor: default;">Expediente al día</span>
+                                {% endif %}
+                            </div>
                         </div>
                     {% empty %}
                         <div class="empty-state-card">
@@ -72,7 +108,7 @@
                             </div>
                             <h4 class="empty-title">Aún no tienes alumnos asociados</h4>
                             <p class="empty-description">
-                                No encontramos ningún estudiante matriculado y aprobado bajo tu cuenta. Las postulaciones enviadas se listan abajo en espera de aprobación docente.
+                                No encontramos ningún estudiante con matrícula previa aprobado bajo tu cuenta. Si es nuevo ingreso, completa una ficha de matrícula a continuación.
                             </p>
                             <a href="{% url 'ficha_matricula' %}" class="btn-empty-action">
                                 Ir a Ficha de Matrícula
@@ -89,10 +125,11 @@
                     <table class="custom-table">
                         <thead>
                             <tr>
+                                <th>Año Lectivo</th>
                                 <th>NIE</th>
                                 <th>Nombre del Alumno</th>
                                 <th>Grado y Sección</th>
-                                <th>Fecha de Solicitud</th>
+                                <th>Fecha de Envío</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
@@ -100,6 +137,11 @@
                         <tbody>
                             {% for sol in solicitudes %}
                                 <tr>
+                                    <td>
+                                        <span class="badge" style="background: #e0e7ff; color: #3730a3; font-weight: 700; padding: 4px 8px; border-radius: 6px;">
+                                            {{ sol.anio_lectivo }}
+                                        </span>
+                                    </td>
                                     <td><strong>{{ sol.nie }}</strong></td>
                                     <td>{{ sol.nombres }} {{ sol.apellidos }}</td>
                                     <td>{{ sol.grado_seccion.get_grado_display }} - Sección "{{ sol.grado_seccion.seccion }}"</td>
@@ -118,20 +160,20 @@
                                     <td>
                                         <a href="{% url 'comprobante_ficha' sol.id %}" class="link-detalle">Ver Comprobante</a>
                                         {% if sol.estado == 'RECHAZADA' and periodo.fase_actual == 'MATRICULA' and sol.anio_lectivo == periodo.anio_activo %}
-                                        <a href="{% url 'corregir_ficha' sol.id %}" class="link-detalle">Corregir solicitud</a>
+                                        <a href="{% url 'corregir_ficha' sol.id %}" class="link-detalle" style="display: block; margin-top: 4px; color: #dc2626; font-weight: 600;">Corregir solicitud</a>
                                         {% endif %}
                                     </td>
                                 </tr>
                                 {% if sol.estado == 'RECHAZADA' and sol.observaciones %}
                                 <tr>
-                                    <td colspan="6" class="empty-state" style="text-align: left; padding: 12px 18px;">
-                                        <strong>Información que debes subsanar:</strong> {{ sol.observaciones }}
+                                    <td colspan="7" class="empty-state" style="text-align: left; padding: 12px 18px; background-color: #fef2f2; border-left: 4px solid #ef4444;">
+                                        <strong style="color: #991b1b;">Información que debes subsanar:</strong> {{ sol.observaciones }}
                                     </td>
                                 </tr>
                                 {% endif %}
                             {% empty %}
                                 <tr>
-                                    <td colspan="6" class="empty-state">
+                                    <td colspan="7" class="empty-state">
                                         No has enviado ninguna ficha de matrícula en este periodo.
                                     </td>
                                 </tr>

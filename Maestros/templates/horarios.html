@@ -8,10 +8,41 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Horarios - C.E. Natalia López</title>
+    <style>
+        /* Ajustes anti-desbordamiento en bloques */
+        .tarjeta-horario {
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            padding: 4px 6px !important;
+            box-sizing: border-box !important;
+            position: relative;
+        }
+        .materia-tag {
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            word-break: break-word !important;
+            line-height: 1.15 !important;
+            font-size: 0.78rem !important;
+            font-weight: 600 !important;
+        }
+        .seccion-tag {
+            font-size: 0.70rem !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            color: #475569 !important;
+            margin-top: 2px !important;
+        }
+    </style>
 </head>
 <body>
     <main class="maestro-alumno">
-        <!-- Menú Lateral Sin Íconos -->
+        <!-- Menú Lateral -->
         <section class="menu-opciones">
             <div class="imgContainer">
                 <img class="Logo" src="{% static 'logo.jpg' %}" alt="Logo C.E. Natalia López">
@@ -40,7 +71,7 @@
             </div>
         </section>
 
-        <!-- Contenedor Principal de Horario -->
+        <!-- Contenedor Principal -->
         <section class="horario-container">
             <div class="titulo-horario">
                 <div>
@@ -110,7 +141,8 @@
                                         {% if c.clase %}
                                         <td class="celda-clase ocupada" 
                                             data-dia="{{ c.dia_id }}" 
-                                            data-bloque="{{ c.bloque_id }}">
+                                            data-bloque="{{ c.bloque_id }}"
+                                            title="{{ c.clase.materia.nombre }} - {{ c.clase.grado_seccion.get_grado_display }} '{{ c.clase.grado_seccion.seccion }}'">
                                             <div class="tarjeta-horario" style="background-color: {{ c.clase.materia.color|default:'#D6E4FF' }};">
                                                 {% if periodo.fase_actual == 'MATRICULA' and estado_actual != 'ENVIADO' and estado_actual != 'APROBADO' and estado_actual != 'PUBLICADO' %}
                                                 <button type="button" class="btn-quitar-clase" title="Quitar clase">&times;</button>
@@ -170,7 +202,7 @@
                                 <div class="aviso-rechazo" role="alert">
                                     <div><i class="ti ti-message-exclamation"></i><strong>Corrección solicitada</strong></div>
                                     <p>{{ motivo_rechazo }}</p>
-                                    <small>Modifica esta propuesta y vuelve a enviarla a Dirección.</small>
+                                    <small>Modifica las clases necesarias y vuelve a enviar a Dirección.</small>
                                 </div>
                             {% endif %}
                             {% if periodo.fase_actual == 'CLASES' %}
@@ -188,8 +220,6 @@
                                 <div style="background: #e8eef9; color: #2E5299; padding: 10px; border-radius: 8px; font-size: 12px; text-align: center; font-weight: 600; border: 1px solid #cbd8ef;">
                                     <i class="ti ti-world-check"></i> Horario oficial publicado
                                 </div>
-                            {% elif estado_actual == 'MIXTO' %}
-                                <div class="aviso-estado-mixto"><i class="ti ti-alert-triangle"></i> Esta propuesta contiene estados anteriores mezclados. Actualiza las clases pendientes antes de enviarla.</div>
                             {% else %}
                                 <button type="button" class="btn-borrador" onclick="window.location.reload();">Guardar borrador</button>
                                 <button type="button" id="btnEnviarDireccion" class="btn-enviar">Enviar a dirección</button>
@@ -217,7 +247,10 @@
                 grado_seccion_nombre: "{{ m.grado_seccion.get_grado_display }} \"{{ m.grado_seccion.seccion }}\"",
                 materia_id: {{ m.materia.id }},
                 materia_nombre: "{{ m.materia.nombre }}",
-                materia_color: "{{ m.materia.color|default:'#D6E4FF' }}"
+                materia_color: "{{ m.materia.color|default:'#D6E4FF' }}",
+                bloques_asignados: {{ m.asignadas }},
+                bloques_maximos: {{ m.meta }},
+                bloques_restantes: {{ m.restantes }}
             },
             {% endfor %}
         ];
@@ -234,9 +267,25 @@
                     return;
                 }
 
+                // Comprobar si al menos una materia tiene cupo
+                const conCupo = materias_disponibles.filter(m => m.bloques_restantes > 0);
+                if (conCupo.length === 0) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Materias Completadas',
+                        text: 'Todas las materias asignadas a este turno ya alcanzaron su cupo semanal autorizado por Dirección.'
+                    });
+                    return;
+                }
+
                 let selectOptions = '<option value="">-- Elige una materia y sección --</option>';
                 materias_disponibles.forEach((item, index) => {
-                    selectOptions += `<option value="${index}">${item.materia_nombre} - ${item.grado_seccion_nombre}</option>`;
+                    const llena = item.bloques_restantes <= 0;
+                    const detalle = llena 
+                        ? ` (Completa: ${item.bloques_asignados}/${item.bloques_maximos})`
+                        : ` (Restan: ${item.bloques_restantes} de ${item.bloques_maximos})`;
+                    const disabledAttr = llena ? 'disabled style="color: #94a3b8;"' : '';
+                    selectOptions += `<option value="${index}" ${disabledAttr}>${item.materia_nombre} - ${item.grado_seccion_nombre}${detalle}</option>`;
                 });
 
                 Swal.fire({
@@ -260,10 +309,15 @@
                     preConfirm: () => {
                         const index = document.getElementById('swal-select-clase').value;
                         if (index === "") {
-                            Swal.showValidationMessage('Debes seleccionar una materia');
+                            Swal.showValidationMessage('Debes seleccionar una materia con bloques restantes');
                             return false;
                         }
-                        return materias_disponibles[index];
+                        const seleccionada = materias_disponibles[index];
+                        if (seleccionada.bloques_restantes <= 0) {
+                            Swal.showValidationMessage('Esta materia ya tiene cubiertos todos sus bloques semanales');
+                            return false;
+                        }
+                        return seleccionada;
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
@@ -284,7 +338,7 @@
                         })
                         .then(res => res.json())
                         .then(data => {
-                            if (data.success) {
+                            if (data.success || data.ok) {
                                 window.location.reload();
                             } else {
                                 Swal.fire('Conflicto de Horario', data.error || 'No se pudo asignar el bloque', 'error');
@@ -306,7 +360,7 @@
 
                 Swal.fire({
                     title: '¿Liberar este bloque?',
-                    text: "Esta hora volverá a quedar disponible.",
+                    text: "Esta hora volverá a quedar disponible y se restará del progreso.",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#C0392B',
@@ -330,12 +384,13 @@
                         })
                         .then(res => res.json())
                         .then(data => {
-                            if (data.success) {
+                            if (data.success || data.ok) {
                                 window.location.reload();
                             } else {
-                                Swal.fire('Error', data.error, 'error');
+                                Swal.fire('Error', data.error || 'No se pudo eliminar el bloque', 'error');
                             }
-                        });
+                        })
+                        .catch(() => Swal.fire('Error', 'Fallo de conexión al eliminar', 'error'));
                     }
                 });
             });
@@ -366,7 +421,7 @@
                         })
                         .then(r => r.json())
                         .then(data => {
-                            if (data.success) {
+                            if (data.success || data.ok) {
                                 Swal.fire({
                                     icon: 'success',
                                     title: '¡Enviado!',

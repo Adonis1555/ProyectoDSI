@@ -1,3 +1,4 @@
+
 from django.db import models
 from django.conf import settings
 from datetime import datetime
@@ -95,6 +96,10 @@ class GradoSeccion(models.Model):
     @property
     def es_tercer_ciclo(self):
         return self.grado in ['7G', '8G', '9G']
+
+    @property
+    def es_parvularia(self):
+        return self.grado in ['PK', 'PK5', 'PK6']
 
 
 class Materia(models.Model):

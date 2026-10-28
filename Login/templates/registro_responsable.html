@@ -8,6 +8,47 @@
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <title>Registro de Responsable</title>
+    <style>
+        .password-wrapper {
+            position: relative;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-wrapper .loginInput {
+            width: 100%;
+            padding-right: 42px;
+            box-sizing: border-box;
+        }
+
+        .btn-toggle-password {
+            position: absolute;
+            right: 12px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            transition: color 0.2s ease;
+        }
+
+        .btn-toggle-password:hover {
+            color: #1e293b;
+        }
+
+        .btn-toggle-password:focus {
+            outline: none;
+        }
+
+        .btn-toggle-password svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
 </head>
 <body>
 
@@ -50,13 +91,40 @@
                 </div>
 
                 <div class="form-row">
+                    <!-- Campo Contraseña -->
                     <div class="input-group">
                         <label class="input-label">Contraseña</label>
-                        <input type="password" class="loginInput" name="password" placeholder="••••••••" required>
+                        <div class="password-wrapper">
+                            <input type="password" id="inputPassword" class="loginInput" name="password" placeholder="••••••••" required>
+                            <button type="button" class="btn-toggle-password" data-target="inputPassword" aria-label="Mostrar u ocultar contraseña">
+                                <svg class="icon-eye-closed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                                <svg class="icon-eye-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- Campo Confirmar Contraseña -->
                     <div class="input-group">
                         <label class="input-label">Confirmar Contraseña</label>
-                        <input type="password" class="loginInput" name="password_confirm" placeholder="••••••••" required>
+                        <div class="password-wrapper">
+                            <input type="password" id="inputPasswordConfirm" class="loginInput" name="password_confirm" placeholder="••••••••" required>
+                            <button type="button" class="btn-toggle-password" data-target="inputPasswordConfirm" aria-label="Mostrar u ocultar confirmación de contraseña">
+                                <svg class="icon-eye-closed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                                <svg class="icon-eye-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -75,6 +143,29 @@
             const form = document.getElementById('formRegistro');
             const inputDui = document.querySelector('input[name="dui"]');
             const inputTelefono = document.querySelector('input[name="telefono"]');
+
+            // 1. Toggle interactivo para ojitos de contraseñas
+            document.querySelectorAll('.btn-toggle-password').forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetInput = document.getElementById(targetId);
+                    const iconOpen = this.querySelector('.icon-eye-open');
+                    const iconClosed = this.querySelector('.icon-eye-closed');
+
+                    if (targetInput) {
+                        const isPassword = targetInput.getAttribute('type') === 'password';
+                        if (isPassword) {
+                            targetInput.setAttribute('type', 'text');
+                            iconOpen.style.display = 'block';
+                            iconClosed.style.display = 'none';
+                        } else {
+                            targetInput.setAttribute('type', 'password');
+                            iconOpen.style.display = 'none';
+                            iconClosed.style.display = 'block';
+                        }
+                    }
+                });
+            });
 
             // Máscara para DUI (00000000-0)
             if (inputDui) {
@@ -108,6 +199,20 @@
 
                 if (!form.checkValidity()) {
                     form.reportValidity();
+                    return;
+                }
+
+                // Validación frontend de contraseñas coincidentes
+                const pass = document.getElementById('inputPassword').value;
+                const passConfirm = document.getElementById('inputPasswordConfirm').value;
+                if (pass !== passConfirm) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Contraseñas no coinciden',
+                        text: 'Verifica que ambas contraseñas escritas sean exactamente iguales.',
+                        confirmButtonColor: '#111827',
+                        confirmButtonText: 'Revisar'
+                    });
                     return;
                 }
 

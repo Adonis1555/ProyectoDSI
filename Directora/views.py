@@ -43,16 +43,23 @@ def directora_view(request):
         ).order_by('apellido')
     else:
         maestros_lista = Maestro.objects.all().order_by('apellido')
-    hoy=date.today()
 
     paginator = Paginator(maestros_lista, 5)
     numero_pagina = request.GET.get('page', 1)
     maestros_paginados = paginator.get_page(numero_pagina)
 
+    periodo = ConfiguracionPeriodo.get_solo()
+    anio_activo = periodo.anio_activo
+    fecha_referencia_ciclo = date(anio_activo, 12, 31)
+
     for m in maestros_paginados:
-        if m.fecha_nac:
-           f_nac = m.fecha_nac.date() if hasattr(m.fecha_nac, 'date') else m.fecha_nac
-           m.edad = hoy.year - f_nac.year - ((hoy.month, hoy.day) < (f_nac.month, f_nac.day))
+        f_nac_raw = getattr(m, 'fecha_nac', None) or getattr(m, 'fecha_nacimiento', None)
+
+        if f_nac_raw:
+            f_nac = f_nac_raw.date() if hasattr(f_nac_raw, 'date') else f_nac_raw
+            m.edad = anio_activo - f_nac.year - (
+                (fecha_referencia_ciclo.month, fecha_referencia_ciclo.day) < (f_nac.month, f_nac.day)
+            )
         else:
             m.edad = "N/A"
 
@@ -61,7 +68,9 @@ def directora_view(request):
     return render(request, "control_maestro.html", {
         'maestros': maestros_paginados,
         'grados_disponibles': grados_disponibles,
-        'q': q
+        'q': q,
+        'periodo': periodo,
+        'anio_activo': anio_activo,
     })
 
 @login_required
@@ -287,7 +296,7 @@ def grado_seccion_control(request):
         'maestros_disponibles': maestros_disponibles,
     }
     return render(request, "grado_seccion_control.html", context)
-
+GRADOS_KINDER = ['PK', 'PK5', 'PK6']
 @login_required
 @directora_required
 @require_POST
@@ -297,46 +306,77 @@ def toggle_grado_activo(request, pk):
         gs = get_object_or_404(GradoSeccion, id=pk)
         nuevo_estado = not gs.activo
         
-        if nuevo_estado:  
+        if nuevo_estado:
             instancia_maestro = gs.maestro_encargado
+            es_kinder_actual = gs.grado in GRADOS_KINDER
             
             if instancia_maestro:
-                grados_activos_docente = instancia_maestro.grados_a_cargo.filter(activo=True).count()
-                if grados_activos_docente >= 2:
+                # Grados activos del docente excluyendo el actual
+                grados_activos_docente = instancia_maestro.grados_a_cargo.filter(activo=True).exclude(id=gs.id)
+                
+                # Comprobar si los grados que ya tiene son de kínder
+                tiene_solo_kinder = all(g.grado in GRADOS_KINDER for g in grados_activos_docente)
+
+                # 1. Validación de límite de grados
+                # Permitir hasta 2 grados siempre que sea la dupla de Kínder
+                total_grados = grados_activos_docente.count()
+                if total_grados >= 2:
                     return JsonResponse({
                         'ok': False,
                         'error': f'No se puede reactivar. El Prof. {instancia_maestro.apellido} ya alcanzó el límite máximo de 2 grados activos.'
-                    })
+                    }, status=400)
 
-                turno_duplicado = instancia_maestro.grados_a_cargo.filter(activo=True, turno=gs.turno).exists()
-                if turno_duplicado:
-                    return JsonResponse({
-                        'ok': False,
-                        'error': f'No se puede reactivar. El Prof. {instancia_maestro.apellido} ya tiene un grado activo en el turno de la {gs.turno.lower()}.'
-                    })
+                # 2. Validación de Turno
+                # Excepción: si el grado a reactivar es de Kínder y el que ya tiene el docente también es de Kínder,
+                # se le permite compartir turno (modalidad integrada PK5/PK6)
+                grados_mismo_turno = grados_activos_docente.filter(turno__iexact=gs.turno)
+                if grados_mismo_turno.exists():
+                    conflicto_no_kinder = grados_mismo_turno.exclude(grado__in=GRADOS_KINDER).exists()
+                    if not es_kinder_actual or conflicto_no_kinder:
+                        return JsonResponse({
+                            'ok': False,
+                            'error': f'No se puede reactivar. El Prof. {instancia_maestro.apellido} ya tiene un grado activo en el turno de la {gs.turno.lower()}.'
+                        }, status=400)
 
-                seccion_duplicada = instancia_maestro.grados_a_cargo.filter(activo=True, seccion=gs.seccion).exists()
-                if seccion_duplicada:
-                    return JsonResponse({
-                        'ok': False,
-                        'error': f'No se puede reactivar. El Prof. {instancia_maestro.apellido} ya es encargado de un aula activa en la Sección "{gs.seccion}".'
-                    })
+                # 3. Validación de Sección
+                # Excepción análoga para la letra de sección entre grados de Kínder
+                grados_misma_seccion = grados_activos_docente.filter(seccion__iexact=gs.seccion)
+                if grados_misma_seccion.exists():
+                    conflicto_seccion_no_kinder = grados_misma_seccion.exclude(grado__in=GRADOS_KINDER).exists()
+                    if not es_kinder_actual or conflicto_seccion_no_kinder:
+                        return JsonResponse({
+                            'ok': False,
+                            'error': f'No se puede reactivar. El Prof. {instancia_maestro.apellido} ya es encargado de un aula en la Sección "{gs.seccion}".'
+                        }, status=400)
 
-            colision_institucional = GradoSeccion.objects.filter(grado=gs.grado, seccion=gs.seccion, activo=True).exists()
+            # 4. Colisión institucional global (no pueden existir dos aulas idénticas activas a la vez)
+            colision_institucional = GradoSeccion.objects.filter(
+                grado=gs.grado,
+                seccion=gs.seccion,
+                activo=True
+            ).exclude(id=gs.id).exists()
+            
             if colision_institucional:
                 return JsonResponse({
                     'ok': False,
-                    'error': 'No se puede reactivar. Ya existe otra sección activa con la misma combinación de Grado y Letra.'
-                })
+                    'error': f'No se puede reactivar. Ya existe otra aula activa de {gs.get_grado_display()} Sección "{gs.seccion}".'
+                }, status=400)
 
+        # Aplicar el cambio de estado
         gs.activo = nuevo_estado
         gs.save()
         
         status_str = "activo" if gs.activo else "inactivo"
-        return JsonResponse({'ok': True, 'mensaje': f'El grado/sección ahora está {status_str}.'})
+        return JsonResponse({
+            'ok': True,
+            'mensaje': f'El aula {gs.get_grado_display()} Sección "{gs.seccion}" ahora está {status_str}.'
+        })
         
     except Exception as e:
-        return JsonResponse({'ok': False, 'error': f'Error interno en el servidor: {str(e)}'})
+        return JsonResponse({
+            'ok': False,
+            'error': f'Error interno en el servidor: {str(e)}'
+        }, status=500)
 
 @login_required
 @directora_required
@@ -2002,12 +2042,44 @@ def archivo_anual(request, anio):
 def ficha_archivada(request, anio, ficha_id):
     if request.method != 'GET':
         return JsonResponse({'ok': False, 'error': 'El historial es de solo lectura.'}, status=405)
+
     from .archivos import ficha_desde_archivo, filtrar_archivo
-    cierre = get_object_or_404(CierrePeriodo, anio_lectivo=anio, fase_cerrada='CLASES')
-    archivo = filtrar_archivo(cierre.resumen['archivo'], request.user)
+    from Directora.models import CierrePeriodo
+
+    # 1. Asegurar entero para consistencia numérica y de búsqueda
+    anio_int = int(anio)
+
+    # 2. Obtener el snapshot del cierre correspondiente a ese año
+    cierre = get_object_or_404(CierrePeriodo, anio_lectivo=anio_int, fase_cerrada='CLASES')
+    archivo = filtrar_archivo(cierre.resumen.get('archivo', []), request.user)
+
+    # 3. Reconstruir la ficha desde el JSON archivado
+    ficha = ficha_desde_archivo(archivo, ficha_id)
+    if not ficha:
+        return JsonResponse({'ok': False, 'error': 'No se encontró la ficha en el archivo histórico.'}, status=404)
+
+    if isinstance(ficha, dict):
+        ficha['anio_lectivo'] = anio_int
+        if ficha.get('fecha_envio') and hasattr(ficha['fecha_envio'], 'replace'):
+            try:
+                ficha['fecha_envio'] = ficha['fecha_envio'].replace(year=anio_int)
+            except ValueError:
+                ficha['fecha_envio'] = ficha['fecha_envio'].replace(year=anio_int, day=28)
+    else:
+        ficha.anio_lectivo = anio_int
+        if hasattr(ficha, 'fecha_envio') and ficha.fecha_envio:
+            try:
+                ficha.fecha_envio = ficha.fecha_envio.replace(year=anio_int)
+            except ValueError:
+                ficha.fecha_envio = ficha.fecha_envio.replace(year=anio_int, day=28)
+
     return render(request, 'solicitud_matricula_detalle.html', {
-        'ficha': ficha_desde_archivo(archivo, ficha_id), 'puede_revisar': False,
-        'anio_archivado': anio, 'archivo_historico': True,
+        'ficha': ficha,
+        'puede_revisar': False,
+        'anio_activo': anio_int,          
+        'anio_archivado': anio_int,
+        'archivo_historico': True,
+        'modo_lectura': True,
     })
 
 @login_required
