@@ -68,7 +68,6 @@
             <a class="btn-volver" href="{% url 'control_alumnos' %}?vista=solicitudes">Volver a solicitudes</a>
             {% endif %}
         </div>
-        {% if archivo_historico %}<div class="mensaje">Ficha conservada al cierre del año {{ anio_archivado }}. Solo lectura. <button type="button" class="btn-volver" onclick="window.print()">Imprimir ficha</button></div>{% endif %}
 
         {% for mensaje in messages %}<div class="mensaje">{{ mensaje }}</div>{% endfor %}
         {% if ficha.observaciones %}<div class="aviso-subsanacion"><strong>Motivo de subsanación:</strong> {{ ficha.observaciones }}</div>{% endif %}
@@ -141,7 +140,7 @@
         <section class="panel-detalle">
             <h2>Historial de revisión</h2>
             {% for revision in ficha.revisiones.all %}
-            <p style="margin-bottom: 12px;">{{ revision.fecha|date:"d/m/Y h:i A" }} · {{ revision.get_accion_display }}{% if revision.motivo %}: {{ revision.motivo }}{% endif %}</p>
+            <p style="margin-bottom: 12px;"> {{ revision.get_accion_display }}{% if revision.motivo %}: {{ revision.motivo }}{% endif %}</p>
             {% endfor %}
         </section>
         {% endif %}

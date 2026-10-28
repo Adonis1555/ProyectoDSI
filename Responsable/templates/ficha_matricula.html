@@ -6,7 +6,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'styles/ficha_matricula.css' %}">
-    <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>{% if modo_lectura %}Comprobante de Matrícula{% else %}Ficha de Matrícula{% endif %}</title>
 </head>
@@ -40,20 +39,35 @@
         <!-- CONTENIDO PRINCIPAL -->
         <section class="contenido-ficha">
             
-            <!-- ENCABEZADO CON HUSO HORARIO LOCAL FORZADO -->
             <div class="encabezado-ficha">
                 <div class="encabezado-textos">
                     {% if modo_lectura %}
                         <h1 class="titulo-pagina">Comprobante de Inscripción y Matrícula</h1>
                         <p class="subtitulo-pagina">
                             Estado: <strong style="color: #2563eb;">{{ ficha.get_estado_display }}</strong> 
-                            {% timezone "America/El_Salvador" %}
-                                | Enviada el {{ ficha.fecha_envio|date:"d/m/Y h:i A" }}
-                            {% endtimezone %}
+                            {% if ficha.fecha_envio %}
+                                {% timezone "America/El_Salvador" %}
+                                    | Enviada el {{ ficha.fecha_envio|date:"d/m/Y h:i A" }}
+                                {% endtimezone %}
+                            {% endif %}
                         </p>
                     {% else %}
-                        <h1 class="titulo-pagina">{% if corregir %}Corregir solicitud de matrícula{% else %}Ficha de Inscripción y Matrícula {{ periodo.anio_activo }}{% endif %}</h1>
-                        <p class="subtitulo-pagina">Completa la información conforme a la Partida de Nacimiento y datos del hogar.</p>
+                        <h1 class="titulo-pagina">
+                            {% if corregir %}
+                                Corregir solicitud de matrícula
+                            {% elif alumno_existente %}
+                                Matrícula Ciclo {{ periodo.anio_activo }} — {{ alumno_existente.nombre }} {{ alumno_existente.apellido }}
+                            {% else %}
+                                Ficha de Inscripción y Matrícula {{ periodo.anio_activo }}
+                            {% endif %}
+                        </h1>
+                        <p class="subtitulo-pagina">
+                            {% if alumno_existente %}
+                                Los datos de identidad del alumno están bloqueados conforme a su registro escolar previo. Selecciona el grado a cursar y actualiza la información del hogar.
+                            {% else %}
+                                Completa la información del estudiante conforme a su Partida de Nacimiento y datos del hogar.
+                            {% endif %}
+                        </p>
                     {% endif %}
                 </div>
                 <a href="{% url 'dashboard_responsable' %}" class="btn-volver-icono" title="Volver al Panel">
@@ -64,27 +78,35 @@
                 </a>
             </div>
 
-            <!-- FORMULARIO CON ID PARA FETCH -->
+            <!-- AVISO PREVENTIVO: SI EL PERIODO ESTÁ CERRADO -->
             {% if not matricula_abierta and not modo_lectura %}
-            <p role="status">El periodo de matrícula está cerrado. Puedes consultar tus solicitudes desde el panel.</p>
-            {% endif %}
-            {% if ficha.observaciones %}
-            <p role="status" style="padding: 14px; color: #991b1b; background: #fee2e2; border-radius: 8px; margin-bottom: 16px;">Información que debes subsanar: {{ ficha.observaciones }}</p>
-            {% endif %}
-            {% if ficha.revisiones.all %}
-            <div class="panel-ficha">
-                <h2 class="titulo-seccion">Historial de revisión</h2>
-                {% for revision in ficha.revisiones.all %}
-                <p>{{ revision.fecha|date:"d/m/Y h:i A" }} · {{ revision.get_accion_display }}{% if revision.motivo %}: {{ revision.motivo }}{% endif %}</p>
-                {% endfor %}
+            <div style="padding: 16px; background: #fee2e2; border-left: 5px solid #dc2626; border-radius: 8px; margin-bottom: 20px; color: #991b1b;">
+                <strong>Periodo de Matrícula Inactivo:</strong> El centro educativo se encuentra actualmente en periodo de clases. La recepción de solicitudes de matrícula está temporalmente cerrada.
             </div>
             {% endif %}
+
+            <!-- AVISO PREVENTIVO: SI NO HAY SECCIONES ACTIVAS -->
+            {% if aviso_sin_secciones and not modo_lectura %}
+            <div style="padding: 16px; background: #fef3c7; border-left: 5px solid #d97706; border-radius: 8px; margin-bottom: 20px; color: #92400e;">
+                <strong>Atención: Secciones no disponibles</strong>
+                <p style="margin: 4px 0 0 0; font-size: 13.5px;">
+                    La Dirección Escolar aún no cuenta con secciones habilitadas para este nivel en el ciclo {{ periodo.anio_activo }}. Por favor comuníquese con la Dirección del centro educativo.
+                </p>
+            </div>
+            {% endif %}
+
+            {% if ficha and ficha.observaciones %}
+            <p role="status" style="padding: 14px; color: #991b1b; background: #fee2e2; border-radius: 8px; margin-bottom: 16px;">
+                Información que debes subsanar: {{ ficha.observaciones }}
+            </p>
+            {% endif %}
+
             <form method="POST" id="form_ficha" action="" class="form-ficha">
                 {% csrf_token %}
                 <input type="hidden" name="anio_activo" value="{{ periodo.anio_activo }}">
-                <fieldset {% if not matricula_abierta and not modo_lectura %}disabled{% endif %} style="border: none; padding: 0; margin: 0; min-width: 0;">
+                <fieldset {% if not matricula_abierta and not modo_lectura or aviso_sin_secciones and not modo_lectura %}disabled{% endif %} style="border: none; padding: 0; margin: 0; min-width: 0;">
 
-                <!-- NIE, GRADO Y SECCIÓN -->
+                <!-- NIE, GRADO, SECCIÓN Y NUEVO INGRESO -->
                 <div class="panel-ficha">
                     <div class="grid-col-3">
                         <div class="form-group">
@@ -97,30 +119,29 @@
                                    maxlength="8" 
                                    minlength="7"
                                    pattern="^[0-9]{7,8}$"
-                                   value="{{ ficha.nie|default:'' }}"
-                                   {% if corregir %}readonly{% endif %}
-                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}
+                                   value="{% if ficha %}{{ ficha.nie }}{% elif alumno_existente %}{{ alumno_existente.NIE }}{% endif %}"
+                                   {% if modo_lectura or corregir or alumno_existente %}readonly style="background-color: #f1f5f9; cursor: not-allowed;"{% endif %}
                                    required>
                         </div>
                 
                         <div class="form-group">
                             <label class="label-custom">Grado a Matricular <span class="req">*</span></label>
-                            <select name="grado_solicitado" id="select_grado" class="select-custom" required {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                            <select name="grado_solicitado" id="select_grado" class="select-custom" required {% if modo_lectura or aviso_sin_secciones %}disabled style="background-color: #f1f5f9;"{% endif %}>
                                 <option value="">Seleccione grado...</option>
                                 {% for codigo, nombre in grados_disponibles %}
-                                    <option value="{{ codigo }}" {% if ficha and ficha.grado_seccion.grado == codigo %}selected{% endif %}>
+                                    <option value="{{ codigo }}" {% if ficha and ficha.grado_seccion and ficha.grado_seccion.grado == codigo %}selected{% endif %}>
                                         {{ nombre }}
                                     </option>
                                 {% empty %}
-                                    <option value="" disabled>No hay grados registrados</option>
+                                    <option value="" disabled>No hay grados activos disponibles</option>
                                 {% endfor %}
                             </select>
                         </div>
                 
                         <div class="form-group">
                             <label class="label-custom">Sección <span class="req">*</span></label>
-                            <select name="seccion_solicitada" id="select_seccion" class="select-custom" required {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% else %}disabled{% endif %}>
-                                {% if modo_lectura %}
+                            <select name="seccion_solicitada" id="select_seccion" class="select-custom" required {% if modo_lectura or aviso_sin_secciones %}disabled style="background-color: #f1f5f9;"{% else %}disabled{% endif %}>
+                                {% if modo_lectura and ficha and ficha.grado_seccion %}
                                     <option value="{{ ficha.grado_seccion.seccion }}" selected>Sección "{{ ficha.grado_seccion.seccion }}"</option>
                                 {% else %}
                                     <option value="">Primero elija un grado...</option>
@@ -128,47 +149,71 @@
                             </select>
                         </div>
                     </div>
+
+                    {% if not alumno_existente %}
+                    <!-- CASILLA DE NUEVO INGRESO (SOLO ALUMNOS NUEVOS) -->
+                    <div style="margin-top: 15px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; font-weight: 600; color: #1e293b;">
+                            <input type="checkbox" name="es_nuevo_ingreso" id="check_nuevo_ingreso" value="true"
+                                   {% if ficha and ficha.es_nuevo_ingreso %}checked{% endif %}
+                                   {% if modo_lectura %}disabled{% endif %}>
+                            <span>Estudiante de Nuevo Ingreso (proviene de otra escuela o ingresa por primera vez a este centro educativo)</span>
+                        </label>
+                    </div>
+                    {% endif %}
                 </div>
 
                 <!-- SECCIÓN 1: DATOS DEL ESTUDIANTE -->
                 <div class="panel-ficha">
-                    <h2 class="titulo-seccion">1. Datos del Estudiante (Según Partida de Nacimiento)</h2>
+                    <h2 class="titulo-seccion">
+                        1. Datos del Estudiante (Según Partida de Nacimiento)
+                        {% if alumno_existente %}<span style="font-size: 12px; font-weight: normal; color: #64748b; margin-left: 8px;">(Bloqueados por registro oficial previo)</span>{% endif %}
+                    </h2>
                     
                     <div class="grid-col-2">
                         <div class="form-group">
                             <label class="label-custom">Nombres <span class="req">*</span></label>
                             <input type="text" name="nombre" class="input-custom" placeholder="Nombres del alumno" 
-                                   value="{{ ficha.nombres|default:'' }}" 
-                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %} required>
+                                   value="{% if ficha %}{{ ficha.nombres }}{% elif alumno_existente %}{{ alumno_existente.nombre }}{% endif %}" 
+                                   {% if alumno_existente or modo_lectura %}readonly style="background-color: #f1f5f9; cursor: not-allowed;"{% endif %} required>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Apellidos <span class="req">*</span></label>
                             <input type="text" name="apellido" class="input-custom" placeholder="Apellidos del alumno" 
-                                   value="{{ ficha.apellidos|default:'' }}" 
-                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %} required>
+                                   value="{% if ficha %}{{ ficha.apellidos }}{% elif alumno_existente %}{{ alumno_existente.apellido }}{% endif %}" 
+                                   {% if alumno_existente or modo_lectura %}readonly style="background-color: #f1f5f9; cursor: not-allowed;"{% endif %} required>
                         </div>
                     </div>
 
                     <div class="grid-col-3">
                         <div class="form-group">
                             <label class="label-custom">Fecha de Nacimiento <span class="req">*</span></label>
-                            <input type="date" name="fecha_nacimiento" class="input-custom" 
-                                   value="{{ ficha.fecha_nacimiento|date:'Y-m-d' }}" 
-                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %} required>
+                            <input type="date" 
+                                   name="fecha_nacimiento" 
+                                   id="fecha_nacimiento" 
+                                   class="input-custom" 
+                                   value="{% if ficha and ficha.fecha_nacimiento %}{{ ficha.fecha_nacimiento|date:'Y-m-d' }}{% elif alumno_existente and alumno_existente.fecha_nacimiento %}{{ alumno_existente.fecha_nacimiento|date:'Y-m-d' }}{% endif %}" 
+                                   max="{{ periodo.anio_activo|add:'-4' }}-12-31"
+                                   min="{{ periodo.anio_activo|add:'-18' }}-01-01"
+                                   {% if alumno_existente or modo_lectura %}readonly style="background-color: #f1f5f9; cursor: not-allowed;"{% endif %} 
+                                   required>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Nacionalidad</label>
                             <input type="text" name="nacionalidad" class="input-custom" 
-                                   value="{{ ficha.nacionalidad|default:'Salvadoreña' }}" 
-                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                                   value="{% if ficha and ficha.nacionalidad %}{{ ficha.nacionalidad }}{% else %}Salvadoreña{% endif %}" 
+                                   {% if alumno_existente or modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Género <span class="req">*</span></label>
-                            <select name="genero" class="select-custom" required {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                            <select name="genero" class="select-custom" required {% if alumno_existente or modo_lectura %}disabled style="background-color: #f1f5f9; cursor: not-allowed;"{% endif %}>
                                 <option value="">Seleccione...</option>
-                                <option value="M" {% if ficha.genero == 'M' %}selected{% endif %}>Masculino</option>
-                                <option value="F" {% if ficha.genero == 'F' %}selected{% endif %}>Femenino</option>
+                                <option value="M" {% if ficha and ficha.genero == 'M' %}selected{% elif alumno_existente and alumno_existente.sexo == 'M' %}selected{% endif %}>Masculino</option>
+                                <option value="F" {% if ficha and ficha.genero == 'F' %}selected{% elif alumno_existente and alumno_existente.sexo == 'F' %}selected{% endif %}>Femenino</option>
                             </select>
+                            {% if alumno_existente %}
+                                <input type="hidden" name="genero" value="{{ alumno_existente.sexo }}">
+                            {% endif %}
                         </div>
                     </div>
 
@@ -177,19 +222,19 @@
                     <div class="grid-col-3">
                         <div class="form-group">
                             <label class="label-custom">Departamento de Nacimiento</label>
-                            <select name="depto_nacimiento" id="depto_nacimiento" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                            <select name="depto_nacimiento" id="depto_nacimiento" class="select-custom" {% if alumno_existente or modo_lectura %}disabled style="background-color: #f1f5f9;"{% endif %}>
                                 <option value="">Seleccione Departamento...</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Municipio de Nacimiento</label>
-                            <select name="municipio_nacimiento" id="municipio_nacimiento" class="select-custom" disabled {% if modo_lectura %}style="background-color: #f3f4f6;"{% endif %}>
+                            <select name="municipio_nacimiento" id="municipio_nacimiento" class="select-custom" disabled style="background-color: #f1f5f9;">
                                 <option value="">Primero elija departamento...</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Distrito de Nacimiento</label>
-                            <select name="distrito_nacimiento" id="distrito_nacimiento" class="select-custom" disabled {% if modo_lectura %}style="background-color: #f3f4f6;"{% endif %}>
+                            <select name="distrito_nacimiento" id="distrito_nacimiento" class="select-custom" disabled style="background-color: #f1f5f9;">
                                 <option value="">Primero elija municipio...</option>
                             </select>
                         </div>
@@ -198,16 +243,16 @@
                     <div class="grid-col-2">
                         <div class="form-group">
                             <label class="label-custom">¿Posee alguna discapacidad?</label>
-                            <select name="tiene_discapacidad" id="tiene_discapacidad" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                            <select name="tiene_discapacidad" id="tiene_discapacidad" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f1f5f9;"{% endif %}>
                                 <option value="No" {% if ficha and not ficha.tiene_discapacidad %}selected{% endif %}>No</option>
-                                <option value="Si" {% if ficha.tiene_discapacidad %}selected{% endif %}>Sí</option>
+                                <option value="Si" {% if ficha and ficha.tiene_discapacidad %}selected{% endif %}>Sí</option>
                             </select>
                         </div>
-                        <div class="form-group" id="grupo_tipo_discapacidad" style="{% if ficha.tiene_discapacidad %}display: block;{% else %}display: none;{% endif %}">
+                        <div class="form-group" id="grupo_tipo_discapacidad" style="{% if ficha and ficha.tiene_discapacidad %}display: block;{% else %}display: none;{% endif %}">
                             <label class="label-custom">Especifique discapacidad</label>
                             <input type="text" name="tipo_discapacidad" class="input-custom" placeholder="Tipo de discapacidad" 
-                                   value="{{ ficha.tipo_discapacidad|default:'' }}" 
-                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                                   value="{% if ficha and ficha.tipo_discapacidad %}{{ ficha.tipo_discapacidad }}{% endif %}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}>
                         </div>
                     </div>
 
@@ -216,19 +261,19 @@
                     <div class="grid-col-3">
                         <div class="form-group">
                             <label class="label-custom">Departamento de Residencia</label>
-                            <select name="depto_residencia" id="depto_residencia" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                            <select name="depto_residencia" id="depto_residencia" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f1f5f9;"{% endif %}>
                                 <option value="">Seleccione Departamento...</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Municipio de Residencia</label>
-                            <select name="municipio_residencia" id="municipio_residencia" class="select-custom" disabled {% if modo_lectura %}style="background-color: #f3f4f6;"{% endif %}>
+                            <select name="municipio_residencia" id="municipio_residencia" class="select-custom" disabled {% if modo_lectura %}style="background-color: #f1f5f9;"{% endif %}>
                                 <option value="">Primero elija departamento...</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Distrito de Residencia</label>
-                            <select name="distrito_residencia" id="distrito_residencia" class="select-custom" disabled {% if modo_lectura %}style="background-color: #f3f4f6;"{% endif %}>
+                            <select name="distrito_residencia" id="distrito_residencia" class="select-custom" disabled {% if modo_lectura %}style="background-color: #f1f5f9;"{% endif %}>
                                 <option value="">Primero elija municipio...</option>
                             </select>
                         </div>
@@ -237,16 +282,16 @@
                     <div class="grid-col-2">
                         <div class="form-group">
                             <label class="label-custom">Zona de Residencia</label>
-                            <select name="zona_residencia" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
-                                <option value="Urbana" {% if ficha.zona_residencia == 'Urbana' %}selected{% endif %}>Urbana</option>
-                                <option value="Rural" {% if ficha.zona_residencia == 'Rural' %}selected{% endif %}>Rural</option>
+                            <select name="zona_residencia" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f1f5f9;"{% endif %}>
+                                <option value="Urbana" {% if ficha and ficha.zona_residencia == 'Urbana' %}selected{% endif %}>Urbana</option>
+                                <option value="Rural" {% if ficha and ficha.zona_residencia == 'Rural' %}selected{% endif %}>Rural</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Dirección Exacta de Residencia</label>
-                            <input type="text" name="direccion_exacta" class="input-custom" placeholder="Colonia, calle, pasaje, polígono o número de casa" 
-                                   value="{{ ficha.direccion_exacta|default:'' }}" 
-                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                            <input type="text" name="direccion_exacta" class="input-custom" placeholder="Colonia, calle, pasaje o número de casa" 
+                                   value="{% if ficha and ficha.direccion_exacta %}{{ ficha.direccion_exacta }}{% endif %}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}>
                         </div>
                     </div>
                 </div>
@@ -258,25 +303,25 @@
                     <div class="grid-col-2">
                         <div class="form-group">
                             <label class="label-custom">¿Presenta problemas de salud o alergias?</label>
-                            <select name="tiene_problemas_salud" id="tiene_problemas_salud" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                            <select name="tiene_problemas_salud" id="tiene_problemas_salud" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f1f5f9;"{% endif %}>
                                 <option value="No" {% if ficha and not ficha.tiene_problemas_salud %}selected{% endif %}>No</option>
-                                <option value="Si" {% if ficha.tiene_problemas_salud %}selected{% endif %}>Sí</option>
+                                <option value="Si" {% if ficha and ficha.tiene_problemas_salud %}selected{% endif %}>Sí</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">¿Esquema de vacunas completo?</label>
-                            <select name="vacunas_completas" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
-                                <option value="Si" {% if ficha.vacunas_completas or not ficha %}selected{% endif %}>Sí</option>
+                            <select name="vacunas_completas" class="select-custom" {% if modo_lectura %}disabled style="background-color: #f1f5f9;"{% endif %}>
+                                <option value="Si" {% if not ficha or ficha.vacunas_completas %}selected{% endif %}>Sí</option>
                                 <option value="No" {% if ficha and not ficha.vacunas_completas %}selected{% endif %}>No</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="form-group" id="grupo_detalle_salud" style="{% if ficha.tiene_problemas_salud %}display: block;{% else %}display: none;{% endif %}">
+                    <div class="form-group" id="grupo_detalle_salud" style="{% if ficha and ficha.tiene_problemas_salud %}display: block;{% else %}display: none;{% endif %}">
                         <label class="label-custom">Detalle de salud o alergias</label>
                         <input type="text" name="detalle_salud" class="input-custom" placeholder="Medicamentos, asma, etc." 
-                               value="{{ ficha.detalle_salud|default:'' }}" 
-                               {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                               value="{% if ficha and ficha.detalle_salud %}{{ ficha.detalle_salud }}{% endif %}" 
+                               {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}>
                     </div>
 
                     <!-- DATOS DEL PADRE -->
@@ -285,21 +330,21 @@
                         <div class="form-group">
                             <label class="label-custom">Nombre Completo del Padre</label>
                             <input type="text" name="nombre_padre" class="input-custom" placeholder="Nombre del padre" 
-                                   value="{{ ficha.nombre_padre|default:'' }}" 
-                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                                   value="{% if ficha and ficha.nombre_padre %}{{ ficha.nombre_padre }}{% endif %}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">DUI del Padre</label>
                             <input type="text" name="dui_padre" class="input-custom mask-dui" placeholder="00000000-0" maxlength="10" 
-                                   value="{{ ficha.dui_padre|default:'' }}" 
-                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                                   value="{% if ficha and ficha.dui_padre %}{{ ficha.dui_padre }}{% endif %}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Estado del Padre</label>
-                            <select name="estado_padre" id="estado_padre" class="select-custom check-ausencia" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
-                                <option value="Presente" {% if ficha.estado_padre == 'Presente' %}selected{% endif %}>Presente</option>
-                                <option value="Fallecido" {% if ficha.estado_padre == 'Fallecido' %}selected{% endif %}>Fallecido</option>
-                                <option value="Ausente" {% if ficha.estado_padre == 'Ausente' %}selected{% endif %}>Ausente / No reconocido</option>
+                            <select name="estado_padre" id="estado_padre" class="select-custom check-ausencia" {% if modo_lectura %}disabled style="background-color: #f1f5f9;"{% endif %}>
+                                <option value="Presente" {% if ficha and ficha.estado_padre == 'Presente' %}selected{% endif %}>Presente</option>
+                                <option value="Fallecido" {% if ficha and ficha.estado_padre == 'Fallecido' %}selected{% endif %}>Fallecido</option>
+                                <option value="Ausente" {% if ficha and ficha.estado_padre == 'Ausente' %}selected{% endif %}>Ausente / No reconocido</option>
                             </select>
                         </div>
                     </div>
@@ -310,21 +355,21 @@
                         <div class="form-group">
                             <label class="label-custom">Nombre Completo de la Madre</label>
                             <input type="text" name="nombre_madre" class="input-custom" placeholder="Nombre de la madre" 
-                                   value="{{ ficha.nombre_madre|default:'' }}" 
-                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                                   value="{% if ficha and ficha.nombre_madre %}{{ ficha.nombre_madre }}{% endif %}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">DUI de la Madre</label>
                             <input type="text" name="dui_madre" class="input-custom mask-dui" placeholder="00000000-0" maxlength="10" 
-                                   value="{{ ficha.dui_madre|default:'' }}" 
-                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                                   value="{% if ficha and ficha.dui_madre %}{{ ficha.dui_madre }}{% endif %}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Estado de la Madre</label>
-                            <select name="estado_madre" id="estado_madre" class="select-custom check-ausencia" {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
-                                <option value="Presente" {% if ficha.estado_madre == 'Presente' %}selected{% endif %}>Presente</option>
-                                <option value="Fallecido" {% if ficha.estado_madre == 'Fallecido' %}selected{% endif %}>Fallecida</option>
-                                <option value="Ausente" {% if ficha.estado_madre == 'Ausente' %}selected{% endif %}>Ausente / No reconocida</option>
+                            <select name="estado_madre" id="estado_madre" class="select-custom check-ausencia" {% if modo_lectura %}disabled style="background-color: #f1f5f9;"{% endif %}>
+                                <option value="Presente" {% if ficha and ficha.estado_madre == 'Presente' %}selected{% endif %}>Presente</option>
+                                <option value="Fallecido" {% if ficha and ficha.estado_madre == 'Fallecido' %}selected{% endif %}>Fallecida</option>
+                                <option value="Ausente" {% if ficha and ficha.estado_madre == 'Ausente' %}selected{% endif %}>Ausente / No reconocida</option>
                             </select>
                         </div>
                     </div>
@@ -338,82 +383,114 @@
                             <div class="form-group">
                                 <label class="label-custom">Nombre Completo del Tutor</label>
                                 <input type="text" name="nombre_tutor_alt" class="input-custom" placeholder="Nombre del tutor" 
-                                       value="{{ ficha.nombre_tutor_alt|default:'' }}" 
-                                       {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                                       value="{% if ficha and ficha.nombre_tutor_alt %}{{ ficha.nombre_tutor_alt }}{% endif %}" 
+                                       {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}>
                             </div>
                             <div class="form-group">
                                 <label class="label-custom">DUI del Tutor</label>
                                 <input type="text" name="dui_tutor_alt" class="input-custom mask-dui" placeholder="00000000-0" maxlength="10" 
-                                       value="{{ ficha.dui_tutor_alt|default:'' }}" 
-                                       {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                                       value="{% if ficha and ficha.dui_tutor_alt %}{{ ficha.dui_tutor_alt }}{% endif %}" 
+                                       {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}>
                             </div>
                             <div class="form-group">
                                 <label class="label-custom">Parentesco</label>
                                 <input type="text" name="parentesco_tutor_alt" class="input-custom" placeholder="Ej: Tío/a, Abuelo/a" 
-                                       value="{{ ficha.parentesco_tutor_alt|default:'' }}" 
-                                       {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                                       value="{% if ficha and ficha.parentesco_tutor_alt %}{{ ficha.parentesco_tutor_alt }}{% endif %}" 
+                                       {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- SECCIÓN 3: RESPONSABLE TITULAR -->
+                <!-- SECCIÓN 3: RESPONSABLE TITULAR (EDITABLE) -->
                 <div class="panel-ficha">
-                    <h2 class="titulo-seccion">3. Responsable Titular (Asiste a reuniones y emergencias)</h2>
+                    <h2 class="titulo-seccion">
+                        3. Responsable Titular (Asiste a reuniones, citatorios y emergencias)
+                        <span style="font-size: 12px; font-weight: normal; color: #64748b; margin-left: 8px;">
+                            (Precargado con tu perfil; puedes modificarlo si el titular ante la escuela para este año será otra persona)
+                        </span>
+                    </h2>
                     
                     <div class="grid-col-3">
                         <div class="form-group">
-                            <label class="label-custom">Nombres <span class="req">*</span></label>
-                            <input type="text" name="nombre_resp" class="input-custom" 
-                                   value="{% if modo_lectura %}{{ ficha.responsable.nombre }}{% else %}{{ responsable.nombre }}{% endif %}" 
-                                   readonly style="background-color: #f3f4f6;">
+                            <label class="label-custom">Nombres del Responsable <span class="req">*</span></label>
+                            <input type="text" 
+                                   name="nombre_resp" 
+                                   id="nombre_resp"
+                                   class="input-custom" 
+                                   placeholder="Nombres del responsable"
+                                   value="{% if ficha and ficha.nombre_responsable %}{{ ficha.nombre_responsable }}{% elif ficha and ficha.responsable %}{{ ficha.responsable.nombre }}{% elif responsable %}{{ responsable.nombre }}{% endif %}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}
+                                   required>
                         </div>
                         <div class="form-group">
-                            <label class="label-custom">Apellidos <span class="req">*</span></label>
-                            <input type="text" name="apellido_resp" class="input-custom" 
-                                   value="{% if modo_lectura %}{{ ficha.responsable.apellido }}{% else %}{{ responsable.apellido }}{% endif %}" 
-                                   readonly style="background-color: #f3f4f6;">
+                            <label class="label-custom">Apellidos del Responsable <span class="req">*</span></label>
+                            <input type="text" 
+                                   name="apellido_resp" 
+                                   id="apellido_resp"
+                                   class="input-custom" 
+                                   placeholder="Apellidos del responsable"
+                                   value="{% if ficha and ficha.apellido_responsable %}{{ ficha.apellido_responsable }}{% elif ficha and ficha.responsable %}{{ ficha.responsable.apellido }}{% elif responsable %}{{ responsable.apellido }}{% endif %}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}
+                                   required>
                         </div>
                         <div class="form-group">
-                            <label class="label-custom">DUI <span class="req">*</span></label>
-                            <input type="text" name="dui_resp" class="input-custom" 
-                                   value="{% if modo_lectura %}{{ ficha.responsable.dui }}{% else %}{{ responsable.dui }}{% endif %}" 
-                                   readonly style="background-color: #f3f4f6;">
+                            <label class="label-custom">DUI del Responsable <span class="req">*</span></label>
+                            <input type="text" 
+                                   name="dui_resp" 
+                                   id="dui_resp"
+                                   class="input-custom mask-dui" 
+                                   placeholder="00000000-0" 
+                                   maxlength="10"
+                                   value="{% if ficha and ficha.dui_responsable %}{{ ficha.dui_responsable }}{% elif ficha and ficha.responsable %}{{ ficha.responsable.dui }}{% elif responsable %}{{ responsable.dui }}{% endif %}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}
+                                   required>
                         </div>
                     </div>
 
                     <div class="grid-col-3">
                         <div class="form-group">
                             <label class="label-custom">Parentesco con el Alumno <span class="req">*</span></label>
-                            <select name="parentesco_resp" class="select-custom" required {% if modo_lectura %}disabled style="background-color: #f3f4f6;"{% endif %}>
+                            <select name="parentesco_resp" class="select-custom" required {% if modo_lectura %}disabled style="background-color: #f1f5f9;"{% endif %}>
                                 <option value="">Seleccione parentesco...</option>
-                                <option value="Padre" {% if ficha.parentesco_responsable == 'Padre' %}selected{% endif %}>Padre</option>
-                                <option value="Madre" {% if ficha.parentesco_responsable == 'Madre' %}selected{% endif %}>Madre</option>
-                                <option value="Abuelo/a" {% if ficha.parentesco_responsable == 'Abuelo/a' %}selected{% endif %}>Abuelo/a</option>
-                                <option value="Tío/a" {% if ficha.parentesco_responsable == 'Tío/a' %}selected{% endif %}>Tío/a</option>
-                                <option value="Hermano/a Mayor" {% if ficha.parentesco_responsable == 'Hermano/a Mayor' %}selected{% endif %}>Hermano/a Mayor</option>
-                                <option value="Tutor Legal" {% if ficha.parentesco_responsable == 'Tutor Legal' %}selected{% endif %}>Tutor Legal</option>
+                                <option value="Padre" {% if ficha and ficha.parentesco_responsable == 'Padre' %}selected{% endif %}>Padre</option>
+                                <option value="Madre" {% if ficha and ficha.parentesco_responsable == 'Madre' %}selected{% endif %}>Madre</option>
+                                <option value="Abuelo/a" {% if ficha and ficha.parentesco_responsable == 'Abuelo/a' %}selected{% endif %}>Abuelo/a</option>
+                                <option value="Tío/a" {% if ficha and ficha.parentesco_responsable == 'Tío/a' %}selected{% endif %}>Tío/a</option>
+                                <option value="Hermano/a Mayor" {% if ficha and ficha.parentesco_responsable == 'Hermano/a Mayor' %}selected{% endif %}>Hermano/a Mayor</option>
+                                <option value="Tutor Legal" {% if ficha and ficha.parentesco_responsable == 'Tutor Legal' %}selected{% endif %}>Tutor Legal</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Teléfono de Contacto <span class="req">*</span></label>
-                            <input type="text" name="telefono_resp" class="input-custom mask-tel" 
-                                   value="{% if ficha %}{{ ficha.telefono_contacto }}{% else %}{{ responsable.telefono }}{% endif %}"
-                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %} required maxlength="9">
+                            <input type="text" 
+                                   name="telefono_resp" 
+                                   class="input-custom mask-tel" 
+                                   placeholder="0000-0000"
+                                   value="{% if ficha and ficha.telefono_contacto %}{{ ficha.telefono_contacto }}{% elif responsable and responsable.telefono %}{{ responsable.telefono }}{% endif %}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %} 
+                                   required maxlength="9">
                         </div>
                         <div class="form-group">
                             <label class="label-custom">Correo para Envío de Notas</label>
-                            <input type="email" name="email_resp" class="input-custom" 
-                                   value="{% if ficha %}{{ ficha.correo_notas|default:'' }}{% else %}{{ request.user.email }}{% endif %}"
-                                   {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                            <input type="email" 
+                                   name="email_resp" 
+                                   class="input-custom" 
+                                   placeholder="correo@ejemplo.com"
+                                   value="{% if ficha and ficha.correo_notas %}{{ ficha.correo_notas }}{% elif request.user and request.user.email %}{{ request.user.email }}{% endif %}" 
+                                   {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="label-custom">Dirección de Residencia del Responsable</label>
-                        <input type="text" name="direccion_resp" class="input-custom" placeholder="Dirección completa del responsable" 
-                               value="{% if ficha %}{{ ficha.direccion_responsable|default:'' }}{% else %}{{ responsable.direccion|default:'' }}{% endif %}"
-                               {% if modo_lectura %}readonly style="background-color: #f3f4f6;"{% endif %}>
+                        <label class="label-custom">Dirección de Residencia del Responsable <span class="req">*</span></label>
+                        <input type="text" 
+                               name="direccion_resp" 
+                               class="input-custom" 
+                               placeholder="Dirección completa del responsable" 
+                               value="{% if ficha and ficha.direccion_responsable %}{{ ficha.direccion_responsable }}{% endif %}" 
+                               {% if modo_lectura %}readonly style="background-color: #f1f5f9;"{% endif %}
+                               required>
                     </div>
                 </div>
 
@@ -422,9 +499,13 @@
                     {% if modo_lectura %}
                         <button type="button" class="btn-enviar-ficha" onclick="window.print()">Imprimir Comprobante</button>
                         <a href="{% url 'dashboard_responsable' %}" class="btn-cancelar-ficha">Regresar al Panel</a>
-                    {% elif matricula_abierta %}
-                        <button type="submit" id="btn_guardar_ficha" class="btn-enviar-ficha">{% if corregir %}Reenviar solicitud corregida{% else %}Guardar y Enviar Solicitud de Matrícula{% endif %}</button>
+                    {% elif matricula_abierta and not aviso_sin_secciones %}
+                        <button type="submit" id="btn_guardar_ficha" class="btn-enviar-ficha">
+                            {% if corregir %}Reenviar solicitud corregida{% else %}Guardar y Enviar Solicitud de Matrícula{% endif %}
+                        </button>
                         <a href="{% url 'dashboard_responsable' %}" class="btn-cancelar-ficha">Cancelar</a>
+                    {% else %}
+                        <a href="{% url 'dashboard_responsable' %}" class="btn-cancelar-ficha">Volver al Panel</a>
                     {% endif %}
                 </div>
                 </fieldset>
@@ -436,7 +517,17 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
 
-            // INTERCEPTOR FETCH: EVITA REDIRECCIÓN BRUSCA Y MUESTRA SWEETALERT2
+            // 0. Restricción dinámica de fecha de nacimiento
+            const inputFechaNac = document.getElementById('fecha_nacimiento');
+            if (inputFechaNac && !inputFechaNac.readOnly) {
+                const anioLectivo = parseInt("{{ periodo.anio_activo }}", 10);
+                if (!isNaN(anioLectivo)) {
+                    inputFechaNac.max = `${anioLectivo - 4}-12-31`;
+                    inputFechaNac.min = `${anioLectivo - 18}-01-01`;
+                }
+            }
+
+            // 1. Interceptor AJAX
             const formFicha = document.getElementById('form_ficha');
             {% if not modo_lectura %}
             if (formFicha) {
@@ -458,12 +549,7 @@
                             'X-Requested-With': 'XMLHttpRequest'
                         }
                     })
-                    .then(response => {
-                        return response.json().then(data => ({
-                            okStatus: response.ok,
-                            data: data
-                        }));
-                    })
+                    .then(response => response.json().then(data => ({ okStatus: response.ok, data: data })))
                     .then(res => {
                         if (res.data.ok) {
                             Swal.fire({
@@ -511,7 +597,7 @@
             }
             {% endif %}
 
-            // 1. Relación dinámica Grado -> Sección
+            // 2. Relación dinámica Grado -> Sección
             const relaciones = [
                 {% for gs in grados_secciones %}
                     { 
@@ -524,43 +610,51 @@
 
             const selectGrado = document.getElementById('select_grado');
             const selectSeccion = document.getElementById('select_seccion');
+            const checkNuevoIngreso = document.getElementById('check_nuevo_ingreso');
 
             {% if not modo_lectura %}
-            selectGrado.addEventListener('change', function() {
-                const codigoSeleccionado = this.value;
-                selectSeccion.innerHTML = '<option value="">Seleccione sección...</option>';
+            if (selectGrado && selectSeccion) {
+                selectGrado.addEventListener('change', function() {
+                    const codigoSeleccionado = this.value;
+                    selectSeccion.innerHTML = '<option value="">Seleccione sección...</option>';
 
-                if (!codigoSeleccionado) {
-                    selectSeccion.disabled = true;
-                    selectSeccion.innerHTML = '<option value="">Primero elija un grado...</option>';
-                    return;
-                }
+                    if (codigoSeleccionado === 'PK5' && checkNuevoIngreso) {
+                        checkNuevoIngreso.checked = true;
+                    }
 
-                const seccionesFiltradas = relaciones.filter(item => item.gradoCodigo === codigoSeleccionado);
+                    if (!codigoSeleccionado) {
+                        selectSeccion.disabled = true;
+                        selectSeccion.innerHTML = '<option value="">Primero elija un grado...</option>';
+                        return;
+                    }
 
-                if (seccionesFiltradas.length > 0) {
-                    seccionesFiltradas.forEach(item => {
+                    const seccionesFiltradas = relaciones.filter(item => item.gradoCodigo === codigoSeleccionado);
+
+                    if (seccionesFiltradas.length > 0) {
+                        seccionesFiltradas.forEach(item => {
+                            const opt = document.createElement('option');
+                            opt.value = item.seccion;
+                            opt.textContent = `Sección "${item.seccion}" (${item.turno})`;
+                            selectSeccion.appendChild(opt);
+                        });
+                        selectSeccion.disabled = false;
+                    } else {
                         const opt = document.createElement('option');
-                        opt.value = item.seccion;
-                        opt.textContent = `Sección "${item.seccion}" (${item.turno})`;
+                        opt.value = "";
+                        opt.textContent = "Sin secciones activas disponibles";
                         selectSeccion.appendChild(opt);
-                    });
-                    selectSeccion.disabled = false;
-                } else {
-                    const opt = document.createElement('option');
-                    opt.value = "";
-                    opt.textContent = "Sin secciones disponibles";
-                    selectSeccion.appendChild(opt);
-                    selectSeccion.disabled = true;
-                }
-            });
-            {% if corregir %}
-            selectGrado.dispatchEvent(new Event('change'));
-            selectSeccion.value = '{{ ficha.grado_seccion.seccion|escapejs }}';
-            {% endif %}
+                        selectSeccion.disabled = true;
+                    }
+                });
+
+                {% if corregir and ficha and ficha.grado_seccion %}
+                selectGrado.dispatchEvent(new Event('change'));
+                selectSeccion.value = '{{ ficha.grado_seccion.seccion|escapejs }}';
+                {% endif %}
+            }
             {% endif %}
 
-            // 2. Validación de NIE en tiempo real (solo dígitos, 7 a 8 caracteres)
+            // 3. Máscaras y validaciones
             const inputNie = document.getElementById('input_nie');
             if (inputNie && !inputNie.readOnly) {
                 inputNie.addEventListener('input', function() {
@@ -569,37 +663,26 @@
                 });
             }
 
-            // 3. Máscara DUI (00000000-0)
             document.querySelectorAll('.mask-dui').forEach(input => {
                 if (!input.readOnly) {
                     input.addEventListener('input', function(e) {
                         let v = e.target.value.replace(/\D/g, '');
                         if (v.length > 9) v = v.slice(0, 9);
-                        if (v.length > 8) {
-                            e.target.value = v.slice(0, 8) + '-' + v.slice(8);
-                        } else {
-                            e.target.value = v;
-                        }
+                        e.target.value = v.length > 8 ? v.slice(0, 8) + '-' + v.slice(8) : v;
                     });
                 }
             });
 
-            // 4. Máscara Teléfono (0000-0000)
             document.querySelectorAll('.mask-tel').forEach(input => {
                 if (!input.readOnly) {
                     input.addEventListener('input', function(e) {
                         let v = e.target.value.replace(/\D/g, '');
                         if (v.length > 8) v = v.slice(0, 8);
-                        if (v.length > 4) {
-                            e.target.value = v.slice(0, 4) + '-' + v.slice(4);
-                        } else {
-                            e.target.value = v;
-                        }
+                        e.target.value = v.length > 4 ? v.slice(0, 4) + '-' + v.slice(4) : v;
                     });
                 }
             });
 
-            // 5. Visibilidad dinámica campos condicionales
             const selectDiscapacidad = document.getElementById('tiene_discapacidad');
             const grupoTipoDiscapacidad = document.getElementById('grupo_tipo_discapacidad');
             if (selectDiscapacidad && !selectDiscapacidad.disabled) {
@@ -621,9 +704,11 @@
             const panelTutor = document.getElementById('panel_tutor_alternativo');
 
             function verificarTutoria() {
-                const padreAusente = (estadoPadre.value === 'Fallecido' || estadoPadre.value === 'Ausente');
-                const madreAusente = (estadoMadre.value === 'Fallecido' || estadoMadre.value === 'Ausente');
-                panelTutor.style.display = (padreAusente || madreAusente) ? 'block' : 'none';
+                const padreAusente = (estadoPadre && (estadoPadre.value === 'Fallecido' || estadoPadre.value === 'Ausente'));
+                const madreAusente = (estadoMadre && (estadoMadre.value === 'Fallecido' || estadoMadre.value === 'Ausente'));
+                if (panelTutor) {
+                    panelTutor.style.display = (padreAusente || madreAusente) ? 'block' : 'none';
+                }
             }
 
             if (estadoPadre && estadoMadre) {
@@ -634,7 +719,7 @@
                 }
             }
 
-            // 6. Cascada Geográfica Oficial de El Salvador
+            // 4. Cascada Geográfica Oficial de El Salvador
             const geografiaElSalvador = {
                 "Ahuachapán": {
                     "Ahuachapán Norte": ["Atiquizaya", "El Refugio", "San Lorenzo", "Turín"],
@@ -742,7 +827,7 @@
                         if (muniSeleccionado && muniSeleccionado === muni) opt.selected = true;
                         sMuni.appendChild(opt);
                     });
-                    {% if not modo_lectura %}
+                    {% if not modo_lectura and not alumno_existente %}
                     sMuni.disabled = false;
                     {% endif %}
                 }
@@ -762,12 +847,12 @@
                         if (distSeleccionado && distSeleccionado === dist) opt.selected = true;
                         sDist.appendChild(opt);
                     });
-                    {% if not modo_lectura %}
+                    {% if not modo_lectura and not alumno_existente %}
                     sDist.disabled = false;
                     {% endif %}
                 }
 
-                {% if not modo_lectura %}
+                {% if not modo_lectura and not alumno_existente %}
                 sDepto.addEventListener("change", function() {
                     cargarMunicipios(this.value, null);
                 });
@@ -787,16 +872,16 @@
 
             inicializarCascada(
                 "depto_nacimiento", "municipio_nacimiento", "distrito_nacimiento",
-                "{{ ficha.depto_nacimiento|default:''|escapejs }}",
-                "{{ ficha.municipio_nacimiento|default:''|escapejs }}",
-                "{{ ficha.distrito_nacimiento|default:''|escapejs }}"
+                "{% if ficha and ficha.depto_nacimiento %}{{ ficha.depto_nacimiento|escapejs }}{% endif %}",
+                "{% if ficha and ficha.municipio_nacimiento %}{{ ficha.municipio_nacimiento|escapejs }}{% endif %}",
+                "{% if ficha and ficha.distrito_nacimiento %}{{ ficha.distrito_nacimiento|escapejs }}{% endif %}"
             );
 
             inicializarCascada(
                 "depto_residencia", "municipio_residencia", "distrito_residencia",
-                "{{ ficha.depto_residencia|default:''|escapejs }}",
-                "{{ ficha.municipio_residencia|default:''|escapejs }}",
-                "{{ ficha.distrito_residencia|default:''|escapejs }}"
+                "{% if ficha and ficha.depto_residencia %}{{ ficha.depto_residencia|escapejs }}{% endif %}",
+                "{% if ficha and ficha.municipio_residencia %}{{ ficha.municipio_residencia|escapejs }}{% endif %}",
+                "{% if ficha and ficha.distrito_residencia %}{{ ficha.distrito_residencia|escapejs }}{% endif %}"
             );
         });
     </script>

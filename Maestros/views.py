@@ -20,30 +20,41 @@ from Directora.archivos import alumnos_del_anio, cierre_anual, filtrar_archivo
 @login_required
 @maestro_required
 def maestro_view(request):
-    # 1. Identificar al maestro y sus secciones asignadas
+    periodo = ConfiguracionPeriodo.get_solo()
+    anio_activo = periodo.anio_activo
+
+    # 1. Identificar al maestro y sus secciones asignadas QUE ESTÉN ACTIVAS
     maestro = get_object_or_404(Maestro, id_usuario=request.user)
-    secciones_maestro = GradoSeccion.objects.filter(maestro_encargado=maestro)
+    secciones_maestro = GradoSeccion.objects.filter(maestro_encargado=maestro, activo=True)
     
     if not secciones_maestro.exists():
         return render(request, "dashboard_maestro.html", {
             'maestro': maestro,
             'secciones_maestro': [],
+            'seccion_actual': None,
             'matrix_mensual': [],
-            'totales_anuales': {}
+            'matriz_mensual': [],
+            'totales_anuales': {},
+            'periodo': periodo,
+            'anio_activo': anio_activo,
         })
 
-    # 2. Determinar la sección activa (por parámetro GET o la primera disponible)
+    # 2. Determinar la sección activa (por parámetro GET o la primera activa disponible)
     seccion_id = request.GET.get('seccion_id')
     if seccion_id:
-        seccion_actual = get_object_or_404(GradoSeccion, id=seccion_id, maestro_encargado=maestro)
+        seccion_actual = get_object_or_404(
+            GradoSeccion, 
+            id=seccion_id, 
+            maestro_encargado=maestro, 
+            activo=True
+        )
     else:
         seccion_actual = secciones_maestro.first()
 
     # 3. Datos de Matrícula de la sección por sexo
-    # Nota: Asegúrate de que los valores guardados en el campo 'sexo' coincidan con 'M' y 'F' (o 'H'/'M')
-    alumnos_seccion = alumnos_del_anio(seccion_actual, ConfiguracionPeriodo.get_solo().anio_activo)
-    total_m = alumnos_seccion.filter(sexo='M').count() # Masculino según las cabeceras de tu tabla
-    total_f = alumnos_seccion.filter(sexo='F').count() # Femenino
+    alumnos_seccion = alumnos_del_anio(seccion_actual, anio_activo)
+    total_m = alumnos_seccion.filter(sexo='M').count()  # Masculino (Hombres en cabeceras)
+    total_f = alumnos_seccion.filter(sexo='F').count()  # Femenino (Mujeres en cabeceras)
     
     matricula_sexo = {
         'M': total_m,
@@ -68,20 +79,18 @@ def maestro_view(request):
         'rc_m': 0, 'rc_h': 0, 'rc_total': 0,
     }
 
-    # Filtrar registros que pertenecen únicamente a los alumnos de esta sección en el año en curso
+    # Filtrar registros que pertenecen únicamente a los alumnos de esta sección en el año activo
     registros_año = RegistroTarjeta.objects.filter(
         alumno__grado_seccion=seccion_actual,
-        fecha__year=ConfiguracionPeriodo.get_solo().anio_activo
+        fecha__year=anio_activo
     )
 
     for mes_num in range(1, 13):
-        # Filtrar registros específicos del mes iterado
         registros_mes = registros_año.filter(fecha__month=mes_num)
         
-        # Agregaciones combinadas mediante consultas condicionales (Q)
+        # Agregaciones: sexo='F' -> d_m / r_m / rc_m (Mujeres); sexo='M' -> d_h / r_h / rc_h (Hombres)
         conteos = registros_mes.aggregate(
-            # Deméritos por Sexo (M = Femenino en tu backend tradicional, H = Masculino en tu tabla)
-            # Revisa si en tu base de datos usas 'M'/'F' o 'H'/'M' para Masculino/Femenino
+            # Deméritos por Sexo
             d_m=Count('id', filter=Q(tipo='D', alumno__sexo='F')), 
             d_h=Count('id', filter=Q(tipo='D', alumno__sexo='M')),
             
@@ -122,7 +131,7 @@ def maestro_view(request):
         }
         matriz_mensual.append(fila)
 
-        # Acumular para los totales globales (Fila 18)
+        # Acumular totales anuales
         totales_anuales['d_m'] += conteos['d_m']
         totales_anuales['d_h'] += conteos['d_h']
         totales_anuales['d_total_sexo'] += d_total_sexo
@@ -148,12 +157,13 @@ def maestro_view(request):
         'seccion_actual': seccion_actual,
         'matricula_sexo': matricula_sexo,
         'matriz_mensual': matriz_mensual,
-        'totales_anuales': totales_anuales
+        'totales_anuales': totales_anuales,
+        'periodo': periodo,
+        'anio_activo': anio_activo,
     }
 
-    # Asegúrate de cambiar "dashboard_maestro.html" si tu archivo se llama diferente
     return render(request, "dashboard_maestro.html", context)
-
+    
 @login_required
 @roles_permitidos(['maestro'])
 def control_alumnos(request):
@@ -489,33 +499,54 @@ def registrar_demerito(request, nie):
             fecha_str = data.get('fecha')
 
             if not tipo_registro or not escala:
-                return JsonResponse({'ok': False, 'error': 'Todos los campos del reporte son obligatorios.'})
+                return JsonResponse({'ok': False, 'error': 'Todos los campos del reporte son obligatorios.'}, status=400)
+            
             if tipo_registro not in dict(RegistroTarjeta.TIPO_CASO_CHOICES) or escala not in dict(RegistroTarjeta.SUB_LETRA_CHOICES):
                 return JsonResponse({'ok': False, 'error': 'El tipo de registro o la escala no son válidos.'}, status=400)
-            
 
+            # Obtener el año lectivo oficial activo
+            periodo = getattr(request, 'periodo', None) or ConfiguracionPeriodo.get_solo()
+            anio_activo = periodo.anio_activo
+
+            # Validación y parseo de fecha
             if fecha_str and fecha_str.strip():
                 try:
-                    fecha_final = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+                    fecha_final = datetime.strptime(fecha_str.strip(), '%Y-%m-%d').date()
                 except ValueError:
-                    return JsonResponse({'ok': False, 'error': 'La fecha no es válida.'}, status=400)
+                    return JsonResponse({'ok': False, 'error': 'El formato de fecha no es válido (debe ser YYYY-MM-DD).'}, status=400)
             else:
-                fecha_final = date.today()
+                # Si no se envía fecha, fijar fecha en el año lectivo activo
+                hoy = date.today()
+                try:
+                    fecha_final = hoy.replace(year=anio_activo)
+                except ValueError:
+                    # En caso de 29 de febrero en año no bisiesto
+                    fecha_final = date(anio_activo, 2, 28)
 
+            # Validar que la fecha pertenezca estrictamente al año lectivo activo
+            if fecha_final.year != anio_activo:
+                return JsonResponse({
+                    'ok': False, 
+                    'error': f'La fecha seleccionada ({fecha_final.strftime("%d/%m/%Y")}) no pertenece al año lectivo escolar activo ({anio_activo}).'
+                }, status=400)
+
+            # Validar alumno y matrícula activa en este año lectivo
             alumno = get_object_or_404(Alumno, NIE=nie)
-            if fecha_final.year != request.periodo.anio_activo:
-                return JsonResponse({'ok': False, 'error': 'La fecha debe pertenecer al año lectivo activo.'}, status=400)
             if not alumno.activo or not Matricula.objects.filter(
-                alumno=alumno, grado_seccion=alumno.grado_seccion,
-                anio_lectivo=request.periodo.anio_activo, estado='ACTIVO',
+                alumno=alumno, 
+                grado_seccion=alumno.grado_seccion,
+                anio_lectivo=anio_activo, 
+                estado='ACTIVO'
             ).exists():
-                return JsonResponse({'ok': False, 'error': 'El alumno no tiene matrícula activa en este año.'}, status=400)
-            
+                return JsonResponse({'ok': False, 'error': f'El estudiante no posee una matrícula activa para el ciclo escolar {anio_activo}.'}, status=400)
+
+            # Validar permisos del docente sobre el grado activo
             maestro = get_object_or_404(Maestro, id_usuario=request.user)
-            secciones_asignadas = GradoSeccion.objects.filter(maestro_encargado=maestro)
+            secciones_asignadas = GradoSeccion.objects.filter(maestro_encargado=maestro, activo=True)
             if alumno.grado_seccion not in secciones_asignadas:
-                return JsonResponse({'ok': False, 'error': 'No está autorizado para añadir reportes a este estudiante.'})
-            
+                return JsonResponse({'ok': False, 'error': 'No tienes autorización para registrar incidencias a estudiantes fuera de tus secciones activas.'}, status=403)
+
+            # Crear el registro de tarjeta conductual
             RegistroTarjeta.objects.create(
                 alumno=alumno,
                 tipo=tipo_registro,
@@ -523,16 +554,16 @@ def registrar_demerito(request, nie):
                 fecha=fecha_final,
                 maestro_registra=request.user
             )
-            
-            return JsonResponse({'ok': True})
+
+            return JsonResponse({'ok': True, 'mensaje': 'Incidencia registrada exitosamente.'})
 
         except json.JSONDecodeError:
-            return JsonResponse({'ok': False, 'error': 'El formato de los datos enviados no es válido.'})
+            return JsonResponse({'ok': False, 'error': 'El formato JSON recibido no es válido.'}, status=400)
         except Exception as e:
-            return JsonResponse({'ok': False, 'error': f"Error interno en el servidor: {str(e)}"})
-            
-    return JsonResponse({'ok': False, 'error': 'Método de petición no permitido.'})
+            return JsonResponse({'ok': False, 'error': f'Error interno en el servidor: {str(e)}'}, status=500)
 
+    return JsonResponse({'ok': False, 'error': 'Método de petición no permitido.'}, status=405)
+    
 @login_required
 @roles_permitidos(['maestro'])
 @periodo_requerido('MATRICULA')
@@ -665,7 +696,7 @@ DIAS_SEMANA = [
 def horario_maestro(request):
     maestro = get_object_or_404(Maestro, id_usuario=request.user)
 
-    # 1. Obtención del año lectivo oficial activo del sistema
+    # 1. Año lectivo activo
     periodo = ConfiguracionPeriodo.get_solo()
     anio_actual = periodo.anio_activo
 
@@ -676,46 +707,11 @@ def horario_maestro(request):
     nivel_solicitado = request.GET.get('nivel', 'basica').lower()
     nivel_actual = 'tercer' if nivel_solicitado == 'tercer' else 'basica'
 
-    # Reconocimiento integral de Parvularia 5 y 6
     grados_basica = ['PK', 'PK5', 'PK6', '1G', '2G', '3G', '4G', '5G', '6G']
     grados_tercer = ['7G', '8G', '9G']
     grados_nivel = grados_tercer if nivel_actual == 'tercer' else grados_basica
 
-    # 3. Consulta directa de materias asignadas en el año activo
-    materias_disponibles = []
-
-    if nivel_actual == 'tercer':
-        for asignacion in obtener_materias_docente(maestro, anio_actual):
-            seccion = asignacion['grado_seccion']
-            if seccion.es_tercer_ciclo and normalizar_turno(seccion.turno) == turno_actual:
-                materias_disponibles.append({
-                    'materia': asignacion['materia'],
-                    'grado_seccion': seccion,
-                })
-    else:
-        # En básica/parvularia: Si es orientador titular en este año y turno
-        seccion_titular = maestro.grados_a_cargo.filter(
-            activo=True,
-            grado__in=grados_basica,
-            turno__iexact=turno_actual
-        ).first()
-
-        if seccion_titular:
-            # Filtrar materias acordes al nivel de la sección titular
-            es_parv = seccion_titular.grado in ['PK', 'PK5', 'PK6']
-            filtro_mats = ['PARVULARIA'] if es_parv else ['BASICA', 'BASICA_Y_TERCER']
-            
-            materias_query = Materia.objects.filter(nivel_aplicable__in=filtro_mats).order_by('nombre')
-            if not materias_query.exists():
-                materias_query = Materia.objects.all().order_by('nombre')
-
-            for mat in materias_query:
-                materias_disponibles.append({
-                    'materia': mat,
-                    'grado_seccion': seccion_titular
-                })
-
-    # 4. Clases programadas por el maestro en este año activo
+    # Clases programadas por el maestro en este turno/nivel/año
     clases = HorarioClase.objects.filter(
         docente=maestro,
         anio_lectivo=anio_actual,
@@ -723,7 +719,51 @@ def horario_maestro(request):
         grado_seccion__grado__in=grados_nivel
     ).select_related('materia', 'grado_seccion')
 
-    # 5. Bloques autorizados por Dirección en el año lectivo activo
+    # 3. Consulta de materias disponibles con conteos exactos
+    materias_disponibles = []
+
+    if nivel_actual == 'tercer':
+        for asignacion in obtener_materias_docente(maestro, anio_actual):
+            seccion = asignacion['grado_seccion']
+            mat = asignacion['materia']
+            if seccion.es_tercer_ciclo and normalizar_turno(seccion.turno) == turno_actual:
+                asignadas = clases.filter(materia=mat, grado_seccion=seccion).count()
+                max_bloques = getattr(mat, 'bloques_semanales', 5) or 5
+                materias_disponibles.append({
+                    'materia': mat,
+                    'grado_seccion': seccion,
+                    'asignadas': asignadas,
+                    'meta': max_bloques,
+                    'restantes': max(0, max_bloques - asignadas)
+                })
+    else:
+        # En básica/parvularia: Titular encargado
+        seccion_titular = maestro.grados_a_cargo.filter(
+            activo=True,
+            grado__in=grados_basica,
+            turno__iexact=turno_actual
+        ).first()
+
+        if seccion_titular:
+            es_parv = seccion_titular.grado in ['PK', 'PK5', 'PK6']
+            filtro_mats = ['PARVULARIA'] if es_parv else ['BASICA', 'BASICA_Y_TERCER']
+
+            materias_query = Materia.objects.filter(nivel_aplicable__in=filtro_mats).order_by('nombre')
+            if not materias_query.exists():
+                materias_query = Materia.objects.all().order_by('nombre')
+
+            for mat in materias_query:
+                asignadas = clases.filter(materia=mat, grado_seccion=seccion_titular).count()
+                max_bloques = getattr(mat, 'bloques_semanales', 5) or 5
+                materias_disponibles.append({
+                    'materia': mat,
+                    'grado_seccion': seccion_titular,
+                    'asignadas': asignadas,
+                    'meta': max_bloques,
+                    'restantes': max(0, max_bloques - asignadas)
+                })
+
+    # 4. Bloques autorizados por Dirección
     filtro_docente = {'docente': maestro} if hasattr(AsignacionBloqueMaestro, 'docente') else {'maestro': maestro}
     bloques_autorizados = set(
         AsignacionBloqueMaestro.objects.filter(
@@ -737,7 +777,7 @@ def horario_maestro(request):
 
     mapa_horario = {(c.dia, c.bloque): c for c in clases}
 
-    # 6. Grilla con los 2 Recesos Oficiales
+    # 5. Grilla horaria
     bloques_horario = BLOQUES_HORARIO_TARDE if turno_actual == 'Tarde' else BLOQUES_HORARIO
     grilla = []
     for b in bloques_horario:
@@ -753,13 +793,13 @@ def horario_maestro(request):
                 })
         grilla.append(fila)
 
-    # 7. Cálculo del Progreso con Meta Real
+    # 6. Cálculo del Progreso
     progreso = []
     for m in materias_disponibles:
         mat = m['materia']
         sec = m['grado_seccion']
-        meta = getattr(mat, 'bloques_semanales', 5) or 5
-        asignadas = clases.filter(materia=mat, grado_seccion=sec).count()
+        meta = m['meta']
+        asignadas = m['asignadas']
         porcentaje = min(int((asignadas / meta) * 100), 100) if meta > 0 else 0
 
         progreso.append({
@@ -769,17 +809,28 @@ def horario_maestro(request):
             'porcentaje': porcentaje
         })
 
-    # 8. Estados y motivo de rechazo
+    # 7. Resolución simplificada del estado (Sin estado mixto)
     estados_encontrados = set(clases.values_list('estado', flat=True))
-    estado_actual = next(iter(estados_encontrados)) if len(estados_encontrados) == 1 else (
-        'MIXTO' if estados_encontrados else 'BORRADOR'
-    )
+    if not estados_encontrados:
+        estado_actual = 'BORRADOR'
+    elif 'PUBLICADO' in estados_encontrados:
+        estado_actual = 'PUBLICADO'
+    elif 'APROBADO' in estados_encontrados:
+        estado_actual = 'APROBADO'
+    elif 'ENVIADO' in estados_encontrados and 'BORRADOR' not in estados_encontrados:
+        estado_actual = 'ENVIADO'
+    elif 'RECHAZADO' in estados_encontrados and 'BORRADOR' not in estados_encontrados:
+        estado_actual = 'RECHAZADO'
+    else:
+        # Si tiene cualquier modificación en borrador, permite editar y enviar
+        estado_actual = 'BORRADOR'
+
     motivo_rechazo = next((
         c.observaciones.strip() for c in clases
         if c.estado == 'RECHAZADO' and c.observaciones and c.observaciones.strip()
     ), '')
 
-    # 9. Píldoras de estado de propuestas evaluadas sobre el año activo
+    # 8. Píldoras de estados por nivel/turno
     combinaciones = [
         ('basica', 'Niveles básicos', 'Mañana', 'manana'),
         ('basica', 'Niveles básicos', 'Tarde', 'tarde'),
@@ -797,7 +848,17 @@ def horario_maestro(request):
         )
         if clases_combo.exists():
             st_set = set(clases_combo.values_list('estado', flat=True))
-            st = next(iter(st_set)) if len(st_set) == 1 else 'MIXTO'
+            if 'PUBLICADO' in st_set:
+                st = 'PUBLICADO'
+            elif 'APROBADO' in st_set:
+                st = 'APROBADO'
+            elif 'ENVIADO' in st_set and 'BORRADOR' not in st_set:
+                st = 'ENVIADO'
+            elif 'RECHAZADO' in st_set and 'BORRADOR' not in st_set:
+                st = 'RECHAZADO'
+            else:
+                st = 'BORRADOR'
+
             estados_propuestas.append({
                 'nivel': n_slug,
                 'nivel_nombre': n_nom,
@@ -837,7 +898,6 @@ def guardar_bloque_horario(request):
         data = json.loads(request.body.decode('utf-8'))
         maestro = get_object_or_404(Maestro, id_usuario=request.user)
 
-        # Forzar año activo del sistema institucional
         periodo = ConfiguracionPeriodo.get_solo()
         anio = int(data.get('anio_lectivo') or periodo.anio_activo)
 
@@ -850,40 +910,8 @@ def guardar_bloque_horario(request):
         materia = Materia.objects.get(id=materia_id)
         turno_clase = normalizar_turno(grado_seccion.turno)
 
-        # Validar si el bloque está autorizado por Dirección (si existen bloques configurados)
-        bloques_profesor = AsignacionBloqueMaestro.objects.filter(
-            maestro=maestro,
-            turno=turno_clase,
-            anio_lectivo=anio,
-            activo=True
-        )
-        if bloques_profesor.exists() and not bloques_profesor.filter(dia=dia, bloque=bloque).exists():
-            return JsonResponse({
-                'success': False,
-                'error': 'Este bloque no está asignado por Dirección para el turno seleccionado.'
-            }, status=400)
-
-        # Validación de pertenencia de carga académica en el año activo
+        # 1. Bloqueo si ya está publicado
         es_tercer = grado_seccion.grado in ['7G', '8G', '9G']
-        if es_tercer:
-            tiene_asignacion = any(
-                asignacion['grado_seccion'].pk == grado_seccion.pk and asignacion['materia'].pk == materia.pk
-                for asignacion in obtener_materias_docente(maestro, anio)
-            )
-            if not tiene_asignacion:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Esta materia y sección no forman parte de tu carga académica de Tercer Ciclo para este año escolar.'
-                }, status=400)
-        else:
-            es_orientador = maestro.grados_a_cargo.filter(id=grado_seccion.id, activo=True).exists()
-            if not es_orientador:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'No estás registrado como orientador encargado de esta sección de Básica/Parvularia.'
-                }, status=400)
-
-        # Bloqueo si ya fue publicado
         grados_nivel = ['7G', '8G', '9G'] if es_tercer else ['PK', 'PK5', 'PK6', '1G', '2G', '3G', '4G', '5G', '6G']
         if HorarioClase.objects.filter(
             docente=maestro,
@@ -897,7 +925,55 @@ def guardar_bloque_horario(request):
                 'error': 'El horario oficial de este nivel ya fue publicado por Dirección y no admite modificaciones.'
             }, status=400)
 
-        # Verificar si el aula ya está ocupada por otro docente en el año activo
+        # 2. Validar autorización de bloque por Dirección
+        bloques_profesor = AsignacionBloqueMaestro.objects.filter(
+            maestro=maestro,
+            turno=turno_clase,
+            anio_lectivo=anio,
+            activo=True
+        )
+        if bloques_profesor.exists() and not bloques_profesor.filter(dia=dia, bloque=bloque).exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'Este bloque no está asignado por Dirección para el turno seleccionado.'
+            }, status=400)
+
+        # 3. Validación de carga académica
+        if es_tercer:
+            tiene_asignacion = any(
+                asignacion['grado_seccion'].pk == grado_seccion.pk and asignacion['materia'].pk == materia.pk
+                for asignacion in obtener_materias_docente(maestro, anio)
+            )
+            if not tiene_asignacion:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Esta materia y sección no forman parte de tu carga académica de Tercer Ciclo.'
+                }, status=400)
+        else:
+            es_orientador = maestro.grados_a_cargo.filter(id=grado_seccion.id, activo=True).exists()
+            if not es_orientador:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'No estás registrado como orientador titular de esta sección.'
+                }, status=400)
+
+        # 4. VALIDACIÓN ESTRICTA DEL LÍMITE DE BLOQUES SEMANALES
+        max_permitidos = getattr(materia, 'bloques_semanales', 5) or 5
+        bloques_actuales = HorarioClase.objects.filter(
+            docente=maestro,
+            grado_seccion=grado_seccion,
+            materia=materia,
+            anio_lectivo=anio,
+            turno=turno_clase
+        ).exclude(dia=dia, bloque=bloque).count()
+
+        if bloques_actuales >= max_permitidos:
+            return JsonResponse({
+                'success': False,
+                'error': f'Límite alcanzado: {materia.nombre} solo admite {max_permitidos} bloques semanales en {grado_seccion}. Ya tiene {bloques_actuales} programados.'
+            }, status=400)
+
+        # 5. Choque de aula con otro docente
         choque_aula = HorarioClase.objects.filter(
             grado_seccion=grado_seccion,
             dia=dia,
@@ -908,11 +984,11 @@ def guardar_bloque_horario(request):
         if choque_aula:
             return JsonResponse({
                 'success': False,
-                'error': f'Conflicto de aula: {grado_seccion} ya tiene programada la clase de {choque_aula.materia.nombre} con el Prof. {choque_aula.docente.apellido} en este bloque.'
+                'error': f'Conflicto de aula: {grado_seccion} ya tiene clase con el Prof. {choque_aula.docente.apellido} en este bloque.'
             }, status=400)
 
-        # Guardar o actualizar la celda
-        clase, _ = HorarioClase.objects.update_or_create(
+        # 6. Guardar celda (queda en BORRADOR para permitir enviar a revisión)
+        HorarioClase.objects.update_or_create(
             docente=maestro,
             dia=dia,
             bloque=bloque,
@@ -927,9 +1003,7 @@ def guardar_bloque_horario(request):
 
         return JsonResponse({
             'success': True,
-            'materia_nombre': materia.nombre,
-            'materia_color': materia.color,
-            'seccion_nombre': f"{grado_seccion.get_grado_display()} '{grado_seccion.seccion}'"
+            'mensaje': 'Bloque asignado correctamente.'
         })
 
     except (GradoSeccion.DoesNotExist, Materia.DoesNotExist):

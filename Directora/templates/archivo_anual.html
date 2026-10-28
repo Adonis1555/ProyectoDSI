@@ -4,7 +4,7 @@
     <h1 class="titulo-alumno">Historial del año {{ anio_archivado }}</h1>
     <a class="btn-historial" href="{% url 'historial_anual' %}">Volver a años cerrados</a>
 </div>
-<p class="aviso-historial">Datos conservados al cierre del {{ cierre.fecha|date:"d/m/Y h:i A" }}. La apertura del siguiente ciclo no modifica esta información. El cierre no asigna promociones ni resultados académicos.</p>
+<p class="aviso-historial">Datos conservados al cierre del {{ anio_archivado }}. La apertura del siguiente ciclo no modifica esta información. El cierre no asigna promociones ni resultados académicos.</p>
 
 <section class="panel-historial">
     <h2>Secciones y docentes encargados</h2>

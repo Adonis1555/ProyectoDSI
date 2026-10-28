@@ -262,9 +262,6 @@
                     <h1 class="titulo-alumno">Alumnos Registrados</h1>
                     <div class="acciones-encabezado">
                         {% include 'acceso_historial.html' %}
-                        {% if periodo.fase_actual == 'MATRICULA' %}<a href="{% url 'registro_alumnos' %}">
-                            <button type="button" class="btnRegistrarAlumno">+ Registrar Alumno</button>
-                        </a>{% endif %}
                     </div>
                 </div>
                 
@@ -305,7 +302,6 @@
                                     <td>
                                         <div style="display: flex; gap: 8px;">
                                             <a href="{% url 'registro_demeritos_view' alumno.NIE %}" class="btn-registrar">Ver Expediente</a>
-                                            {% if periodo.fase_actual == 'MATRICULA' %}<a href="{% url 'editar_alumno' alumno.NIE %}" class="btn-editar">Editar</a>{% endif %}
                                         </div>
                                     </td>
                                 </tr>
