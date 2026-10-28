@@ -20,12 +20,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@4aa8s&o5w*enf^a#ts-rgo&cza^@-5i&g5m)7-m00)ppdkx5r'
-
+SECRET_KEY = os.environ.get('SECRET_KEY','django-insecure-@4aa8s&o5w*enf^a#ts-rgo&cza^@-5i&g5m)7-m00)ppdkx5r')
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 AUTH_USER_MODEL = "Login.Usuario" 
 
@@ -47,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -81,14 +85,10 @@ WSGI_APPLICATION = 'Cenalop_DSI.wsgi.application'
 import os
 
 DATABASES = {
-    'default': {
-    'ENGINE': 'django.db.backends.postgresql',
-    'NAME': 'ProyectoDSI',
-    'USER':'postgres',
-    'PASSWORD': 12345678,
-    'HOST':'localhost',
-    'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600
+    )
 }
 
 
@@ -115,6 +115,11 @@ AUTHENTICATION_BACKENDS = [
 ]
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
+# Archivos estáticos
+
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 LANGUAGE_CODE = 'en-us'
 
@@ -126,7 +131,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-
+CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
