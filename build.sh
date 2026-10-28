@@ -10,3 +10,4 @@ python manage.py collectstatic --no-input
 
 # Aplicar las migraciones a la base de datos PostgreSQL de Render
 python manage.py migrate
+python manage.py cargar_datos_demo
