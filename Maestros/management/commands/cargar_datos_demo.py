@@ -278,7 +278,7 @@ class Command(BaseCommand):
                     "fecha_nacimiento": date(2012, 3, 14), "genero": "F",
                     "nacionalidad": "Salvadoreña", "responsable": resp,
                     "parentesco_responsable": "MADRE", "telefono_contacto": "7845-1290",
-                    "grado_seccion": sec_8a, "estado": "PENDIENTE",
+                    "grado_seccion": sec_8a, "estado": "APROBADA",
                     "direccion_exacta": "San Salvador"
                 }
             )
