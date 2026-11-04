@@ -192,7 +192,7 @@
                                    name="fecha_nacimiento" 
                                    id="fecha_nacimiento" 
                                    class="input-custom" 
-                                   value="{% if ficha and ficha.fecha_nacimiento %}{{ ficha.fecha_nacimiento|date:'Y-m-d' }}{% elif alumno_existente and alumno_existente.fecha_nacimiento %}{{ alumno_existente.fecha_nacimiento|date:'Y-m-d' }}{% endif %}" 
+                                   value="{% if alumno_existente and alumno_existente.fecha_nac %}{{ alumno_existente.fecha_nac|date:'Y-m-d' }}{% elif ficha and ficha.fecha_nacimiento %}{{ ficha.fecha_nacimiento|date:'Y-m-d' }}{% endif %}"
                                    max="{{ periodo.anio_activo|add:'-4' }}-12-31"
                                    min="{{ periodo.anio_activo|add:'-18' }}-01-01"
                                    {% if alumno_existente or modo_lectura %}readonly style="background-color: #f1f5f9; cursor: not-allowed;"{% endif %} 

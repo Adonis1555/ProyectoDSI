@@ -269,18 +269,4 @@ class Command(BaseCommand):
                 }
             )
 
-            sec_8a = secciones_map["8G"]
-            FichaMatricula.objects.update_or_create(
-                nie="8572940",
-                anio_lectivo=anio,
-                defaults={
-                    "nombres": "Sofía Valentina", "apellidos": "Gómez Flores",
-                    "fecha_nacimiento": date(2012, 3, 14), "genero": "F",
-                    "nacionalidad": "Salvadoreña", "responsable": resp,
-                    "parentesco_responsable": "MADRE", "telefono_contacto": "7845-1290",
-                    "grado_seccion": sec_8a, "estado": "APROBADA",
-                    "direccion_exacta": "San Salvador"
-                }
-            )
-
         self.stdout.write(self.style.SUCCESS("✓ Demo generado con éxito: bloques, materias y docentes 100% concordantes y sin choques."))

@@ -238,8 +238,13 @@ def ficha_matricula_view(request, ficha_id=None, corregir=False):
         if alumno_db:
             nombres = alumno_db.nombre
             apellidos = alumno_db.apellido
-            fecha_nacimiento = alumno_db.fecha_nacimiento
+            fecha_nacimiento = alumno_db.fecha_nac
             genero = alumno_db.sexo
+        if fecha_nacimiento is None:
+        return JsonResponse({
+            'ok': False,
+            'error': 'El alumno no tiene fecha de nacimiento registrada. Solicita a la administración que actualice sus datos.'
+        }, status=400)
         else:
             nombres = request.POST.get('nombre', '').strip()
             apellidos = request.POST.get('apellido', '').strip()
